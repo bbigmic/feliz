@@ -112,7 +112,7 @@ export default function SoftwareFormModal({ isOpen, onClose, onAdded, softwareTo
       toast.error(`Uzupełnij: ${missing.join(', ')}`)
       return
     }
-    const categories = JSON.stringify(categoriesInput.split(',').map(s => s.trim()).filter(Boolean))
+    const categories = JSON.stringify(categoriesInput.split(',').map((s: string) => s.trim()).filter(Boolean))
     const payload = {
       name,
       description,
