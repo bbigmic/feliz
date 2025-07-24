@@ -723,9 +723,6 @@ video {
 .visible {
   visibility: visible;
 }
-.static {
-  position: static;
-}
 .fixed {
   position: fixed;
 }
@@ -859,9 +856,6 @@ video {
 .block {
   display: block;
 }
-.inline {
-  display: inline;
-}
 .flex {
   display: flex;
 }
@@ -870,9 +864,6 @@ video {
 }
 .grid {
   display: grid;
-}
-.contents {
-  display: contents;
 }
 .hidden {
   display: none;
@@ -1422,12 +1413,6 @@ video {
 }
 .font-semibold {
   font-weight: 600;
-}
-.lowercase {
-  text-transform: lowercase;
-}
-.italic {
-  font-style: italic;
 }
 .leading-tight {
   line-height: 1.25;
