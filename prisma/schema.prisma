@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  orders       Order[]
+  termsAccepted     Boolean   @default(false)
+  marketingAccepted Boolean   @default(false)
+  isAdmin           Boolean   @default(false)
+}
+
+model Order {
+  id              Int      @id @default(autoincrement())
+  userId          Int?
+  user            User?    @relation(fields: [userId], references: [id])
+  productId       Int? // teraz opcjonalne
+  email           String?  // email dla niezalogowanych użytkowników
+  phone           String
+  info            String?
+  orderType       String   @default("demo") // "demo" lub "consultation"
+  status          String   @default("pending")
+  createdAt       DateTime @default(now())
+  stripeSessionId String?
+  termsAccepted     Boolean   @default(false)
+  marketingAccepted Boolean   @default(false)
+}
+
+model Software {
+  id          Int             @id @default(autoincrement())
+  name        String
+  description String
+  price       Int
+  categories  String          @default("[]")
+  demoUrl     String
+  features    String
+  rating      Float
+  sales       Int
+  status      String          @default("active")
+  createdAt   DateTime        @default(now())
+  images      SoftwareImage[]
+}
+
+model SoftwareImage {
+  id          Int      @id @default(autoincrement())
+  url         String
+  isThumbnail Boolean  @default(false)
+  softwareId  Int
+  software    Software @relation(fields: [softwareId], references: [id])
+}
+
+model Component {
+  id        Int    @id @default(autoincrement())
+  name      String
+  priceFrom Int
+  priceTo   Int
+  notes     String
+}
