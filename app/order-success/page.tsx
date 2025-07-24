@@ -3,9 +3,9 @@
 import { CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 
-export default function OrderSuccess() {
+function OrderSuccessContent() {
   const searchParams = useSearchParams()
   const orderId = searchParams.get('orderId')
   const [orderType, setOrderType] = useState<'demo' | 'consultation' | null>(null)
@@ -58,5 +58,13 @@ export default function OrderSuccess() {
       </p>
       <Link href="/" className="btn-primary mt-4">Wróć na stronę główną</Link>
     </div>
+  )
+}
+
+export default function OrderSuccess() {
+  return (
+    <Suspense>
+      <OrderSuccessContent />
+    </Suspense>
   )
 } 
