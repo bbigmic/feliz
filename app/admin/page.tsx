@@ -12,6 +12,7 @@ import {
   Users,
   Package
 } from 'lucide-react'
+import toast from 'react-hot-toast'
 import SoftwareFormModal from '@/components/SoftwareFormModal'
 import AuthModal from '@/components/AuthModal'
 
@@ -59,6 +60,7 @@ export default function AdminPanel() {
   const [editComponent, setEditComponent] = useState<Component | null>(null)
   const [isEditComponentModalOpen, setIsEditComponentModalOpen] = useState(false)
   const [softwareToEdit, setSoftwareToEdit] = useState<Software | null>(null)
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
 
   const [authChecked, setAuthChecked] = useState(false)
   const [showLogin, setShowLogin] = useState(false)
@@ -146,11 +148,13 @@ export default function AdminPanel() {
     </div>
   }
 
+  const filteredSoftware = software.filter(item => statusFilter === 'all' || item.status === statusFilter)
+  
   const stats = [
     { title: 'Wszystkie oprogramowanie', value: software.length, icon: Package, color: 'text-primary-500' },
     { title: 'Aktywne', value: software.filter(s => s.status === 'active').length, icon: Eye, color: 'text-green-600' },
-    { title: 'Sprzedaże', value: software.reduce((sum, s) => sum + s.sales, 0), icon: BarChart3, color: 'text-purple-600' },
-    { title: 'Średnia ocena', value: (software.reduce((sum, s) => sum + s.rating, 0) / software.length).toFixed(1), icon: Users, color: 'text-orange-600' }
+    { title: 'Wyświetlane', value: filteredSoftware.length, icon: BarChart3, color: 'text-purple-600' },
+    { title: 'Średnia ocena', value: software.length > 0 ? (software.reduce((sum, s) => sum + s.rating, 0) / software.length).toFixed(1) : '0.0', icon: Users, color: 'text-orange-600' }
   ]
 
   const handleEdit = (software: Software) => {
@@ -168,6 +172,36 @@ export default function AdminPanel() {
     setSoftware(software.map(s => s.id === updatedSoftware.id ? updatedSoftware : s))
     setIsEditModalOpen(false)
     setSelectedSoftware(null)
+  }
+
+  // Funkcja do zmiany statusu oprogramowania
+  const handleStatusToggle = async (softwareId: number, currentStatus: string) => {
+    const newStatus = currentStatus === 'active' ? 'inactive' : 'active'
+    
+    try {
+      const response = await fetch(`/api/admin/softwares?id=${softwareId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: newStatus
+        })
+      })
+
+      if (response.ok) {
+        // Aktualizuj lokalny stan
+        setSoftware(software.map(s => 
+          s.id === softwareId ? { ...s, status: newStatus as 'active' | 'inactive' } : s
+        ))
+        toast.success(`Status zmieniony na ${newStatus === 'active' ? 'aktywny' : 'nieaktywny'}`)
+      } else {
+        toast.error('Błąd podczas zmiany statusu')
+      }
+    } catch (error) {
+      console.error('Error toggling status:', error)
+      toast.error('Błąd podczas zmiany statusu')
+    }
   }
 
   return (
@@ -271,10 +305,14 @@ export default function AdminPanel() {
                     <option className="bg-darkpanel text-darktext">Business</option>
                     <option className="bg-darkpanel text-darktext">Content</option>
                   </select>
-                  <select className="px-3 py-2 border border-gray-700 rounded-lg text-sm bg-darkpanel text-darktext w-full sm:w-auto">
-                    <option className="bg-darkpanel text-darktext">Wszystkie statusy</option>
-                    <option className="bg-darkpanel text-darktext">Aktywne</option>
-                    <option className="bg-darkpanel text-darktext">Nieaktywne</option>
+                  <select 
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')}
+                    className="px-3 py-2 border border-gray-700 rounded-lg text-sm bg-darkpanel text-darktext w-full sm:w-auto"
+                  >
+                    <option value="all" className="bg-darkpanel text-darktext">Wszystkie statusy</option>
+                    <option value="active" className="bg-darkpanel text-darktext">Aktywne</option>
+                    <option value="inactive" className="bg-darkpanel text-darktext">Nieaktywne</option>
                   </select>
                 </div>
               </div>
@@ -285,7 +323,7 @@ export default function AdminPanel() {
                 <>
                   {/* Mobile: karty */}
                   <div className="flex flex-col gap-4 sm:hidden">
-                    {software.map((item) => (
+                    {filteredSoftware.map((item) => (
                       <div key={item.id} className="bg-darkpanel rounded-xl shadow-lg p-4 border border-gray-800">
                         <div className="flex items-center gap-3 mb-2">
                           {item.thumbnailUrl && (
@@ -315,6 +353,12 @@ export default function AdminPanel() {
                         <div className="flex gap-2 mt-2">
                           <button onClick={() => { setSoftwareToEdit(item); setIsEditModalOpen(true) }} className="btn-primary flex-1 py-2 text-xs">Edytuj</button>
                           <button onClick={() => window.open(`/demo/${item.id}`, '_blank')} className="btn-secondary flex-1 py-2 text-xs">Zobacz</button>
+                          <button 
+                            onClick={() => handleStatusToggle(item.id, item.status)} 
+                            className={`flex-1 py-2 text-xs rounded-lg ${item.status === 'active' ? 'bg-orange-700 hover:bg-orange-800 text-white' : 'bg-green-700 hover:bg-green-800 text-white'}`}
+                          >
+                            {item.status === 'active' ? 'Dezaktywuj' : 'Aktywuj'}
+                          </button>
                           <button onClick={async () => { if (confirm('Czy na pewno chcesz usunąć to oprogramowanie?')) { await fetch(`/api/admin/softwares?id=${item.id}`, { method: 'DELETE' }); fetchSoftwares(); } }} className="bg-red-700 hover:bg-red-800 text-white rounded-lg px-2 py-2 text-xs">Usuń</button>
                         </div>
                       </div>
@@ -335,7 +379,7 @@ export default function AdminPanel() {
                         </tr>
                       </thead>
                       <tbody>
-                        {software.map((item) => (
+                        {filteredSoftware.map((item) => (
                           <tr key={item.id} className="border-b border-gray-900 hover:bg-darkbg/60">
                             <td className="py-4 px-4">
                               <div className="flex items-center space-x-3">
@@ -374,6 +418,13 @@ export default function AdminPanel() {
                               <div className="flex space-x-2">
                                 <button onClick={() => { setSoftwareToEdit(item); setIsEditModalOpen(true) }} className="text-primary-500 hover:text-primary-300 p-1" title="Edytuj"><Edit className="w-4 h-4" /></button>
                                 <button onClick={() => window.open(`/demo/${item.id}`, '_blank')} className="text-green-400 hover:text-green-300 p-1" title="Zobacz demo"><Eye className="w-4 h-4" /></button>
+                                <button 
+                                  onClick={() => handleStatusToggle(item.id, item.status)} 
+                                  className={`p-1 ${item.status === 'active' ? 'text-orange-400 hover:text-orange-300' : 'text-green-400 hover:text-green-300'}`} 
+                                  title={item.status === 'active' ? 'Dezaktywuj' : 'Aktywuj'}
+                                >
+                                  {item.status === 'active' ? '⏸️' : '▶️'}
+                                </button>
                                 <button onClick={async () => { if (confirm('Czy na pewno chcesz usunąć to oprogramowanie?')) { await fetch(`/api/admin/softwares?id=${item.id}`, { method: 'DELETE' }); fetchSoftwares(); } }} className="text-red-400 hover:text-red-300 p-1" title="Usuń"><Trash2 className="w-4 h-4" /></button>
                               </div>
                             </td>

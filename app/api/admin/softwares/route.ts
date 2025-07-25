@@ -66,10 +66,28 @@ export async function PATCH(request: NextRequest) {
     const id = Number(new URL(request.url).searchParams.get('id'))
     const body = await request.json()
     console.log('PATCH body:', body)
+    
+    // Sprawdź czy to aktualizacja tylko statusu
+    if (body.status && Object.keys(body).length === 1) {
+      // Aktualizacja tylko statusu
+      if (!id || !body.status) {
+        return NextResponse.json({ error: 'Brak wymaganych danych.' }, { status: 400 })
+      }
+      
+      await prisma.software.update({
+        where: { id },
+        data: { status: body.status }
+      })
+      
+      return NextResponse.json({ success: true })
+    }
+    
+    // Pełna aktualizacja (dla formularza edycji)
     const { name, description, price, categories, demoUrl, features, rating, sales, status, images, thumbnailIdx } = body
     if (!id || !name || !description || !categories || !demoUrl || !features || rating === undefined || sales === undefined || !status || images === undefined || thumbnailIdx === undefined) {
       return NextResponse.json({ error: 'Brak wymaganych danych.', details: { id, name, description, price, categories, demoUrl, features, rating, sales, status, images, thumbnailIdx } }, { status: 400 })
     }
+    
     // Usuń stare zdjęcia
     await prisma.softwareImage.deleteMany({ where: { softwareId: id } })
     // Zaktualizuj software

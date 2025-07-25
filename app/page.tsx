@@ -215,6 +215,9 @@ export default function Home() {
 
   const filteredSoftware = softwares
     .filter(item => {
+      // Pokazuj tylko aktywne oprogramowania na stronie głównej
+      if (item.status !== 'active') return false
+      
       const nameMatch = item.name.toLowerCase().includes(searchTerm.toLowerCase())
       const categoryMatch = selectedCategory === 'all' || 
         (() => {
