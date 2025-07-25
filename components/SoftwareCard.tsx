@@ -137,7 +137,7 @@ export default function SoftwareCard({ software, onOrderClick, onGalleryClick }:
 
         {/* Stats */}
         <div className="flex items-center justify-between text-sm text-gray-400">
-          <span>{software.sales} sprzedaży</span>
+          {/* <span>{software.sales} sprzedaży</span> */}
           <span>ID: {software.id}</span>
         </div>
 
