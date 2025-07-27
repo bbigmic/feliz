@@ -8,46 +8,49 @@ datasource db {
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
-  email        String   @unique
-  passwordHash String
-  createdAt    DateTime @default(now())
-  orders       Order[]
-  termsAccepted     Boolean   @default(false)
-  marketingAccepted Boolean   @default(false)
-  isAdmin           Boolean   @default(false)
+  id                Int      @id @default(autoincrement())
+  email             String   @unique
+  passwordHash      String
+  createdAt         DateTime @default(now())
+  termsAccepted     Boolean  @default(false)
+  marketingAccepted Boolean  @default(false)
+  isAdmin           Boolean  @default(false)
+  orders            Order[]
 }
 
 model Order {
-  id              Int      @id @default(autoincrement())
-  userId          Int?
-  user            User?    @relation(fields: [userId], references: [id])
-  productId       Int? // teraz opcjonalne
-  email           String?  // email dla niezalogowanych użytkowników
-  phone           String
-  info            String?
-  orderType       String   @default("demo") // "demo" lub "consultation"
-  status          String   @default("pending")
-  createdAt       DateTime @default(now())
-  stripeSessionId String?
-  termsAccepted     Boolean   @default(false)
-  marketingAccepted Boolean   @default(false)
-  demoConsentAccepted Boolean @default(false)
+  id                  Int      @id @default(autoincrement())
+  userId              Int?
+  productId           Int?
+  email               String?
+  phone               String
+  info                String?
+  orderType           String   @default("demo")
+  status              String   @default("pending")
+  createdAt           DateTime @default(now())
+  stripeSessionId     String?
+  termsAccepted       Boolean  @default(false)
+  marketingAccepted   Boolean  @default(false)
+  demoConsentAccepted Boolean  @default(false)
+  user                User?    @relation(fields: [userId], references: [id])
 }
 
 model Software {
-  id          Int             @id @default(autoincrement())
-  name        String
-  description String
-  price       Int
-  categories  String          @default("[]")
-  demoUrl     String
-  features    String
-  rating      Float
-  sales       Int
-  status      String          @default("active")
-  createdAt   DateTime        @default(now())
-  images      SoftwareImage[]
+  id            Int             @id @default(autoincrement())
+  name          String
+  description   String
+  price         Int
+  categories    String          @default("[]")
+  demoUrl       String
+  features      String
+  rating        Float
+  sales         Int
+  status        String          @default("active")
+  createdAt     DateTime        @default(now())
+  descriptionEn String?
+  featuresEn    String?
+  nameEn        String?
+  images        SoftwareImage[]
 }
 
 model SoftwareImage {
@@ -59,9 +62,11 @@ model SoftwareImage {
 }
 
 model Component {
-  id        Int    @id @default(autoincrement())
+  id        Int     @id @default(autoincrement())
   name      String
   priceFrom Int
   priceTo   Int
   notes     String
+  nameEn    String?
+  notesEn   String?
 }
