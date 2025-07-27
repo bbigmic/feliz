@@ -1,7 +1,7 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
+  "/admin/page": "app/admin/page.js",
   "/page": "app/page.js",
   "/api/auth/me/route": "app/api/auth/me/route.js",
-  "/api/admin/components/route": "app/api/admin/components/route.js",
-  "/api/admin/softwares/route": "app/api/admin/softwares/route.js"
+  "/api/admin/softwares/route": "app/api/admin/softwares/route.js",
+  "/api/admin/orders/route": "app/api/admin/orders/route.js"
 }

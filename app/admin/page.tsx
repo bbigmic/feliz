@@ -84,6 +84,21 @@ export default function AdminPanel() {
     setLoadingComponents(false)
   }
 
+  // 4. Funkcja pobierająca zamówienia
+  const fetchOrders = async () => {
+    setLoadingOrders(true)
+    try {
+      const res = await fetch('/api/admin/orders')
+      const data = await res.json()
+      setOrders(data.orders || [])
+    } catch (error) {
+      console.error('Błąd pobierania zamówień:', error)
+      toast.error('Błąd pobierania zamówień')
+    } finally {
+      setLoadingOrders(false)
+    }
+  }
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -115,11 +130,7 @@ export default function AdminPanel() {
       fetchSoftwares()
     }
     if (activeTab === 'orders') {
-      setLoadingOrders(true)
-      fetch('/api/admin/orders')
-        .then(res => res.json())
-        .then(data => setOrders(data.orders || []))
-        .finally(() => setLoadingOrders(false))
+      fetchOrders()
     }
     if (activeTab === 'users') {
       setLoadingUsers(true)
