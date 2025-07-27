@@ -18,25 +18,37 @@ export async function GET() {
     const tableInfo = await prisma.$queryRaw`
       SELECT 
         schemaname,
-        tablename,
-        n_tup_ins as inserts,
-        n_tup_upd as updates,
-        n_tup_del as deletes
+        relname as tablename,
+        n_tup_ins::text as inserts,
+        n_tup_upd::text as updates,
+        n_tup_del::text as deletes
       FROM pg_stat_user_tables 
-      WHERE tablename = 'Order'
+      WHERE relname = 'Order'
     `
     
     // Sprawdź ostatnie operacje na tabeli
     const recentActivity = await prisma.$queryRaw`
       SELECT 
         schemaname,
-        tablename,
+        relname as tablename,
         last_vacuum,
         last_autovacuum,
         last_analyze,
         last_autoanalyze
       FROM pg_stat_user_tables 
-      WHERE tablename = 'Order'
+      WHERE relname = 'Order'
+    `
+    
+    // Sprawdź wszystkie tabele
+    const allTables = await prisma.$queryRaw`
+      SELECT 
+        schemaname,
+        relname as tablename,
+        n_tup_ins::text as inserts,
+        n_tup_upd::text as updates,
+        n_tup_del::text as deletes
+      FROM pg_stat_user_tables 
+      ORDER BY relname
     `
     
     await prisma.$disconnect()
@@ -46,6 +58,7 @@ export async function GET() {
       connectionInfo,
       tableInfo,
       recentActivity,
+      allTables,
       timestamp: new Date().toISOString()
     })
   } catch (error) {
