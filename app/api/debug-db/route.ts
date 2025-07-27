@@ -21,9 +21,9 @@ export async function GET() {
       select: { id: true, email: true, isAdmin: true, createdAt: true }
     })
     
-    // Sprawdź ostatnie zamówienia
+    // Sprawdź ostatnie zamówienia (ostatnie 10)
     const recentOrders = await prisma.order.findMany({
-      take: 5,
+      take: 10,
       orderBy: { createdAt: 'desc' },
       select: { 
         id: true, 
@@ -32,6 +32,18 @@ export async function GET() {
         status: true, 
         createdAt: true,
         demoConsentAccepted: true
+      }
+    })
+    
+    // Sprawdź najnowsze zamówienie
+    const latestOrder = await prisma.order.findFirst({
+      orderBy: { createdAt: 'desc' },
+      select: { 
+        id: true, 
+        email: true, 
+        orderType: true, 
+        status: true, 
+        createdAt: true
       }
     })
     
@@ -47,6 +59,9 @@ export async function GET() {
     const migrationStatus = await prisma.$queryRaw`
       SELECT * FROM _prisma_migrations ORDER BY finished_at DESC LIMIT 5
     `
+    
+    // Sprawdź timestamp bazy danych
+    const dbTimestamp = await prisma.$queryRaw`SELECT NOW() as current_time`
     
     await prisma.$disconnect()
     
@@ -64,8 +79,10 @@ export async function GET() {
       },
       adminUsers,
       recentOrders,
+      latestOrder,
       orderColumns,
       migrationStatus,
+      dbTimestamp,
       env: {
         DATABASE_URL: process.env.DATABASE_URL ? 'SET' : 'NOT SET',
         JWT_SECRET: process.env.JWT_SECRET ? 'SET' : 'NOT SET',

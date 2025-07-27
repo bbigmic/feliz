@@ -1,3 +1,5 @@
 {
-  "/api/debug-db/route": "app/api/debug-db/route.js"
+  "/api/debug-db/route": "app/api/debug-db/route.js",
+  "/api/debug-order/route": "app/api/debug-order/route.js",
+  "/api/refresh-db/route": "app/api/refresh-db/route.js"
 }
