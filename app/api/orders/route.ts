@@ -75,6 +75,23 @@ export async function POST(request: NextRequest) {
       unitAmount = Math.round((software?.price || 0) * 0.2 * 100) // 20% ceny w groszach
     }
     
+    // Debug URL-i
+    const baseUrl = process.env.NODE_ENV === 'production' 
+      ? process.env.NEXT_PUBLIC_BASE_URL 
+      : (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
+    
+    const successUrl = `${baseUrl}/order-success?orderId=${order.id}`
+    const cancelUrl = `${baseUrl}/`
+    
+    console.log('Stripe URLs:', {
+      NODE_ENV: process.env.NODE_ENV,
+      VERCEL_URL: process.env.VERCEL_URL,
+      NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
+      baseUrl,
+      successUrl,
+      cancelUrl
+    })
+    
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -91,8 +108,8 @@ export async function POST(request: NextRequest) {
         },
       ],
       mode: 'payment',
-      success_url: `${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : process.env.NEXT_PUBLIC_BASE_URL}/order-success?orderId=${order.id}`,
-      cancel_url: `${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : process.env.NEXT_PUBLIC_BASE_URL}/`,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
       metadata: {
         orderId: order.id.toString(),
         productId: productId?.toString() || '',
