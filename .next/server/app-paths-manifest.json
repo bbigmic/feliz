@@ -1,4 +1,4 @@
 {
-  "/api/admin/orders/route": "app/api/admin/orders/route.js",
-  "/api/debug-db/route": "app/api/debug-db/route.js"
+  "/_not-found/page": "app/_not-found/page.js",
+  "/admin/page": "app/admin/page.js"
 }

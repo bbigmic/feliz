@@ -3,9 +3,10 @@ import { PrismaClient } from '@prisma/client'
 
 export async function GET() {
   try {
-    const prisma = new PrismaClient()
+    console.log('Refresh DB called - forcing complete refresh')
     
     // Wymuś odświeżenie połączenia
+    const prisma = new PrismaClient()
     await prisma.$connect()
     await prisma.$disconnect()
     
@@ -20,6 +21,25 @@ export async function GET() {
       select: { id: true, email: true, createdAt: true }
     })
     
+    // Sprawdź wszystkie zamówienia z ostatnich 24h
+    const recentOrders = await newPrisma.order.findMany({
+      where: {
+        createdAt: {
+          gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // ostatnie 24h
+        }
+      },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, email: true, createdAt: true }
+    })
+    
+    // Sprawdź szczegóły połączenia
+    const connectionInfo = await newPrisma.$queryRaw`
+      SELECT 
+        current_database() as database_name,
+        current_user as current_user,
+        NOW() as current_time
+    `
+    
     await newPrisma.$disconnect()
     
     return NextResponse.json({
@@ -27,6 +47,8 @@ export async function GET() {
       message: 'Połączenie z bazą odświeżone',
       orderCount,
       latestOrder,
+      recentOrders,
+      connectionInfo,
       timestamp: new Date().toISOString()
     })
   } catch (error) {
