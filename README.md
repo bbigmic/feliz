@@ -154,9 +154,8 @@ MIT License - zobacz [LICENSE](LICENSE) dla szczegółów.
 
 ## 📞 Kontakt
 
-- **Email**: kontakt@feliztrade.pl
-- **Website**: https://feliztrade.pl
-- **GitHub**: https://github.com/your-username/feliztrade
+- **Email**: feliztradeltd@proton.me
+- **Website**: https://feliztradeltd.com
 
 ## 🎯 Roadmap
 

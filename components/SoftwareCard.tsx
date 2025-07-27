@@ -37,7 +37,8 @@ export default function SoftwareCard({ software, onOrderClick, onGalleryClick }:
     toast.success('Otwieranie demo...')
   }
 
-  const handleBuyClick = () => {
+  const handleBuyClick = (e: React.MouseEvent) => {
+    e.stopPropagation() // Zatrzymaj propagację, żeby nie otworzyć galerii
     if (onOrderClick) {
       onOrderClick(software)
     } else {
@@ -68,14 +69,14 @@ export default function SoftwareCard({ software, onOrderClick, onGalleryClick }:
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       whileHover={{ y: -5 }}
+      onClick={openGallery} // Cała karta otwiera galerię
     >
       {/* Image */}
       <div className="relative mb-4">
         <img
           src={imageSrc}
           alt={software.name}
-          className="w-full h-48 object-cover rounded-lg cursor-pointer"
-          onClick={openGallery}
+          className="w-full h-48 object-cover rounded-lg"
         />
         <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all duration-300 rounded-lg flex items-center justify-center">
           {isHovered && (
@@ -85,7 +86,10 @@ export default function SoftwareCard({ software, onOrderClick, onGalleryClick }:
               className="flex space-x-2"
             >
               <button
-                onClick={openGallery}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  openGallery()
+                }}
                 className="bg-white text-gray-900 p-2 rounded-full hover:bg-gray-100 transition-colors"
                 title="Zobacz galerię"
               >
@@ -150,13 +154,13 @@ export default function SoftwareCard({ software, onOrderClick, onGalleryClick }:
             </span>
           </div>
           <div className="flex space-x-2">
-            <button
+            {/* <button
               onClick={handleDemoClick}
               className="btn-secondary flex items-center space-x-1"
             >
               <Eye className="w-4 h-4" />
               <span>Zobacz</span>
-            </button>
+            </button> */}
             <button
               onClick={handleBuyClick}
               className="btn-primary flex items-center space-x-1"

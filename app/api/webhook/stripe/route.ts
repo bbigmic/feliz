@@ -27,13 +27,33 @@ export async function POST(request: NextRequest) {
       case 'checkout.session.completed':
         const session = event.data.object as Stripe.Checkout.Session
         const orderId = session.metadata?.orderId
+        const productId = session.metadata?.productId
+        const orderType = session.metadata?.orderType
 
         if (orderId) {
+          // Aktualizuj status zamówienia
           await prisma.order.update({
             where: { id: parseInt(orderId) },
             data: { status: 'paid' }
           })
           console.log(`Zamówienie ${orderId} zostało opłacone`)
+          
+          // Jeśli to demo i mamy productId, zwiększ licznik sprzedaży
+          if (orderType === 'demo' && productId) {
+            try {
+              await prisma.software.update({
+                where: { id: parseInt(productId) },
+                data: {
+                  sales: {
+                    increment: 1
+                  }
+                }
+              })
+              console.log(`Zwiększono licznik sprzedaży dla oprogramowania ${productId}`)
+            } catch (err) {
+              console.error('Błąd podczas zwiększania licznika sprzedaży:', err)
+            }
+          }
         }
         break
 

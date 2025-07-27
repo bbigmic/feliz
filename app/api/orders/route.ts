@@ -8,10 +8,22 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2023-10
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, productId, email, phone, info, orderType, termsAccepted, marketingAccepted } = await request.json()
+    const { userId, productId, email, phone, info, orderType, termsAccepted, marketingAccepted, demoConsentAccepted } = await request.json()
     if (!phone) {
       return NextResponse.json({ error: 'Brak wymaganych danych.' }, { status: 400 })
     }
+    
+    // Pobierz dane oprogramowania jeśli to demo
+    let software = null
+    if (productId && orderType === 'demo') {
+      software = await prisma.software.findUnique({
+        where: { id: productId }
+      })
+      if (!software) {
+        return NextResponse.json({ error: 'Nie znaleziono oprogramowania.' }, { status: 404 })
+      }
+    }
+    
     // 1. Utwórz zamówienie w bazie
     const order = await prisma.order.create({
       data: {
@@ -24,8 +36,10 @@ export async function POST(request: NextRequest) {
         status: 'pending',
         termsAccepted: !!termsAccepted,
         marketingAccepted: !!marketingAccepted,
+        demoConsentAccepted: !!demoConsentAccepted,
       },
     })
+    
     // Wysyłka maila do właściciela
     try {
       const transporter = nodemailer.createTransport({
@@ -41,16 +55,25 @@ export async function POST(request: NextRequest) {
         from: `FelizTrade <${process.env.EMAIL_USER}>`,
         to: process.env.EMAIL_USER,
         subject: order.orderType === 'consultation' ? 'Nowa wycena/konsultacja' : 'Nowe zamówienie demo',
-        text: `Nowe zamówienie (${order.orderType === 'consultation' ? 'wycena/konsultacja' : 'demo'}):\nEmail: ${order.email || 'zalogowany użytkownik'}\nTelefon: ${order.phone}\nInfo: ${order.info || '-'}\nID zamówienia: ${order.id}`
+        text: `Nowe zamówienie (${order.orderType === 'consultation' ? 'wycena/konsultacja' : 'demo'}):\nEmail: ${order.email || 'zalogowany użytkownik'}\nTelefon: ${order.phone}\nInfo: ${order.info || '-'}\nID zamówienia: ${order.id}${software ? `\nOprogramowanie: ${software.name}\nCena demo: ${Math.round(software.price * 0.2)} zł` : ''}`
       })
     } catch (err) {
       console.error('Błąd wysyłki maila:', err)
     }
+    
     // 2. Utwórz sesję Stripe Checkout
     const isConsultation = orderType === 'consultation' || !productId
-    const productName = isConsultation ? 'Konsultacja/Wycena' : 'Demo oprogramowania'
-    const productDescription = isConsultation ? 'Zamówienie konsultacji lub wyceny FelizTrade' : 'Zamówienie demo produktu FelizTrade'
-    const unitAmount = isConsultation ? 50000 : 150000 // konsultacja/wycena: 500 zł, demo: 1500 zł
+    let productName, productDescription, unitAmount
+    
+    if (isConsultation) {
+      productName = 'Konsultacja/Wycena'
+      productDescription = 'Zamówienie konsultacji lub wyceny FelizTrade'
+      unitAmount = 50000 // 500 zł w groszach
+    } else {
+      productName = 'Zaliczka za demo'
+      productDescription = `Zaliczka za demo: ${software?.name || 'Oprogramowanie'}`
+      unitAmount = Math.round((software?.price || 0) * 0.2 * 100) // 20% ceny w groszach
+    }
     
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -62,7 +85,7 @@ export async function POST(request: NextRequest) {
               name: productName,
               description: productDescription,
             },
-            unit_amount: unitAmount, // 500 zł lub 1500 zł w groszach
+            unit_amount: unitAmount,
           },
           quantity: 1,
         },
@@ -72,11 +95,15 @@ export async function POST(request: NextRequest) {
       cancel_url: `${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : process.env.NEXT_PUBLIC_BASE_URL}/`,
       metadata: {
         orderId: order.id.toString(),
+        productId: productId?.toString() || '',
+        orderType: orderType || 'demo',
       },
       customer_email: userId ? (await prisma.user.findUnique({ where: { id: userId } }))?.email : email,
     })
+    
     // 3. Zaktualizuj zamówienie o stripeSessionId
     await prisma.order.update({ where: { id: order.id }, data: { stripeSessionId: session.id } })
+    
     // 4. Zwróć url do przekierowania
     return NextResponse.json({ url: session.url }, { status: 201 })
   } catch (err) {
