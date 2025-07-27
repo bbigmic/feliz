@@ -8,6 +8,10 @@ export async function GET() {
     // Sprawdź połączenie z bazą
     await prisma.$connect()
     
+    // Sprawdź DATABASE_URL (bez hasła)
+    const dbUrl = process.env.DATABASE_URL || 'NOT SET'
+    const maskedDbUrl = dbUrl.replace(/\/\/[^:]+:[^@]+@/, '//***:***@')
+    
     // Sprawdź liczbę rekordów w każdej tabeli
     const userCount = await prisma.user.count()
     const orderCount = await prisma.order.count()
@@ -63,6 +67,14 @@ export async function GET() {
     // Sprawdź timestamp bazy danych
     const dbTimestamp = await prisma.$queryRaw`SELECT NOW() as current_time`
     
+    // Sprawdź szczegóły połączenia
+    const connectionInfo = await prisma.$queryRaw`
+      SELECT 
+        current_database() as database_name,
+        current_user as current_user,
+        version() as postgres_version
+    `
+    
     await prisma.$disconnect()
     
     return NextResponse.json({
@@ -70,6 +82,8 @@ export async function GET() {
       connection: 'OK',
       timestamp: new Date().toISOString(),
       environment: process.env.NODE_ENV,
+      databaseUrl: maskedDbUrl,
+      connectionInfo,
       counts: {
         users: userCount,
         orders: orderCount,

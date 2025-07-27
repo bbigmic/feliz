@@ -1,3 +1,4 @@
 {
-  "/api/debug-connection/route": "app/api/debug-connection/route.js"
+  "/api/admin/orders/route": "app/api/admin/orders/route.js",
+  "/api/debug-db/route": "app/api/debug-db/route.js"
 }
