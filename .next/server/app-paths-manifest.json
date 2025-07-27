@@ -1,23 +1,6 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
-  "/about/page": "app/about/page.js",
   "/admin/page": "app/admin/page.js",
   "/api/admin/orders/route": "app/api/admin/orders/route.js",
-  "/api/admin/components/route": "app/api/admin/components/route.js",
-  "/api/admin/softwares/route": "app/api/admin/softwares/route.js",
-  "/api/admin/upload-image/route": "app/api/admin/upload-image/route.js",
-  "/api/admin/users/route": "app/api/admin/users/route.js",
-  "/api/auth/login/route": "app/api/auth/login/route.js",
-  "/api/auth/logout/route": "app/api/auth/logout/route.js",
-  "/api/auth/me/route": "app/api/auth/me/route.js",
-  "/api/auth/register/route": "app/api/auth/register/route.js",
-  "/api/debug-connection/route": "app/api/debug-connection/route.js",
-  "/api/debug-db/route": "app/api/debug-db/route.js",
   "/api/debug-prisma/route": "app/api/debug-prisma/route.js",
-  "/api/orders/route": "app/api/orders/route.js",
-  "/api/refresh-db/route": "app/api/refresh-db/route.js",
-  "/api/webhook/stripe/route": "app/api/webhook/stripe/route.js",
-  "/order-success/page": "app/order-success/page.js",
-  "/page": "app/page.js",
-  "/regulamin/page": "app/regulamin/page.js"
+  "/api/debug-db/route": "app/api/debug-db/route.js"
 }

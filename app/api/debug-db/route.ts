@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 
+const prisma = new PrismaClient()
+
 export async function GET() {
   try {
-    const prisma = new PrismaClient()
-    
-    // Sprawdź połączenie z bazą
-    await prisma.$connect()
-    
     // Sprawdź DATABASE_URL (bez hasła)
     const dbUrl = process.env.DATABASE_URL || 'NOT SET'
     const maskedDbUrl = dbUrl.replace(/\/\/[^:]+:[^@]+@/, '//***:***@')
@@ -75,8 +72,6 @@ export async function GET() {
         version() as postgres_version
     `
     
-    await prisma.$disconnect()
-    
     return NextResponse.json({
       success: true,
       connection: 'OK',
@@ -111,5 +106,7 @@ export async function GET() {
       timestamp: new Date().toISOString(),
       environment: process.env.NODE_ENV
     }, { status: 500 })
+  } finally {
+    await prisma.$disconnect()
   }
 } 

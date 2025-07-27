@@ -1,15 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 
+const prisma = new PrismaClient()
+
 export async function GET() {
   try {
     console.log('Admin orders API called')
-    
-    const prisma = new PrismaClient()
-    
-    // Sprawdź połączenie
-    await prisma.$connect()
-    console.log('Connected to database')
     
     // Sprawdź liczbę zamówień przed pobraniem
     const totalCount = await prisma.order.count()
@@ -38,8 +34,6 @@ export async function GET() {
     }))
     console.log('First 3 orders:', firstThree)
     
-    await prisma.$disconnect()
-    
     return NextResponse.json({ 
       orders,
       debug: {
@@ -56,5 +50,7 @@ export async function GET() {
       error: 'Błąd pobierania zamówień',
       details: String(error)
     }, { status: 500 })
+  } finally {
+    await prisma.$disconnect()
   }
 } 
