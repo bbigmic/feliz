@@ -1,9 +1,3 @@
 {
-  "/api/admin/orders/route": "app/api/admin/orders/route.js",
-  "/api/orders/route": "app/api/orders/route.js",
-  "/api/auth/me/route": "app/api/auth/me/route.js",
-  "/api/admin/components/route": "app/api/admin/components/route.js",
-  "/page": "app/page.js",
-  "/api/admin/softwares/route": "app/api/admin/softwares/route.js",
-  "/admin/page": "app/admin/page.js"
+  "/api/debug-db/route": "app/api/debug-db/route.js"
 }
