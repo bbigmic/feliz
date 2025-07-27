@@ -13,30 +13,72 @@ export async function GET() {
     const orderCount = await prisma.order.count()
     const softwareCount = await prisma.software.count()
     const componentCount = await prisma.component.count()
+    const softwareImageCount = await prisma.softwareImage.count()
     
     // Sprawdź użytkowników admin
     const adminUsers = await prisma.user.findMany({
       where: { isAdmin: true },
-      select: { id: true, email: true, isAdmin: true }
+      select: { id: true, email: true, isAdmin: true, createdAt: true }
     })
+    
+    // Sprawdź ostatnie zamówienia
+    const recentOrders = await prisma.order.findMany({
+      take: 5,
+      orderBy: { createdAt: 'desc' },
+      select: { 
+        id: true, 
+        email: true, 
+        orderType: true, 
+        status: true, 
+        createdAt: true,
+        demoConsentAccepted: true
+      }
+    })
+    
+    // Sprawdź strukturę tabeli Order
+    const orderColumns = await prisma.$queryRaw`
+      SELECT column_name, data_type, is_nullable, column_default
+      FROM information_schema.columns 
+      WHERE table_name = 'Order'
+      ORDER BY ordinal_position
+    `
+    
+    // Sprawdź czy migracje zostały zastosowane
+    const migrationStatus = await prisma.$queryRaw`
+      SELECT * FROM _prisma_migrations ORDER BY finished_at DESC LIMIT 5
+    `
     
     await prisma.$disconnect()
     
     return NextResponse.json({
       success: true,
       connection: 'OK',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV,
       counts: {
         users: userCount,
         orders: orderCount,
         software: softwareCount,
-        components: componentCount
+        components: componentCount,
+        softwareImages: softwareImageCount
       },
-      adminUsers
+      adminUsers,
+      recentOrders,
+      orderColumns,
+      migrationStatus,
+      env: {
+        DATABASE_URL: process.env.DATABASE_URL ? 'SET' : 'NOT SET',
+        JWT_SECRET: process.env.JWT_SECRET ? 'SET' : 'NOT SET',
+        NODE_ENV: process.env.NODE_ENV
+      }
     })
   } catch (error) {
+    console.error('Debug DB error:', error)
     return NextResponse.json({ 
       error: String(error),
-      message: 'Błąd połączenia z bazą danych'
+      message: 'Błąd połączenia z bazą danych',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV
     }, { status: 500 })
   }
 } 
