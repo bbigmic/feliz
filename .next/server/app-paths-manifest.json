@@ -1,6 +1,4 @@
 {
   "/admin/page": "app/admin/page.js",
-  "/api/admin/orders/route": "app/api/admin/orders/route.js",
-  "/api/debug-prisma/route": "app/api/debug-prisma/route.js",
-  "/api/debug-db/route": "app/api/debug-db/route.js"
+  "/api/debug-all-endpoints/route": "app/api/debug-all-endpoints/route.js"
 }
