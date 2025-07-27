@@ -82,6 +82,9 @@ export default function Header() {
             <a href="#main-content" className="text-darktext hover:text-primary-300 transition-colors" onClick={handleNavScroll('main-content')}>
               Oprogramowania
             </a>
+            <a href="#pricing" className="text-darktext hover:text-primary-300 transition-colors" onClick={handleNavScroll('pricing')}>
+              Cennik
+            </a>
             <a href="#cta-section" className="text-darktext hover:text-primary-300 transition-colors" onClick={handleNavScroll('cta-section')}>
               Kontakt
             </a>
@@ -124,6 +127,9 @@ export default function Header() {
               </a>
               <a href="#main-content" className="text-lg font-semibold text-darktext rounded-xl px-4 py-3 hover:bg-primary-600/20 hover:text-primary-300 transition-all duration-150 active:bg-primary-700/30" onClick={e => { setIsMenuOpen(false); setTimeout(() => handleNavScroll('main-content')(e), 200); }}>
                 Oprogramowania
+              </a>
+              <a href="#pricing" className="text-lg font-semibold text-darktext rounded-xl px-4 py-3 hover:bg-primary-600/20 hover:text-primary-300 transition-all duration-150 active:bg-primary-700/30" onClick={e => { setIsMenuOpen(false); setTimeout(() => handleNavScroll('pricing')(e), 200); }}>
+                Cennik
               </a>
               <a href="#cta-section" className="text-lg font-semibold text-darktext rounded-xl px-4 py-3 hover:bg-primary-600/20 hover:text-primary-300 transition-all duration-150 active:bg-primary-700/30" onClick={e => { setIsMenuOpen(false); setTimeout(() => handleNavScroll('cta-section')(e), 200); }}>
                 Kontakt

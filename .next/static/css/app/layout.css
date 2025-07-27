@@ -829,6 +829,9 @@ video {
 .mb-8 {
   margin-bottom: 2rem;
 }
+.ml-4 {
+  margin-left: 1rem;
+}
 .ml-auto {
   margin-left: auto;
 }
@@ -846,9 +849,6 @@ video {
 }
 .mt-8 {
   margin-top: 2rem;
-}
-.ml-4 {
-  margin-left: 1rem;
 }
 .line-clamp-2 {
   overflow: hidden;
@@ -967,6 +967,9 @@ video {
 .max-w-3xl {
   max-width: 48rem;
 }
+.max-w-4xl {
+  max-width: 56rem;
+}
 .max-w-\[120px\] {
   max-width: 120px;
 }
@@ -984,9 +987,6 @@ video {
 }
 .max-w-xl {
   max-width: 36rem;
-}
-.max-w-4xl {
-  max-width: 56rem;
 }
 .flex-1 {
   flex: 1 1 0%;

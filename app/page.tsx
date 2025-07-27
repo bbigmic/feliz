@@ -451,7 +451,7 @@ export default function Home() {
           )}
         </main>
         {/* Sekcja cennika komponentów funkcjonalnych */}
-        <section className="container mx-auto px-4 py-12">
+        <section id="pricing" className="container mx-auto px-4 py-12">
           <h2 className="text-3xl font-bold mb-6 text-center">Cennik komponentów funkcjonalnych</h2>
           {/* Desktop table */}
           <div className="overflow-x-auto hidden md:block">
