@@ -803,7 +803,7 @@ export default function AdminPanel() {
                             <td className="py-4 px-4">
                               <div className="flex space-x-2">
                                 <button onClick={() => { setSoftwareToEdit(item); setIsEditModalOpen(true) }} className="text-primary-500 hover:text-primary-300 p-1" title="Edytuj"><Edit className="w-4 h-4" /></button>
-                                <button onClick={() => window.open(`/demo/${item.id}`, '_blank')} className="text-green-400 hover:text-green-300 p-1" title="Zobacz demo"><Eye className="w-4 h-4" /></button>
+                                <button onClick={() => window.open(item.demoUrl, '_blank')} className="text-green-400 hover:text-green-300 p-1" title="Zobacz demo"><Eye className="w-4 h-4" /></button>
                                 <button 
                                   onClick={() => handleStatusToggle(item.id, item.status)} 
                                   className={`p-1 ${item.status === 'active' ? 'text-orange-400 hover:text-orange-300' : 'text-green-400 hover:text-green-300'}`} 
