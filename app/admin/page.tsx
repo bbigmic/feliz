@@ -40,7 +40,7 @@ interface Component {
 }
 
 export default function AdminPanel() {
-  const [activeTab, setActiveTab] = useState<'software' | 'users' | 'orders' | 'components'>('software')
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'software' | 'users' | 'orders' | 'components' | 'statistics'>('dashboard')
   const [software, setSoftware] = useState<Software[]>([])
   const [loading, setLoading] = useState(false)
 
@@ -61,6 +61,9 @@ export default function AdminPanel() {
   const [isEditComponentModalOpen, setIsEditComponentModalOpen] = useState(false)
   const [softwareToEdit, setSoftwareToEdit] = useState<Software | null>(null)
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
+  // Stan dla statystyk
+  const [statistics, setStatistics] = useState<any>(null)
+  const [loadingStatistics, setLoadingStatistics] = useState(false)
 
   const [authChecked, setAuthChecked] = useState(false)
   const [showLogin, setShowLogin] = useState(false)
@@ -99,6 +102,21 @@ export default function AdminPanel() {
     }
   }
 
+  // 5. Funkcja pobierająca statystyki
+  const fetchStatistics = async () => {
+    setLoadingStatistics(true)
+    try {
+      const res = await fetch('/api/admin/statistics')
+      const data = await res.json()
+      setStatistics(data)
+    } catch (error) {
+      console.error('Błąd pobierania statystyk:', error)
+      toast.error('Błąd pobierania statystyk')
+    } finally {
+      setLoadingStatistics(false)
+    }
+  }
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -126,6 +144,17 @@ export default function AdminPanel() {
   }, [])
 
   useEffect(() => {
+    if (activeTab === 'dashboard') {
+      // Dashboard ładuje wszystkie dane potrzebne do podsumowania
+      fetchSoftwares()
+      fetchOrders()
+      fetchStatistics()
+      setLoadingUsers(true)
+      fetch('/api/admin/users')
+        .then(res => res.json())
+        .then(data => setUsers(data.users || []))
+        .finally(() => setLoadingUsers(false))
+    }
     if (activeTab === 'software') {
       fetchSoftwares()
     }
@@ -141,6 +170,9 @@ export default function AdminPanel() {
     }
     if (activeTab === 'components') {
       fetchComponents()
+    }
+    if (activeTab === 'statistics') {
+      fetchStatistics()
     }
   }, [activeTab])
 
@@ -245,6 +277,12 @@ export default function AdminPanel() {
         {/* Tabs */}
         <div className="flex space-x-2 mb-6 border-b border-gray-800 overflow-x-auto whitespace-nowrap scrollbar-thin scrollbar-thumb-darkbg scrollbar-track-transparent">
           <button
+            className={`px-6 py-2 font-medium transition-colors duration-200 border-b-2 ${activeTab === 'dashboard' ? 'border-primary-500 text-primary-500' : 'border-transparent text-darksubtle hover:text-primary-400'}`}
+            onClick={() => setActiveTab('dashboard')}
+          >
+            Dashboard
+          </button>
+          <button
             className={`px-6 py-2 font-medium transition-colors duration-200 border-b-2 ${activeTab === 'software' ? 'border-primary-500 text-primary-500' : 'border-transparent text-darksubtle hover:text-primary-400'}`}
             onClick={() => setActiveTab('software')}
           >
@@ -268,9 +306,343 @@ export default function AdminPanel() {
           >
             Komponenty
           </button>
+          <button
+            className={`px-6 py-2 font-medium transition-colors duration-200 border-b-2 ${activeTab === 'statistics' ? 'border-primary-500 text-primary-500' : 'border-transparent text-darksubtle hover:text-primary-400'}`}
+            onClick={() => setActiveTab('statistics')}
+          >
+            Statystyki
+          </button>
         </div>
 
         {/* Tab Content */}
+        {activeTab === 'dashboard' && (
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="space-y-6"
+          >
+            {/* Karty z kluczowymi metrykami */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="card bg-gradient-to-br from-blue-600 to-blue-700 text-white"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-blue-100 text-sm">Wszystkie oprogramowania</p>
+                    <p className="text-3xl font-bold">{software.length}</p>
+                  </div>
+                  <Package className="w-8 h-8 text-blue-200" />
+                </div>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="card bg-gradient-to-br from-green-600 to-green-700 text-white"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-green-100 text-sm">Aktywne oprogramowania</p>
+                    <p className="text-3xl font-bold">{software.filter(s => s.status === 'active').length}</p>
+                  </div>
+                  <Eye className="w-8 h-8 text-green-200" />
+                </div>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="card bg-gradient-to-br from-purple-600 to-purple-700 text-white"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-purple-100 text-sm">Wszystkie zamówienia</p>
+                    <p className="text-3xl font-bold">{orders.length}</p>
+                  </div>
+                  <BarChart3 className="w-8 h-8 text-purple-200" />
+                </div>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="card bg-gradient-to-br from-orange-600 to-orange-700 text-white"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-orange-100 text-sm">Zarejestrowani użytkownicy</p>
+                    <p className="text-3xl font-bold">{users.length}</p>
+                  </div>
+                  <Users className="w-8 h-8 text-orange-200" />
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Dodatkowe karty z dzisiejszymi i miesięcznymi metrykami */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="card bg-gradient-to-br from-indigo-600 to-indigo-700 text-white"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-indigo-100 text-sm">Dzisiejsze zamówienia</p>
+                    <p className="text-3xl font-bold">
+                      {orders.filter(order => {
+                        const today = new Date().toDateString()
+                        const orderDate = new Date(order.createdAt).toDateString()
+                        return today === orderDate && (order.status === 'pending' || order.status === 'paid')
+                      }).length}
+                    </p>
+                  </div>
+                  <div className="w-8 h-8 bg-indigo-200 rounded-lg flex items-center justify-center">
+                    <span className="text-indigo-700 font-bold text-sm">DZ</span>
+                  </div>
+                </div>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="card bg-gradient-to-br from-emerald-600 to-emerald-700 text-white"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-emerald-100 text-sm">Dzisiejsze opłacone</p>
+                    <p className="text-3xl font-bold">
+                      {orders.filter(order => {
+                        const today = new Date().toDateString()
+                        const orderDate = new Date(order.createdAt).toDateString()
+                        return today === orderDate && order.status === 'paid'
+                      }).length}
+                    </p>
+                  </div>
+                  <div className="w-8 h-8 bg-emerald-200 rounded-lg flex items-center justify-center">
+                    <span className="text-emerald-700 font-bold text-sm">OP</span>
+                  </div>
+                </div>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+                className="card bg-gradient-to-br from-rose-600 to-rose-700 text-white"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-rose-100 text-sm">Dzisiejszy przychód</p>
+                    <p className="text-3xl font-bold">
+                      {(() => {
+                        const today = new Date().toDateString()
+                        const todayRevenue = orders
+                          .filter(order => {
+                            const orderDate = new Date(order.createdAt).toDateString()
+                            return today === orderDate && order.status === 'paid'
+                          })
+                          .reduce((sum, order) => {
+                            if (order.orderType === 'consultation') {
+                              return sum + 500 // 500 zł za konsultację
+                            } else if (order.orderType === 'demo' && order.productId) {
+                              const foundSoftware = software.find(s => s.id === order.productId)
+                              return sum + Math.round((foundSoftware?.price || 0) * 0.2) // 20% ceny za demo
+                            }
+                            return sum
+                          }, 0)
+                        return todayRevenue.toLocaleString('pl-PL')
+                      })()} zł
+                    </p>
+                  </div>
+                  <div className="w-8 h-8 bg-rose-200 rounded-lg flex items-center justify-center">
+                    <span className="text-rose-700 font-bold text-sm">PLN</span>
+                  </div>
+                </div>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8 }}
+                className="card bg-gradient-to-br from-cyan-600 to-cyan-700 text-white"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-cyan-100 text-sm">Przychód w tym miesiącu</p>
+                    <p className="text-3xl font-bold">
+                      {(() => {
+                        const now = new Date()
+                        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+                        const monthRevenue = orders
+                          .filter(order => {
+                            const orderDate = new Date(order.createdAt)
+                            return orderDate >= startOfMonth && order.status === 'paid'
+                          })
+                          .reduce((sum, order) => {
+                            if (order.orderType === 'consultation') {
+                              return sum + 500 // 500 zł za konsultację
+                            } else if (order.orderType === 'demo' && order.productId) {
+                              const foundSoftware = software.find(s => s.id === order.productId)
+                              return sum + Math.round((foundSoftware?.price || 0) * 0.2) // 20% ceny za demo
+                            }
+                            return sum
+                          }, 0)
+                        return monthRevenue.toLocaleString('pl-PL')
+                      })()} zł
+                    </p>
+                  </div>
+                  <div className="w-8 h-8 bg-cyan-200 rounded-lg flex items-center justify-center">
+                    <span className="text-cyan-700 font-bold text-sm">MC</span>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Najnowsze zamówienia */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="card"
+              >
+                <h3 className="text-lg font-semibold text-darktext mb-4">Najnowsze zamówienia</h3>
+                {loadingOrders ? (
+                  <div className="text-center py-8 text-darksubtle">Ładowanie...</div>
+                ) : orders.length > 0 ? (
+                  <div className="space-y-3">
+                    {orders.slice(0, 5).map((order) => {
+                      // Znajdź nazwę oprogramowania dla demo
+                      const softwareName = order.orderType === 'demo' && order.productId 
+                        ? software.find(s => s.id === order.productId)?.name || `Demo #${order.productId}`
+                        : null
+                      
+                      return (
+                        <div key={order.id} className="flex items-center justify-between p-3 bg-darkbg rounded-lg">
+                          <div>
+                            <p className="font-medium text-darktext">{order.email || 'Brak email'}</p>
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm text-darksubtle">
+                                {order.orderType === 'consultation' ? 'Wycena' : 'Demo'}
+                              </p>
+                              {order.orderType === 'consultation' && order.selectedCategory && (
+                                <span className="text-xs bg-primary-600 text-white px-2 py-1 rounded-full">
+                                  {order.selectedCategory}
+                                </span>
+                              )}
+                              {order.orderType === 'demo' && softwareName && (
+                                <span className="text-xs bg-green-600 text-white px-2 py-1 rounded-full">
+                                  {softwareName}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm text-darksubtle">
+                              {new Date(order.createdAt).toLocaleDateString('pl-PL')}
+                            </p>
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              order.status === 'paid' 
+                                ? 'bg-green-900 text-green-300' 
+                                : order.status === 'pending'
+                                ? 'bg-yellow-900 text-yellow-300'
+                                : 'bg-red-900 text-red-300'
+                            }`}>
+                              {order.status === 'paid' ? 'Opłacone' : order.status === 'pending' ? 'Oczekujące' : 'Wygasłe'}
+                            </span>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-darksubtle">Brak zamówień</div>
+                )}
+              </motion.div>
+
+              {/* Najpopularniejsze oprogramowania */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="card"
+              >
+                <h3 className="text-lg font-semibold text-darktext mb-4">Najpopularniejsze oprogramowania</h3>
+                {loading ? (
+                  <div className="text-center py-8 text-darksubtle">Ładowanie...</div>
+                ) : software.length > 0 ? (
+                  <div className="space-y-3">
+                    {software
+                      .sort((a, b) => b.sales - a.sales)
+                      .slice(0, 5)
+                      .map((item, index) => (
+                        <div key={item.id} className="flex items-center justify-between p-3 bg-darkbg rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <span className="text-lg font-bold text-primary-500">#{index + 1}</span>
+                            <div>
+                              <p className="font-medium text-darktext">{item.name}</p>
+                              <p className="text-sm text-darksubtle">{item.sales} sprzedaży</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-primary-400">{item.price.toLocaleString('pl-PL')} zł</p>
+                            <div className="flex items-center space-x-1">
+                              <span className="text-yellow-500">★</span>
+                              <span className="text-sm text-darksubtle">{item.rating}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-darksubtle">Brak oprogramowań</div>
+                )}
+              </motion.div>
+            </div>
+
+            {/* Szybkie akcje */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
+              className="card"
+            >
+              <h3 className="text-lg font-semibold text-darktext mb-4">Szybkie akcje</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button 
+                  onClick={() => setIsAddModalOpen(true)}
+                  className="flex items-center justify-center space-x-2 p-4 bg-primary-600 hover:bg-primary-700 rounded-lg text-white transition-colors"
+                >
+                  <Plus className="w-5 h-5" />
+                  <span>Dodaj oprogramowanie</span>
+                </button>
+                <button 
+                  onClick={() => setActiveTab('orders')}
+                  className="flex items-center justify-center space-x-2 p-4 bg-green-600 hover:bg-green-700 rounded-lg text-white transition-colors"
+                >
+                  <BarChart3 className="w-5 h-5" />
+                  <span>Zobacz zamówienia</span>
+                </button>
+                <button 
+                  onClick={() => setActiveTab('statistics')}
+                  className="flex items-center justify-center space-x-2 p-4 bg-purple-600 hover:bg-purple-700 rounded-lg text-white transition-colors"
+                >
+                  <Settings className="w-5 h-5" />
+                  <span>Szczegółowe statystyki</span>
+                </button>
+              </div>
+            </motion.div>
+          </motion.section>
+        )}
         {activeTab === 'software' && (
           <>
             {/* Stats */}
@@ -502,12 +874,13 @@ export default function AdminPanel() {
                     <th className="py-2">ID</th>
                     <th className="py-2">Email</th>
                     <th className="py-2">Typ</th>
-                    <th className="py-2">Produkt</th>
+                    <th className="py-2">Produkt/Kategoria</th>
                     <th className="py-2">Telefon</th>
                     <th className="py-2">Status</th>
                     <th className="py-2">Data</th>
                     <th className="py-2">Zgoda na regulamin</th>
                     <th className="py-2">Zgoda marketingowa</th>
+                    <th className="py-2">Zgoda o demo</th>
                     <th className="py-2">Akcje</th>
                   </tr>
                 </thead>
@@ -526,12 +899,18 @@ export default function AdminPanel() {
                             {order.orderType === 'consultation' ? 'Wycena' : 'Demo'}
                           </span>
                         </td>
-                        <td className="py-2">{order.productId || 'N/A'}</td>
+                        <td className="py-2">
+                          {order.orderType === 'consultation' 
+                            ? (order.selectedCategory || 'N/A')
+                            : (order.productId || 'N/A')
+                          }
+                        </td>
                         <td className="py-2">{order.phone}</td>
                         <td className="py-2">{order.status}</td>
                         <td className="py-2">{new Date(order.createdAt).toLocaleString('pl-PL')}</td>
                         <td className="py-2">{order.termsAccepted ? '✔️' : '❌'}</td>
                         <td className="py-2">{order.marketingAccepted ? '✔️' : '❌'}</td>
+                        <td className="py-2">{order.demoConsentAccepted ? '✔️' : '❌'}</td>
                         <td className="py-2">
                           <button
                             className="btn-secondary text-xs px-3 py-1"
@@ -543,7 +922,7 @@ export default function AdminPanel() {
                       </tr>
                       {expandedOrderId === order.id && (
                         <tr>
-                          <td colSpan={8} className="bg-darkbg/80 p-4 border-t border-b border-primary-700 text-sm">
+                          <td colSpan={10} className="bg-darkbg/80 p-4 border-t border-b border-primary-700 text-sm">
                             <div>
                               <b>Dodatkowe informacje od zamawiającego:</b><br />
                               {order.info ? order.info : <span className="text-darksubtle">Brak dodatkowych informacji</span>}
@@ -621,6 +1000,210 @@ export default function AdminPanel() {
                   </tbody>
                 </table>
               </div>
+            )}
+          </motion.section>
+        )}
+        {activeTab === 'statistics' && (
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="space-y-6"
+          >
+            <div className="card">
+              <h2 className="text-xl font-semibold text-darktext mb-6">Przegląd ogólny</h2>
+              {loadingStatistics ? (
+                <div className="text-center py-12 text-lg text-darksubtle">Ładowanie statystyk...</div>
+              ) : statistics ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg p-6 text-white">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-blue-100 text-sm">Wszystkie oprogramowania</p>
+                        <p className="text-3xl font-bold">{statistics.totalSoftware}</p>
+                      </div>
+                      <Package className="w-8 h-8 text-blue-200" />
+                    </div>
+                  </div>
+                  <div className="bg-gradient-to-br from-green-600 to-green-700 rounded-lg p-6 text-white">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-green-100 text-sm">Aktywne oprogramowania</p>
+                        <p className="text-3xl font-bold">{statistics.activeSoftware}</p>
+                      </div>
+                      <Eye className="w-8 h-8 text-green-200" />
+                    </div>
+                  </div>
+                  <div className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-lg p-6 text-white">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-purple-100 text-sm">Wszystkie zamówienia</p>
+                        <p className="text-3xl font-bold">{statistics.totalOrders}</p>
+                      </div>
+                      <BarChart3 className="w-8 h-8 text-purple-200" />
+                    </div>
+                  </div>
+                  <div className="bg-gradient-to-br from-orange-600 to-orange-700 rounded-lg p-6 text-white">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-orange-100 text-sm">Zarejestrowani użytkownicy</p>
+                        <p className="text-3xl font-bold">{statistics.totalUsers}</p>
+                      </div>
+                      <Users className="w-8 h-8 text-orange-200" />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-12 text-lg text-darksubtle">Brak danych statystycznych</div>
+              )}
+            </div>
+
+            {statistics && (
+              <>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="card">
+                    <h3 className="text-lg font-semibold text-darktext mb-4">Najpopularniejsze oprogramowania</h3>
+                    <div className="space-y-3">
+                      {statistics.topSoftware?.map((item: any, index: number) => (
+                        <div key={item.id} className="flex items-center justify-between p-3 bg-darkbg rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <span className="text-lg font-bold text-primary-500">#{index + 1}</span>
+                            <div>
+                              <p className="font-medium text-darktext">{item.name}</p>
+                              <p className="text-sm text-darksubtle">{item.sales} sprzedaży</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-primary-400">{item.price.toLocaleString('pl-PL')} zł</p>
+                            <div className="flex items-center space-x-1">
+                              <span className="text-yellow-500">★</span>
+                              <span className="text-sm text-darksubtle">{item.rating}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="card">
+                    <h3 className="text-lg font-semibold text-darktext mb-4">Ostatnie zamówienia</h3>
+                    <div className="space-y-3">
+                      {statistics.recentOrders?.map((order: any) => (
+                        <div key={order.id} className="flex items-center justify-between p-3 bg-darkbg rounded-lg">
+                          <div>
+                            <p className="font-medium text-darktext">{order.email || 'Brak email'}</p>
+                            <p className="text-sm text-darksubtle">
+                              {order.orderType === 'consultation' ? 'Wycena' : 'Demo'}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm text-darksubtle">
+                              {new Date(order.createdAt).toLocaleDateString('pl-PL')}
+                            </p>
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              order.status === 'paid' 
+                                ? 'bg-green-900 text-green-300' 
+                                : order.status === 'pending'
+                                ? 'bg-yellow-900 text-yellow-300'
+                                : 'bg-red-900 text-red-300'
+                            }`}>
+                              {order.status === 'paid' ? 'Opłacone' : order.status === 'pending' ? 'Oczekujące' : 'Wygasłe'}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="card">
+                  <h3 className="text-lg font-semibold text-darktext mb-4">Statystyki sprzedaży</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="text-center p-4 bg-darkbg rounded-lg">
+                      <p className="text-2xl font-bold text-primary-400">
+                        {statistics.totalRevenue?.toLocaleString('pl-PL')} zł
+                      </p>
+                      <p className="text-sm text-darksubtle">Całkowity przychód</p>
+                    </div>
+                    <div className="text-center p-4 bg-darkbg rounded-lg">
+                      <p className="text-2xl font-bold text-green-400">
+                        {statistics.paidOrders}
+                      </p>
+                      <p className="text-sm text-darksubtle">Opłacone zamówienia</p>
+                    </div>
+                    <div className="text-center p-4 bg-darkbg rounded-lg">
+                      <p className="text-2xl font-bold text-yellow-400">
+                        {statistics.averageOrderValue?.toLocaleString('pl-PL')} zł
+                      </p>
+                      <p className="text-sm text-darksubtle">Średnia wartość zamówienia</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Nowa sekcja: Statystyki dzienne i miesięczne */}
+                <div className="card">
+                  <h3 className="text-lg font-semibold text-darktext mb-4">Sprzedaż dzienna (ostatnie 7 dni)</h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr>
+                          <th className="py-2 px-2 text-left">Data</th>
+                          <th className="py-2 px-2 text-left">Zamówienia</th>
+                          <th className="py-2 px-2 text-left">Przychód</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {statistics.dailyStats7?.map((d: any) => (
+                          <tr key={d.date}>
+                            <td className="py-1 px-2">{d.date}</td>
+                            <td className="py-1 px-2">{d.orders}</td>
+                            <td className="py-1 px-2">{d.revenue.toLocaleString('pl-PL')} zł</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div className="card">
+                  <h3 className="text-lg font-semibold text-darktext mb-4">Sprzedaż dzienna (ostatnie 30 dni)</h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr>
+                          <th className="py-2 px-2 text-left">Data</th>
+                          <th className="py-2 px-2 text-left">Zamówienia</th>
+                          <th className="py-2 px-2 text-left">Przychód</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {statistics.dailyStats30?.map((d: any) => (
+                          <tr key={d.date}>
+                            <td className="py-1 px-2">{d.date}</td>
+                            <td className="py-1 px-2">{d.orders}</td>
+                            <td className="py-1 px-2">{d.revenue.toLocaleString('pl-PL')} zł</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="card">
+                    <h3 className="text-lg font-semibold text-darktext mb-4">Bieżący miesiąc</h3>
+                    <div className="flex flex-col gap-2">
+                      <div className="flex justify-between"><span>Zamówienia:</span><span className="font-bold">{statistics.thisMonthOrders}</span></div>
+                      <div className="flex justify-between"><span>Przychód:</span><span className="font-bold">{statistics.thisMonthRevenue.toLocaleString('pl-PL')} zł</span></div>
+                    </div>
+                  </div>
+                  <div className="card">
+                    <h3 className="text-lg font-semibold text-darktext mb-4">Poprzedni miesiąc</h3>
+                    <div className="flex flex-col gap-2">
+                      <div className="flex justify-between"><span>Zamówienia:</span><span className="font-bold">{statistics.lastMonthOrders}</span></div>
+                      <div className="flex justify-between"><span>Przychód:</span><span className="font-bold">{statistics.lastMonthRevenue.toLocaleString('pl-PL')} zł</span></div>
+                    </div>
+                  </div>
+                </div>
+              </>
             )}
           </motion.section>
         )}

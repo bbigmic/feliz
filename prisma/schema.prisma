@@ -32,6 +32,7 @@ model Order {
   termsAccepted       Boolean  @default(false)
   marketingAccepted   Boolean  @default(false)
   demoConsentAccepted Boolean  @default(false)
+  selectedCategory    String?
   user                User?    @relation(fields: [userId], references: [id])
 }
 

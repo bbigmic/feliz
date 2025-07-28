@@ -8,7 +8,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2023-10
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, productId, email, phone, info, orderType, termsAccepted, marketingAccepted, demoConsentAccepted } = await request.json()
+    const { userId, productId, email, phone, info, orderType, termsAccepted, marketingAccepted, demoConsentAccepted, selectedCategory } = await request.json()
     if (!phone) {
       return NextResponse.json({ error: 'Brak wymaganych danych.' }, { status: 400 })
     }
@@ -37,6 +37,7 @@ export async function POST(request: NextRequest) {
         termsAccepted: !!termsAccepted,
         marketingAccepted: !!marketingAccepted,
         demoConsentAccepted: !!demoConsentAccepted,
+        selectedCategory: selectedCategory || null,
       },
     })
     

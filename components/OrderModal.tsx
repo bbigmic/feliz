@@ -20,6 +20,8 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
   const [marketingAccepted, setMarketingAccepted] = useState(false)
   const [demoConsentAccepted, setDemoConsentAccepted] = useState(false)
   const [software, setSoftware] = useState<any>(null)
+  const [selectedCategory, setSelectedCategory] = useState("")
+  const [availableCategories, setAvailableCategories] = useState<string[]>([])
   
   const isConsultation = !productId
   const orderType = isConsultation ? 'consultation' : 'demo'
@@ -46,6 +48,34 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
       setSoftware(null)
     }
   }, [productId])
+
+  // Pobierz wszystkie kategorie z oprogramowań
+  useEffect(() => {
+    if (isConsultation) {
+      fetch('/api/admin/softwares')
+        .then(res => res.json())
+        .then(data => {
+          // Wyciągnij wszystkie kategorie z oprogramowań
+          const allCategories = data.softwares?.flatMap((software: any) => {
+            try {
+              const categories = JSON.parse(software.categories || '[]')
+              return Array.isArray(categories) ? categories : []
+            } catch {
+              return []
+            }
+          }) || []
+          
+          // Usuń duplikaty i posortuj
+          const uniqueCategories = Array.from(new Set(allCategories)).sort() as string[]
+          setAvailableCategories(uniqueCategories)
+        })
+        .catch(err => {
+          console.error('Błąd pobierania kategorii:', err)
+        })
+    }
+  }, [isConsultation])
+
+
 
   useEffect(() => {
     if (userEmail) setEmail(userEmail)
@@ -87,7 +117,8 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
           orderType,
           termsAccepted: userEmail ? true : termsAccepted,
           marketingAccepted: userEmail ? false : marketingAccepted,
-          demoConsentAccepted: !isConsultation ? demoConsentAccepted : true
+          demoConsentAccepted: !isConsultation ? demoConsentAccepted : true,
+          selectedCategory: isConsultation ? selectedCategory : null
         })
       })
       const data = await res.json()
@@ -160,6 +191,22 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
             required
             disabled={loading}
           />
+          {isConsultation && (
+            <select
+              value={selectedCategory}
+              onChange={e => setSelectedCategory(e.target.value)}
+              className="w-full p-2 rounded bg-darkbg border border-gray-700 text-darktext"
+              required
+              disabled={loading}
+            >
+              <option value="">Wybierz kategorię projektu</option>
+              {availableCategories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+          )}
           <textarea
             placeholder={isConsultation 
               ? "Opisz swój projekt, wymagania i oczekiwania (opcjonalnie)"

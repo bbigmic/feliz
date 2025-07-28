@@ -121,7 +121,7 @@ INSERT INTO "Software" ("id", "name", "description", "price", "categories", "dem
 (7, 'Landing Page Komory hiperbaryczne', 'Strona wizytówka, cennik i kontakt', 2900, '["Landing Page","Usługi"]', 'https://heartfelt-tarsier-96534b.netlify.app/', '["Landing Page","Kontakt","Oferta","Zapis rezerwacji w Google"]', 5, 0, 'active', '2025-07-25T14:07:13.794Z'),
 (8, 'AI Rooms App', 'Aplikacja do uruchamiania rozmowy między dwoma modelami AI', 4900, '["Blockchain","AI"]', 'https://ai-rooms.vercel.app/', '["Blockchain","AI Integration","SaaS","Crypto Payment","Multilingual"]', 5, 0, 'active', '2025-07-25T17:22:21.772Z'),
 (9, 'Wypożyczalnia rowerów elektrycznych', 'Strona internetowa z ofertą rowerów możliwością rezerwacji terminów', 3900, '["Wypożyczalnia","Strona Internetowa"]', 'https://deft-dolphin-f095e0.netlify.app/', '["Kalendarz","Rezerwacje","Wybór oferty","Płatności online"]', 5, 0, 'active', '2025-07-25T18:05:11.085Z'),
-(10, 'Pseudo Casino', 'Pseudo-casino z różnymi typami gier gotowe do rozwoju o kolejne', 24900, '["Gry"]', 'https://onisac.vercel.app/', '["Rejestracja użytkowników","Punkty i ich wydawanie","Zdobywanie punktów","Poziomy i ranking użytkowników"]', 5, 0, 'active', '2025-07-25T19:02:54.016Z');
+(10, 'Demo Casino', 'Casino z różnymi typami gier gotowe do rozwoju o kolejne', 24900, '["Gry"]', 'https://onisac.vercel.app/', '["Rejestracja użytkowników","Punkty i ich wydawanie","Zdobywanie punktów","Poziomy i ranking użytkowników"]', 5, 0, 'active', '2025-07-25T19:02:54.016Z');
 
 -- =====================================================
 -- DANE ZDJĘĆ OPROGRAMOWANIA
