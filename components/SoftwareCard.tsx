@@ -124,7 +124,7 @@ export default function SoftwareCard({ software, onOrderClick, onGalleryClick }:
           </div>
         </div>
 
-        <p className="text-gray-100 text-sm line-clamp-2" translate="yes">{software.description}</p>
+        <p className="text-gray-100 text-sm" translate="yes">{software.description}</p>
 
         {/* Features */}
         <div className="flex flex-wrap gap-1">
