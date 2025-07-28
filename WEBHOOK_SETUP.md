@@ -60,6 +60,11 @@ Po udanej płatności status zamówienia powinien się zmieniać z `pending` na 
      ✅ Zamówienie 123 zostało oznaczone jako opłacone
      ```
 
+4. **Fallback mechanizm**
+   - Jeśli webhook nie działa, status zostanie zaktualizowany na stronie sukcesu
+   - Strona `/order-success?orderId=123` automatycznie aktualizuje status na "paid"
+   - Sprawdza czy zamówienie ma `stripeSessionId` i status "pending"
+
 ### 4. Debugowanie
 
 Jeśli webhook nie działa:
@@ -110,6 +115,10 @@ W środowisku produkcyjnym:
 
 ### Debug endpoint
 - `app/api/debug-webhook/route.ts` - testowanie i debugowanie
+
+### Aktualizacja statusu
+- `app/api/orders/update-status/route.ts` - aktualizacja statusu zamówień
+- `app/order-success/page.tsx` - automatyczna aktualizacja na stronie sukcesu
 
 ### Tworzenie zamówień
 - `app/api/orders/route.ts` - tworzenie zamówień i sesji Stripe
