@@ -88,7 +88,7 @@ export default function AdminPanel() {
   const fetchOrders = async () => {
     setLoadingOrders(true)
     try {
-      const res = await fetch('/api/admin/orders')
+      const res = await fetch('/api/admin/orders', { next: { revalidate: 0 } })
       const data = await res.json()
       setOrders(data.orders || [])
     } catch (error) {
