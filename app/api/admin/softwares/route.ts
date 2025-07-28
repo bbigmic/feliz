@@ -53,7 +53,16 @@ export async function GET() {
       ...s,
       thumbnailUrl: s.images.find(img => img.isThumbnail)?.url || s.images[0]?.url || null
     }))
-    return NextResponse.json({ softwares: result })
+    
+    const response = NextResponse.json({ softwares: result })
+    
+    // Wyłącz cachowanie dla tego endpointu
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+    response.headers.set('Pragma', 'no-cache')
+    response.headers.set('Expires', '0')
+    response.headers.set('Surrogate-Control', 'no-store')
+    
+    return response
   } catch (err) {
     return NextResponse.json({ error: 'Błąd serwera.' }, { status: 500 })
   } finally {
