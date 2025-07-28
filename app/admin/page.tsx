@@ -15,6 +15,7 @@ import {
 import toast from 'react-hot-toast'
 import SoftwareFormModal from '@/components/SoftwareFormModal'
 import AuthModal from '@/components/AuthModal'
+import Link from 'next/link'
 
 interface Software {
   id: number
@@ -183,7 +184,7 @@ export default function AdminPanel() {
     return <div className="min-h-screen flex items-center justify-center bg-darkbg text-darktext">
       <div className="max-w-sm w-full">
         <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold">Panel Administracyjny</h2>
+          <h2  className="text-2xl font-bold">Panel Administracyjny</h2>
           <p className="text-darksubtle mt-2">Dostęp tylko dla administratora</p>
         </div>
         <AuthModal isOpen={true} onClose={() => {}} onAuthSuccess={() => window.location.reload()} />
@@ -253,8 +254,10 @@ export default function AdminPanel() {
         <div className="container mx-auto px-2 sm:px-4 py-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-3">
-              <img src="/logo-wsp-edu.png" alt="Logo" className="w-10 h-10 rounded-lg object-contain p-1" />
-              <h1 className="text-2xl font-bold text-darktext">Panel Administracyjny</h1>
+              <Link href="/" className="flex items-center gap-3">
+                <img src="/logo-wsp-edu.png" alt="Logo" className="w-10 h-10 rounded-lg object-contain p-1" />
+                <h1 className="text-2xl font-bold text-darktext">Panel Administracyjny</h1>
+              </Link>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
               <button className="btn-primary flex items-center justify-center space-x-2 w-full sm:w-auto" onClick={() => setIsAddModalOpen(true)}>
