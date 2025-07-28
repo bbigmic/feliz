@@ -17,7 +17,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="pl" className="dark">
+    <html lang="pl" className="dark" translate="yes">
       <head>
         <title>Budowanie aplikacji | FelizTrade - Platforma Sprzedaży Oprogramowań WWW</title>
         <meta name="description" content="Budowanie aplikacji - Profesjonalna platforma do sprzedaży oprogramowań WWW z automatycznym systemem demo" />
@@ -29,7 +29,7 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" type="image/x-icon" />
       </head>
-      <body className={inter.className}>
+      <body className={inter.className} translate="yes">
         <Toaster position="top-right" />
         {children}
       </body>

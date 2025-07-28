@@ -40,9 +40,9 @@ export default function Footer() {
                 alt="FelizTrade Logo" 
                 className="w-8 h-8 object-contain"
               />
-              <span className="text-xl font-bold">FelizTrade</span>
+              <span className="text-xl font-bold" translate="no">FelizTrade</span>
             </div>
-            <p className="text-gray-300 mb-4 max-w-md">
+            <p className="text-gray-300 mb-4 max-w-md" translate="yes">
               Profesjonalna platforma sprzedaży oprogramowań WWW. 
               Oferujemy gotowe rozwiązania webowe oraz dostosowane do Twoich potrzeb.
             </p>
@@ -65,20 +65,20 @@ export default function Footer() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <h3 className="text-lg font-semibold mb-4">Szybkie linki</h3>
+            <h3 className="text-lg font-semibold mb-4" translate="yes">Szybkie linki</h3>
             <ul className="space-y-2">
               <li>
-                <a href="/" className="text-gray-300 hover:text-white transition-colors">
+                <a href="/" className="text-gray-300 hover:text-white transition-colors" translate="yes">
                   Strona główna
                 </a>
               </li>
               <li>
-                <a href="#main-content" className="text-gray-300 hover:text-white transition-colors" onClick={handleNavScroll('main-content')}>
+                <a href="#main-content" className="text-gray-300 hover:text-white transition-colors" translate="yes" onClick={handleNavScroll('main-content')}>
                   Oprogramowania
                 </a>
               </li>
               <li>
-                <a href="#cta-section" className="text-gray-300 hover:text-white transition-colors" onClick={handleNavScroll('cta-section')}>
+                <a href="#cta-section" className="text-gray-300 hover:text-white transition-colors" translate="yes" onClick={handleNavScroll('cta-section')}>
                   Kontakt
                 </a>
               </li>
@@ -91,19 +91,19 @@ export default function Footer() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <h3 className="text-lg font-semibold mb-4">Kontakt</h3>
+            <h3 className="text-lg font-semibold mb-4" translate="yes">Kontakt</h3>
             <ul className="space-y-3">
               <li className="flex items-center space-x-2">
                 <Mail className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-300">FelizTradeLTD@proton.me</span>
+                <span className="text-gray-300" translate="no">FelizTradeLTD@proton.me</span>
               </li>
               <li className="flex items-center space-x-2">
                 <Phone className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-300">+48 502 600 739</span>
+                <span className="text-gray-300" translate="no">+48 502 600 739</span>
               </li>
               <li className="flex items-center space-x-2">
                 <MapPin className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-300">Preston Lancashire, United Kingdom</span>
+                <span className="text-gray-300" translate="yes">Preston Lancashire, United Kingdom</span>
               </li>
             </ul>
           </motion.div>
@@ -117,7 +117,7 @@ export default function Footer() {
           className="border-t border-gray-800 mt-8 pt-8 text-center"
         >
           <p className="text-gray-400">
-            © 2025 FelizTrade. Wszystkie prawa zastrzeżone.
+            © 2025 <span translate="no">FelizTrade</span>. <span translate="yes">Wszystkie prawa zastrzeżone.</span>
           </p>
         </motion.div>
       </div>

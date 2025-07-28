@@ -290,7 +290,7 @@ export default function Home() {
             onEnded={handleFadeEnd}
           >
             <source src="/bg.mp4" type="video/mp4" />
-            Twoja przeglądarka nie obsługuje wideo HTML5.
+            <span translate="yes">Twoja przeglądarka nie obsługuje wideo HTML5.</span>
           </video>
         ))}
         {/* Warstwa przyciemniająca */}
@@ -309,14 +309,16 @@ export default function Home() {
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1.2, delay: 0 }}
+              translate="yes"
             >
-              Profesjonalne <span className="text-primary-300">Oprogramowania WWW i Aplikacje Mobilne</span>
+              Profesjonalne <span className="text-primary-300" translate="yes">Oprogramowania WWW i Aplikacje Mobilne</span>
             </motion.h1>
             <motion.p
               className="text-xl text-gray-100 mb-8 max-w-3xl mx-auto drop-shadow"
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1.2, delay: 0.3 }}
+              translate="yes"
             >
               Odkryj naszą kolekcję gotowych rozwiązań webowych. Zamów nowoczesne 
               oprogramowanie i automatyzacje dopasowane do potrzeb Twojej firmy.
@@ -329,15 +331,15 @@ export default function Home() {
             >
               <div className="flex items-center gap-2 text-gray-200">
                 <Globe className="w-5 h-5" />
-                <span>30+ Oprogramowań</span>
+                <span translate="yes">30+ Oprogramowań</span>
               </div>
               <div className="flex items-center gap-2 text-gray-200">
                 <Star className="w-5 h-5 text-yellow-400" />
-                <span>4.9/5 Ocena</span>
+                <span translate="yes">4.9/5 Ocena</span>
               </div>
               <div className="flex items-center gap-2 text-gray-200">
                 <ShoppingCart className="w-5 h-5" />
-                <span>500+ Sprzedaży</span>
+                <span translate="yes">500+ Sprzedaży</span>
               </div>
             </motion.div>
           </motion.section>
@@ -363,7 +365,7 @@ export default function Home() {
               <polyline points="19 12 12 19 5 12"></polyline>
             </svg>
           </motion.div>
-          <span className="mt-2 text-primary-500 text-sm font-medium animate-pulse">Przewiń w dół</span>
+          <span className="mt-2 text-primary-500 text-sm font-medium animate-pulse" translate="yes">Przewiń w dół</span>
         </div>
       </div>
       <div className="relative z-20" id="main-content">
@@ -405,10 +407,10 @@ export default function Home() {
                   onChange={(e) => setSortBy(e.target.value)}
                   className="px-4 py-2 border border-gray-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-darkpanel text-darktext"
                 >
-                  <option value="name" className="bg-darkpanel text-darktext">Sortuj po nazwie</option>
-                  <option value="price" className="bg-darkpanel text-darktext">Sortuj po cenie</option>
-                  <option value="rating" className="bg-darkpanel text-darktext">Sortuj po ocenie</option>
-                  <option value="sales" className="bg-darkpanel text-darktext">Sortuj po sprzedaży</option>
+                  <option value="name" className="bg-darkpanel text-darktext" translate="yes">Sortuj po nazwie</option>
+                  <option value="price" className="bg-darkpanel text-darktext" translate="yes">Sortuj po cenie</option>
+                  <option value="rating" className="bg-darkpanel text-darktext" translate="yes">Sortuj po ocenie</option>
+                  <option value="sales" className="bg-darkpanel text-darktext" translate="yes">Sortuj po sprzedaży</option>
                 </select>
               </div>
             </div>
@@ -416,9 +418,9 @@ export default function Home() {
 
           {/* Software Grid */}
           {loading ? (
-            <div className="text-center py-12 text-lg text-darksubtle">Ładowanie oprogramowań...</div>
+            <div className="text-center py-12 text-lg text-darksubtle" translate="yes">Ładowanie oprogramowań...</div>
           ) : error ? (
-            <div className="text-center py-12 text-lg text-red-400">{error}</div>
+            <div className="text-center py-12 text-lg text-red-400" translate="yes">{error}</div>
           ) : (
             <motion.section 
               initial={{ opacity: 0, y: 20 }}
@@ -444,7 +446,7 @@ export default function Home() {
               
               {filteredSoftware.length === 0 && (
                 <div className="text-center py-12">
-                  <p className="text-gray-300 text-lg">Nie znaleziono oprogramowań spełniających kryteria.</p>
+                  <p className="text-gray-300 text-lg" translate="yes">Nie znaleziono oprogramowań spełniających kryteria.</p>
                 </div>
               )}
             </motion.section>
@@ -452,23 +454,23 @@ export default function Home() {
         </main>
         {/* Sekcja cennika komponentów funkcjonalnych */}
         <section id="pricing" className="container mx-auto px-4 py-12">
-          <h2 className="text-3xl font-bold mb-6 text-center">Cennik komponentów funkcjonalnych</h2>
+          <h2 className="text-3xl font-bold mb-6 text-center" translate="yes">Cennik komponentów funkcjonalnych</h2>
           {/* Desktop table */}
           <div className="overflow-x-auto hidden md:block">
             <table className="w-full bg-darkpanel rounded-lg shadow-lg">
               <thead>
                 <tr className="border-b border-gray-800">
-                  <th className="py-3 px-4 text-left font-semibold text-darksubtle">Komponent</th>
-                  <th className="py-3 px-4 text-left font-semibold text-darksubtle">Koszt (PLN)</th>
-                  <th className="py-3 px-4 text-left font-semibold text-darksubtle">Uwagi</th>
+                  <th className="py-3 px-4 text-left font-semibold text-darksubtle" translate="yes">Komponent</th>
+                  <th className="py-3 px-4 text-left font-semibold text-darksubtle" translate="yes">Koszt (PLN)</th>
+                  <th className="py-3 px-4 text-left font-semibold text-darksubtle" translate="yes">Uwagi</th>
                 </tr>
               </thead>
               <tbody>
                 {components.map((item) => (
                   <tr key={item.id} className="border-b border-gray-900 hover:bg-darkbg/60">
-                    <td className="py-3 px-4">{item.name}</td>
-                    <td className="py-3 px-4">{item.priceFrom.toLocaleString('pl-PL')} – {item.priceTo.toLocaleString('pl-PL')} PLN</td>
-                    <td className="py-3 px-4">{item.notes}</td>
+                    <td className="py-3 px-4" translate="yes">{item.name}</td>
+                    <td className="py-3 px-4" translate="no">{item.priceFrom.toLocaleString('pl-PL')} – {item.priceTo.toLocaleString('pl-PL')} PLN</td>
+                    <td className="py-3 px-4" translate="yes">{item.notes}</td>
                   </tr>
                 ))}
               </tbody>
@@ -480,11 +482,11 @@ export default function Home() {
               <div key={item.id} className="bg-darkpanel rounded-xl shadow-lg p-4 border border-gray-800">
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center justify-between">
-                    <span className="font-semibold text-lg text-white">{item.name}</span>
-                    <span className="text-primary-400 font-bold text-base text-right block min-w-[110px]">{item.priceFrom.toLocaleString('pl-PL')} – {item.priceTo.toLocaleString('pl-PL')} PLN</span>
+                    <span className="font-semibold text-lg text-white" translate="yes">{item.name}</span>
+                    <span className="text-primary-400 font-bold text-base text-right block min-w-[110px]" translate="no">{item.priceFrom.toLocaleString('pl-PL')} – {item.priceTo.toLocaleString('pl-PL')} PLN</span>
                   </div>
                   {item.notes && (
-                    <div className="text-darksubtle text-sm mt-1">{item.notes}</div>
+                    <div className="text-darksubtle text-sm mt-1" translate="yes">{item.notes}</div>
                   )}
                 </div>
               </div>
@@ -493,10 +495,11 @@ export default function Home() {
         </section>
         {/* Sekcja CTA Zamów własną aplikację */}
         <section id="cta-section" className="container mx-auto px-4 py-12 mb-12 flex flex-col items-center">
-          <h2 className="text-3xl font-bold mb-4 text-center">Zamów wycenę własnej aplikacji</h2>
-          <p className="text-lg text-darksubtle mb-6 text-center max-w-2xl">Masz pomysł na własny system, aplikację lub automatyzację? Zrealizujemy Twój projekt kompleksowo – od analizy po wdrożenie i wsparcie.</p>
+          <h2 className="text-3xl font-bold mb-4 text-center" translate="yes">Zamów wycenę własnej aplikacji</h2>
+          <p className="text-lg text-darksubtle mb-6 text-center max-w-2xl" translate="yes">Masz pomysł na własny system, aplikację lub automatyzację? Zrealizujemy Twój projekt kompleksowo – od analizy po wdrożenie i wsparcie.</p>
           <button
             className="btn-primary text-lg px-8 py-4 rounded-full shadow-lg hover:scale-105 transition-transform"
+            translate="yes"
             onClick={() => { setOrderProduct(null); setOrderModalOpen(true) }}
           >
             Zamów konsultację i wycenę

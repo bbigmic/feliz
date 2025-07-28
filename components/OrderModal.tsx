@@ -153,24 +153,24 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
         >
           ✕
         </button>
-        <h2 className="text-2xl font-bold mb-4 text-center text-darktext">
+        <h2 className="text-2xl font-bold mb-4 text-center text-darktext" translate="yes">
           {isConsultation ? 'Zamów konsultację i wycenę' : 'Zamów demo'}
         </h2>
         
         {!isConsultation && software && (
           <div className="mb-4 p-4 bg-darkbg rounded-lg border border-gray-700">
-            <h3 className="font-semibold text-white mb-2">{software.name}</h3>
-            <div className="text-sm text-gray-300 mb-2">{software.description}</div>
+            <h3 className="font-semibold text-white mb-2" translate="yes">{software.name}</h3>
+            <div className="text-sm text-gray-300 mb-2" translate="yes">{software.description}</div>
             <div className="flex justify-between items-center">
-              <span className="text-darksubtle text-sm">Cena demo (20%):</span>
-              <span className="text-xl font-bold text-primary-400">{demoPrice.toLocaleString('pl-PL')} zł</span>
+              <span className="text-darksubtle text-sm" translate="yes">Cena demo (20%):</span>
+              <span className="text-xl font-bold text-primary-400" translate="no">{demoPrice.toLocaleString('pl-PL')} zł</span>
             </div>
           </div>
         )}
         
         <form onSubmit={handleSubmit} className="space-y-4">
           {userEmail ? (
-            <div className="text-darktext text-sm">Zamawiasz jako: <b>{userEmail}</b></div>
+            <div className="text-darktext text-sm" translate="yes">Zamawiasz jako: <b>{userEmail}</b></div>
           ) : (
             <input
               type="email"
@@ -199,9 +199,9 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
               required
               disabled={loading}
             >
-              <option value="">Wybierz kategorię projektu</option>
+              <option value="" translate="yes">Wybierz kategorię projektu</option>
               {availableCategories.map((category) => (
-                <option key={category} value={category}>
+                <option key={category} value={category} translate="yes">
                   {category}
                 </option>
               ))}
@@ -230,7 +230,7 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
                   disabled={loading}
                   className="mt-1"
                 />
-                <span>
+                <span translate="yes">
                   Oświadczam, że opłata zaliczkowa dotyczy wyłącznie przygotowania wersji demonstracyjnej aplikacji, 
                   która zostanie udostępniona online pod linkiem przesłanym na podany adres e-mail w ciągu 7 dni roboczych 
                   od zaksięgowania płatności. Wersja demo może zawierać błędy i ma charakter poglądowy. 
@@ -246,11 +246,11 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
             <>
               <label className="flex items-center gap-2 text-sm text-darksubtle">
                 <input type="checkbox" checked={termsAccepted} onChange={e => setTermsAccepted(e.target.checked)} required disabled={loading} />
-                Akceptuję <a href="/regulamin" target="_blank" className="underline text-primary-400">regulamin.</a> <span className="text-red-400">*</span>
+                <span translate="yes">Akceptuję</span> <a href="/regulamin" target="_blank" className="underline text-primary-400" translate="yes">regulamin.</a> <span className="text-red-400">*</span>
               </label>
               <label className="flex items-center gap-2 text-sm text-darksubtle">
                 <input type="checkbox" checked={marketingAccepted} onChange={e => setMarketingAccepted(e.target.checked)} disabled={loading} />
-                Chcę otrzymywać informacje marketingowe (opcjonalnie)
+                <span translate="yes">Chcę otrzymywać informacje marketingowe (opcjonalnie)</span>
               </label>
             </>
           )}
@@ -258,12 +258,13 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
             type="submit"
             className="btn-primary w-full"
             disabled={loading}
+            translate="yes"
           >
             {loading ? "..." : `Zamów ${isConsultation ? 'wycenę' : 'demo'} i przejdź do płatności`}
           </button>
           <div className="text-center text-darksubtle text-sm mt-4">
-            lub<br />
-            <span className="font-semibold">Zadzwoń na <br /><a href="tel:+48 502 600 739" className="underline hover:text-primary-400">+48 502 600 739</a></span>
+            <span translate="yes">lub</span><br />
+            <span className="font-semibold" translate="yes">Zadzwoń na</span> <br /><a href="tel:+48 502 600 739" className="underline hover:text-primary-400" translate="no">+48 502 600 739</a>
           </div>
         </form>
       </div>

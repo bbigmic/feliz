@@ -70,22 +70,22 @@ export default function Header() {
           >
             <Link href="/" className="flex items-center space-x-2">
               <img src="/logo-wsp-edu.png" alt="Logo" className="w-10 h-10 object-contain" />
-              <span className="text-xl font-bold text-darktext">FelizTrade</span>
+              <span className="text-xl font-bold text-darktext" translate="no">FelizTrade</span>
             </Link>
           </motion.div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link href="/" className="text-darktext hover:text-primary-300 transition-colors">
+            <Link href="/" className="text-darktext hover:text-primary-300 transition-colors" translate="yes">
               Strona główna
             </Link>
-            <a href="#main-content" className="text-darktext hover:text-primary-300 transition-colors" onClick={handleNavScroll('main-content')}>
+            <a href="#main-content" className="text-darktext hover:text-primary-300 transition-colors" translate="yes" onClick={handleNavScroll('main-content')}>
               Oprogramowania
             </a>
-            <a href="#pricing" className="text-darktext hover:text-primary-300 transition-colors" onClick={handleNavScroll('pricing')}>
+            <a href="#pricing" className="text-darktext hover:text-primary-300 transition-colors" translate="yes" onClick={handleNavScroll('pricing')}>
               Cennik
             </a>
-            <a href="#cta-section" className="text-darktext hover:text-primary-300 transition-colors" onClick={handleNavScroll('cta-section')}>
+            <a href="#cta-section" className="text-darktext hover:text-primary-300 transition-colors" translate="yes" onClick={handleNavScroll('cta-section')}>
               Kontakt
             </a>
           </nav>
@@ -122,16 +122,16 @@ export default function Header() {
             className="md:hidden overflow-hidden border-t border-gray-800 bg-darkpanel/95 rounded-b-2xl shadow-2xl px-4 py-6 mt-2 mx-[-1rem] sm:mx-0"
           >
             <nav className="flex flex-col gap-5">
-              <a href="#" className="text-lg font-semibold text-darktext rounded-xl px-4 py-3 hover:bg-primary-600/20 hover:text-primary-300 transition-all duration-150 active:bg-primary-700/30" onClick={() => setIsMenuOpen(false)}>
+              <a href="#" className="text-lg font-semibold text-darktext rounded-xl px-4 py-3 hover:bg-primary-600/20 hover:text-primary-300 transition-all duration-150 active:bg-primary-700/30" translate="yes" onClick={() => setIsMenuOpen(false)}>
                 Strona główna
               </a>
-              <a href="#main-content" className="text-lg font-semibold text-darktext rounded-xl px-4 py-3 hover:bg-primary-600/20 hover:text-primary-300 transition-all duration-150 active:bg-primary-700/30" onClick={e => { setIsMenuOpen(false); setTimeout(() => handleNavScroll('main-content')(e), 200); }}>
+              <a href="#main-content" className="text-lg font-semibold text-darktext rounded-xl px-4 py-3 hover:bg-primary-600/20 hover:text-primary-300 transition-all duration-150 active:bg-primary-700/30" translate="yes" onClick={e => { setIsMenuOpen(false); setTimeout(() => handleNavScroll('main-content')(e), 200); }}>
                 Oprogramowania
               </a>
-              <a href="#pricing" className="text-lg font-semibold text-darktext rounded-xl px-4 py-3 hover:bg-primary-600/20 hover:text-primary-300 transition-all duration-150 active:bg-primary-700/30" onClick={e => { setIsMenuOpen(false); setTimeout(() => handleNavScroll('pricing')(e), 200); }}>
+              <a href="#pricing" className="text-lg font-semibold text-darktext rounded-xl px-4 py-3 hover:bg-primary-600/20 hover:text-primary-300 transition-all duration-150 active:bg-primary-700/30" translate="yes" onClick={e => { setIsMenuOpen(false); setTimeout(() => handleNavScroll('pricing')(e), 200); }}>
                 Cennik
               </a>
-              <a href="#cta-section" className="text-lg font-semibold text-darktext rounded-xl px-4 py-3 hover:bg-primary-600/20 hover:text-primary-300 transition-all duration-150 active:bg-primary-700/30" onClick={e => { setIsMenuOpen(false); setTimeout(() => handleNavScroll('cta-section')(e), 200); }}>
+              <a href="#cta-section" className="text-lg font-semibold text-darktext rounded-xl px-4 py-3 hover:bg-primary-600/20 hover:text-primary-300 transition-all duration-150 active:bg-primary-700/30" translate="yes" onClick={e => { setIsMenuOpen(false); setTimeout(() => handleNavScroll('cta-section')(e), 200); }}>
                 Kontakt
               </a>
               <div className="pt-6 mt-2 border-t border-gray-800">
@@ -145,6 +145,7 @@ export default function Header() {
                       <span className="text-darktext font-medium text-base truncate max-w-[120px]">{user.email}</span>
                       <button
                         className="ml-auto btn-primary px-4 py-2 rounded-lg text-sm font-semibold"
+                        translate="yes"
                         onClick={() => {
                           document.cookie = 'token=; Max-Age=0; path=/;'
                           setUser(null)
@@ -153,7 +154,7 @@ export default function Header() {
                       >Wyloguj się</button>
                     </div>
                   ) : (
-                    <button className="btn-primary w-full py-3 text-lg rounded-xl mt-2" onClick={() => { setIsAuthOpen(true); setIsMenuOpen(false); }}>
+                    <button className="btn-primary w-full py-3 text-lg rounded-xl mt-2" translate="yes" onClick={() => { setIsAuthOpen(true); setIsMenuOpen(false); }}>
                       Zaloguj się
                     </button>
                   )}

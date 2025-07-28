@@ -107,7 +107,7 @@ export default function SoftwareCard({ software, onOrderClick, onGalleryClick }:
         </div>
         <div className="absolute top-2 right-2 flex flex-wrap gap-1">
           {(Array.isArray(software.categories) ? software.categories : JSON.parse(software.categories || '[]')).map((cat: string, idx: number) => (
-            <span key={cat} className="bg-primary-600 text-white px-2 py-1 rounded-full text-xs font-medium mr-1">
+            <span key={cat} className="bg-primary-600 text-white px-2 py-1 rounded-full text-xs font-medium mr-1" translate="yes">
               {cat}
             </span>
           ))}
@@ -117,14 +117,14 @@ export default function SoftwareCard({ software, onOrderClick, onGalleryClick }:
       {/* Content */}
       <div className="space-y-3">
         <div className="flex items-start justify-between">
-          <h3 className="text-lg font-semibold text-darktext">{software.name}</h3>
+          <h3 className="text-lg font-semibold text-darktext" translate="yes">{software.name}</h3>
           <div className="flex items-center space-x-1">
             <Star className="w-4 h-4 text-yellow-400 fill-current" />
             <span className="text-sm text-gray-200">{software.rating}</span>
           </div>
         </div>
 
-        <p className="text-gray-100 text-sm line-clamp-2">{software.description}</p>
+        <p className="text-gray-100 text-sm line-clamp-2" translate="yes">{software.description}</p>
 
         {/* Features */}
         <div className="flex flex-wrap gap-1">
@@ -133,6 +133,7 @@ export default function SoftwareCard({ software, onOrderClick, onGalleryClick }:
               <span
                 key={index}
                 className="bg-gray-700 text-gray-100 px-2 py-1 rounded-full text-xs"
+                translate="yes"
               >
                 {feature}
               </span>
@@ -142,15 +143,15 @@ export default function SoftwareCard({ software, onOrderClick, onGalleryClick }:
         {/* Stats */}
         <div className="flex items-center justify-between text-sm text-gray-400">
           {/* <span>{software.sales} sprzedaży</span> */}
-          <span>ID: {software.id}</span>
+          <span translate="no">ID: {software.id}</span>
         </div>
 
         {/* Price and Actions */}
         <div className="flex items-center justify-between pt-3 border-t border-gray-700">
           <div>
-            <span className="text-base text-darksubtle block leading-tight">od</span>
-            <span className="text-2xl font-bold text-white block leading-tight">
-              {software.price.toLocaleString('pl-PL')} zł
+            <span className="text-base text-darksubtle block leading-tight" translate="yes">od</span>
+            <span className="text-2xl font-bold text-white block leading-tight" translate="no">
+              {software.price.toLocaleString('pl-PL')} PLN
             </span>
           </div>
           <div className="flex space-x-2">
@@ -166,7 +167,7 @@ export default function SoftwareCard({ software, onOrderClick, onGalleryClick }:
               className="btn-primary flex items-center space-x-1"
             >
               <ShoppingCart className="w-4 h-4" />
-              <span>Zamów</span>
+              <span translate="yes">Zamów</span>
             </button>
           </div>
         </div>
