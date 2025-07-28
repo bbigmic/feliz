@@ -64,6 +64,24 @@ feliztrade/
 
 ## 🔧 Konfiguracja
 
+### Konfiguracja Webhook Stripe
+
+Aby płatności automatycznie aktualizowały status zamówień, należy skonfigurować webhook w Stripe Dashboard:
+
+1. **Zaloguj się do Stripe Dashboard**
+2. **Przejdź do Webhooks** (Developers → Webhooks)
+3. **Dodaj endpoint**:
+   - URL: `https://twoja-domena.com/api/webhook/stripe`
+   - Events: `checkout.session.completed`, `checkout.session.expired`
+4. **Skopiuj Webhook Secret** i dodaj do pliku `.env`:
+   ```
+   STRIPE_WEBHOOK_SECRET=whsec_twój_secret_tutaj
+   ```
+
+**Testowanie webhooka:**
+- GET `/api/debug-webhook` - sprawdź konfigurację
+- POST `/api/debug-webhook` - symuluj aktualizację statusu
+
 ### System Proxy Demo
 
 System proxy automatycznie wyświetla demo oprogramowań przez URL `/demo/{id}`. 
@@ -120,9 +138,30 @@ Platforma jest w pełni responsywna:
 - CORS headers
 - Rate limiting (do implementacji)
 
-## 🚀 Deployment
+## 🔐 Zmienne środowiskowe
 
-### Vercel (zalecane)
+Utwórz plik `.env` w głównym katalogu projektu:
+
+```env
+# Baza danych
+DATABASE_URL="postgresql://user:password@host:port/database"
+
+# Stripe
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+
+# Aplikacja
+NEXT_PUBLIC_BASE_URL=https://twoja-domena.com
+JWT_SECRET=twój_jwt_secret
+
+# Email (opcjonalne)
+SMTP_SERVER=smtp.example.com
+SMTP_PORT=587
+EMAIL_USER=user@example.com
+EMAIL_PASS=password
+```
+
+## 🚀 Deployment
 ```bash
 npm run build
 vercel --prod

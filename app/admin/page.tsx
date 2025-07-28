@@ -528,7 +528,21 @@ export default function AdminPanel() {
                         </td>
                         <td className="py-2">{order.productId || 'N/A'}</td>
                         <td className="py-2">{order.phone}</td>
-                        <td className="py-2">{order.status}</td>
+                        <td className="py-2">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            order.status === 'paid' 
+                              ? 'bg-green-600 text-white' 
+                              : order.status === 'pending'
+                              ? 'bg-yellow-600 text-white'
+                              : order.status === 'expired'
+                              ? 'bg-red-600 text-white'
+                              : 'bg-gray-600 text-white'
+                          }`}>
+                            {order.status === 'paid' ? 'Opłacone' : 
+                             order.status === 'pending' ? 'Oczekujące' :
+                             order.status === 'expired' ? 'Wygasłe' : order.status}
+                          </span>
+                        </td>
                         <td className="py-2">{new Date(order.createdAt).toLocaleString('pl-PL')}</td>
                         <td className="py-2">{order.termsAccepted ? '✔️' : '❌'}</td>
                         <td className="py-2">{order.marketingAccepted ? '✔️' : '❌'}</td>
