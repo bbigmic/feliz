@@ -1060,62 +1060,6 @@ export default function AdminPanel() {
 
             {statistics && (
               <>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div className="card">
-                    <h3 className="text-lg font-semibold text-darktext mb-4">Najpopularniejsze oprogramowania</h3>
-                    <div className="space-y-3">
-                      {statistics.topSoftware?.map((item: any, index: number) => (
-                        <div key={item.id} className="flex items-center justify-between p-3 bg-darkbg rounded-lg">
-                          <div className="flex items-center space-x-3">
-                            <span className="text-lg font-bold text-primary-500">#{index + 1}</span>
-                            <div>
-                              <p className="font-medium text-darktext">{item.name}</p>
-                              <p className="text-sm text-darksubtle">{item.sales} sprzedaży</p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-bold text-primary-400">{item.price.toLocaleString('pl-PL')} zł</p>
-                            <div className="flex items-center space-x-1">
-                              <span className="text-yellow-500">★</span>
-                              <span className="text-sm text-darksubtle">{item.rating}</span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="card">
-                    <h3 className="text-lg font-semibold text-darktext mb-4">Ostatnie zamówienia</h3>
-                    <div className="space-y-3">
-                      {statistics.recentOrders?.map((order: any) => (
-                        <div key={order.id} className="flex items-center justify-between p-3 bg-darkbg rounded-lg">
-                          <div>
-                            <p className="font-medium text-darktext">{order.email || 'Brak email'}</p>
-                            <p className="text-sm text-darksubtle">
-                              {order.orderType === 'consultation' ? 'Wycena' : 'Demo'}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-sm text-darksubtle">
-                              {new Date(order.createdAt).toLocaleDateString('pl-PL')}
-                            </p>
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              order.status === 'paid' 
-                                ? 'bg-green-900 text-green-300' 
-                                : order.status === 'pending'
-                                ? 'bg-yellow-900 text-yellow-300'
-                                : 'bg-red-900 text-red-300'
-                            }`}>
-                              {order.status === 'paid' ? 'Opłacone' : order.status === 'pending' ? 'Oczekujące' : 'Wygasłe'}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
                 <div className="card">
                   <h3 className="text-lg font-semibold text-darktext mb-4">Statystyki sprzedaży</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
