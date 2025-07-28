@@ -1,5 +1,1 @@
-{
-  "/api/orders/update-status/route": "app/api/orders/update-status/route.js",
-  "/order-success/page": "app/order-success/page.js",
-  "/api/debug-webhook/route": "app/api/debug-webhook/route.js"
-}
+{}
