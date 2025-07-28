@@ -455,7 +455,7 @@ export default function AdminPanel() {
                           })
                           .reduce((sum, order) => {
                             if (order.orderType === 'consultation') {
-                              return sum + 500 // 500 zł za konsultację
+                              return sum + 500 // 500 PLN za konsultację
                             } else if (order.orderType === 'demo' && order.productId) {
                               const foundSoftware = software.find(s => s.id === order.productId)
                               return sum + Math.round((foundSoftware?.price || 0) * 0.2) // 20% ceny za demo
@@ -463,7 +463,7 @@ export default function AdminPanel() {
                             return sum
                           }, 0)
                         return todayRevenue.toLocaleString('pl-PL')
-                      })()} zł
+                      })()} PLN
                     </p>
                   </div>
                   <div className="w-8 h-8 bg-rose-200 rounded-lg flex items-center justify-center">
@@ -492,7 +492,7 @@ export default function AdminPanel() {
                           })
                           .reduce((sum, order) => {
                             if (order.orderType === 'consultation') {
-                              return sum + 500 // 500 zł za konsultację
+                              return sum + 500 // 500 PLN za konsultację
                             } else if (order.orderType === 'demo' && order.productId) {
                               const foundSoftware = software.find(s => s.id === order.productId)
                               return sum + Math.round((foundSoftware?.price || 0) * 0.2) // 20% ceny za demo
@@ -500,7 +500,7 @@ export default function AdminPanel() {
                             return sum
                           }, 0)
                         return monthRevenue.toLocaleString('pl-PL')
-                      })()} zł
+                      })()} PLN
                     </p>
                   </div>
                   <div className="w-8 h-8 bg-cyan-200 rounded-lg flex items-center justify-center">
@@ -597,7 +597,7 @@ export default function AdminPanel() {
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="font-bold text-primary-400">{item.price.toLocaleString('pl-PL')} zł</p>
+                            <p className="font-bold text-primary-400">{item.price.toLocaleString('pl-PL')} PLN</p>
                             <div className="flex items-center space-x-1">
                               <span className="text-yellow-500">★</span>
                               <span className="text-sm text-darksubtle">{item.rating}</span>
@@ -728,7 +728,7 @@ export default function AdminPanel() {
                           ))}
                         </div>
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-primary-400 font-bold text-base">{item.price.toLocaleString('pl-PL')} zł</span>
+                          <span className="text-primary-400 font-bold text-base">{item.price.toLocaleString('pl-PL')} PLN</span>
                           <span className="text-darksubtle text-xs">Sprzedaże: {item.sales}</span>
                         </div>
                         <div className="flex items-center gap-2 mb-2">
@@ -788,7 +788,7 @@ export default function AdminPanel() {
                               </div>
                             </td>
                             <td className="py-4 px-4 font-medium text-darktext">
-                              {item.price.toLocaleString('pl-PL')} zł
+                              {item.price.toLocaleString('pl-PL')} PLN
                             </td>
                             <td className="py-4 px-4 text-darksubtle">{item.sales}</td>
                             <td className="py-4 px-4">
@@ -1068,7 +1068,7 @@ export default function AdminPanel() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="text-center p-4 bg-darkbg rounded-lg">
                       <p className="text-2xl font-bold text-primary-400">
-                        {statistics.totalRevenue?.toLocaleString('pl-PL')} zł
+                        {statistics.totalRevenue?.toLocaleString('pl-PL')} PLN
                       </p>
                       <p className="text-sm text-darksubtle">Całkowity przychód</p>
                     </div>
@@ -1080,7 +1080,7 @@ export default function AdminPanel() {
                     </div>
                     <div className="text-center p-4 bg-darkbg rounded-lg">
                       <p className="text-2xl font-bold text-yellow-400">
-                        {statistics.averageOrderValue?.toLocaleString('pl-PL')} zł
+                        {statistics.averageOrderValue?.toLocaleString('pl-PL')} PLN
                       </p>
                       <p className="text-sm text-darksubtle">Średnia wartość zamówienia</p>
                     </div>
@@ -1104,7 +1104,7 @@ export default function AdminPanel() {
                           <tr key={d.date}>
                             <td className="py-1 px-2">{d.date}</td>
                             <td className="py-1 px-2">{d.orders}</td>
-                            <td className="py-1 px-2">{d.revenue.toLocaleString('pl-PL')} zł</td>
+                            <td className="py-1 px-2">{d.revenue.toLocaleString('pl-PL')} PLN</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1127,7 +1127,7 @@ export default function AdminPanel() {
                           <tr key={d.date}>
                             <td className="py-1 px-2">{d.date}</td>
                             <td className="py-1 px-2">{d.orders}</td>
-                            <td className="py-1 px-2">{d.revenue.toLocaleString('pl-PL')} zł</td>
+                            <td className="py-1 px-2">{d.revenue.toLocaleString('pl-PL')} PLN</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1139,14 +1139,14 @@ export default function AdminPanel() {
                     <h3 className="text-lg font-semibold text-darktext mb-4">Bieżący miesiąc</h3>
                     <div className="flex flex-col gap-2">
                       <div className="flex justify-between"><span>Zamówienia:</span><span className="font-bold">{statistics.thisMonthOrders}</span></div>
-                      <div className="flex justify-between"><span>Przychód:</span><span className="font-bold">{statistics.thisMonthRevenue.toLocaleString('pl-PL')} zł</span></div>
+                      <div className="flex justify-between"><span>Przychód:</span><span className="font-bold">{statistics.thisMonthRevenue.toLocaleString('pl-PL')} PLN</span></div>
                     </div>
                   </div>
                   <div className="card">
                     <h3 className="text-lg font-semibold text-darktext mb-4">Poprzedni miesiąc</h3>
                     <div className="flex flex-col gap-2">
                       <div className="flex justify-between"><span>Zamówienia:</span><span className="font-bold">{statistics.lastMonthOrders}</span></div>
-                      <div className="flex justify-between"><span>Przychód:</span><span className="font-bold">{statistics.lastMonthRevenue.toLocaleString('pl-PL')} zł</span></div>
+                      <div className="flex justify-between"><span>Przychód:</span><span className="font-bold">{statistics.lastMonthRevenue.toLocaleString('pl-PL')} PLN</span></div>
                     </div>
                   </div>
                 </div>

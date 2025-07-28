@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
         from: `FelizTrade <${process.env.EMAIL_USER}>`,
         to: process.env.EMAIL_USER,
         subject: order.orderType === 'consultation' ? 'Nowa wycena/konsultacja' : 'Nowe zamówienie demo',
-        text: `Nowe zamówienie (${order.orderType === 'consultation' ? 'wycena/konsultacja' : 'demo'}):\nEmail: ${order.email || 'zalogowany użytkownik'}\nTelefon: ${order.phone}\nInfo: ${order.info || '-'}\nID zamówienia: ${order.id}${software ? `\nOprogramowanie: ${software.name}\nCena demo: ${Math.round(software.price * 0.2)} zł` : ''}`
+        text: `Nowe zamówienie (${order.orderType === 'consultation' ? 'wycena/konsultacja' : 'demo'}):\nEmail: ${order.email || 'zalogowany użytkownik'}\nTelefon: ${order.phone}\nInfo: ${order.info || '-'}\nID zamówienia: ${order.id}${software ? `\nOprogramowanie: ${software.name}\nCena demo: ${Math.round(software.price * 0.2)} PLN` : ''}`
       })
     } catch (err) {
       console.error('Błąd wysyłki maila:', err)
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     if (isConsultation) {
       productName = 'Konsultacja/Wycena'
       productDescription = 'Zamówienie konsultacji lub wyceny FelizTrade'
-      unitAmount = 50000 // 500 zł w groszach
+      unitAmount = 50000 // 500 PLN w groszach
     } else {
       productName = 'Zaliczka za demo'
       productDescription = `Zaliczka za demo: ${software?.name || 'Oprogramowanie'}`

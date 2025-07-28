@@ -163,7 +163,7 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
             <div className="text-sm text-gray-300 mb-2" translate="yes">{software.description}</div>
             <div className="flex justify-between items-center">
               <span className="text-darksubtle text-sm" translate="yes">Cena demo (20%):</span>
-              <span className="text-xl font-bold text-primary-400" translate="no">{demoPrice.toLocaleString('pl-PL')} zł</span>
+              <span className="text-xl font-bold text-primary-400" translate="no">{demoPrice.toLocaleString('pl-PL')} PLN</span>
             </div>
           </div>
         )}

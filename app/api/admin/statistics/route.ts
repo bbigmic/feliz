@@ -60,7 +60,7 @@ export async function GET() {
     // Całkowity przychód
     const totalRevenue = paidOrdersData.reduce((sum, order) => {
       if (order.orderType === 'consultation') {
-        return sum + 500 // 500 zł za konsultację
+        return sum + 500 // 500 PLN za konsultację
       } else if (order.orderType === 'demo' && order.productId) {
         const price = softwarePriceMap.get(order.productId) || 0
         return sum + Math.round(price * 0.2) // 20% ceny za demo
@@ -91,7 +91,7 @@ export async function GET() {
       const dateStr = order.createdAt.toISOString().slice(0, 10)
       let price = 0
       if (order.orderType === 'consultation') {
-        price = 500 // 500 zł za konsultację
+        price = 500 // 500 PLN za konsultację
       } else if (order.orderType === 'demo' && order.productId) {
         price = Math.round((softwarePriceMap.get(order.productId) || 0) * 0.2) // 20% ceny za demo
       }
@@ -120,14 +120,14 @@ export async function GET() {
       if (order.createdAt >= startOfThisMonth) {
         thisMonthOrders++
         if (order.orderType === 'consultation') {
-          thisMonthRevenue += 500 // 500 zł za konsultację
+          thisMonthRevenue += 500 // 500 PLN za konsultację
         } else if (order.orderType === 'demo' && order.productId) {
           thisMonthRevenue += Math.round((softwarePriceMap.get(order.productId) || 0) * 0.2) // 20% ceny za demo
         }
       } else if (order.createdAt >= startOfLastMonth && order.createdAt <= endOfLastMonth) {
         lastMonthOrders++
         if (order.orderType === 'consultation') {
-          lastMonthRevenue += 500 // 500 zł za konsultację
+          lastMonthRevenue += 500 // 500 PLN za konsultację
         } else if (order.orderType === 'demo' && order.productId) {
           lastMonthRevenue += Math.round((softwarePriceMap.get(order.productId) || 0) * 0.2) // 20% ceny za demo
         }
