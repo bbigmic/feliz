@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     if (isConsultation) {
       productName = 'Konsultacja/Wycena'
       productDescription = 'Zamówienie konsultacji lub wyceny FelizTrade'
-      unitAmount = 50000 // 500 PLN w groszach
+      unitAmount = 20000 // 200 PLN w groszach
     } else {
       productName = 'Zaliczka za demo'
       productDescription = `Zaliczka za demo: ${software?.name || 'Oprogramowanie'}`
