@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react"
 import toast from "react-hot-toast"
+import { useLanguage } from "@/contexts/LanguageContext"
+import { formatPrice } from "@/lib/i18n"
 
 interface OrderModalProps {
   isOpen: boolean
@@ -12,6 +14,7 @@ interface OrderModalProps {
 }
 
 export default function OrderModal({ isOpen, onClose, productId, userEmail, userId }: OrderModalProps) {
+  const { t, language } = useLanguage()
   const [email, setEmail] = useState(userEmail || "")
   const [phone, setPhone] = useState("")
   const [info, setInfo] = useState("")
@@ -118,7 +121,8 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
           termsAccepted: userEmail ? true : termsAccepted,
           marketingAccepted: userEmail ? false : marketingAccepted,
           demoConsentAccepted: !isConsultation ? demoConsentAccepted : true,
-          selectedCategory: isConsultation ? selectedCategory : null
+          selectedCategory: isConsultation ? selectedCategory : null,
+          language
         })
       })
       const data = await res.json()
@@ -153,28 +157,32 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
         >
           ✕
         </button>
-        <h2 className="text-2xl font-bold mb-4 text-center text-darktext" translate="yes">
-          {isConsultation ? 'Zamów konsultację i wycenę' : 'Zamów demo'}
+        <h2 className="text-2xl font-bold mb-4 text-center text-darktext">
+          {isConsultation ? t('orderModal.consultationTitle') : t('orderModal.demoTitle')}
         </h2>
         
         {!isConsultation && software && (
           <div className="mb-4 p-4 bg-darkbg rounded-lg border border-gray-700">
-            <h3 className="font-semibold text-white mb-2" translate="yes">{software.name}</h3>
-            <div className="text-sm text-gray-300 mb-2" translate="yes">{software.description}</div>
+            <h3 className="font-semibold text-white mb-2">
+              {language === 'en' && software.nameEn ? software.nameEn : software.name}
+            </h3>
+            <div className="text-sm text-gray-300 mb-2">
+              {language === 'en' && software.descriptionEn ? software.descriptionEn : software.description}
+            </div>
             <div className="flex justify-between items-center">
-              <span className="text-darksubtle text-sm" translate="yes">Cena demo (20%):</span>
-              <span className="text-xl font-bold text-primary-400" translate="no">{demoPrice.toLocaleString('pl-PL')} PLN</span>
+              <span className="text-darksubtle text-sm">{t('orderModal.demoPrice')}</span>
+              <span className="text-xl font-bold text-primary-400">{formatPrice(demoPrice, language)}</span>
             </div>
           </div>
         )}
         
         <form onSubmit={handleSubmit} className="space-y-4">
           {userEmail ? (
-            <div className="text-darktext text-sm" translate="yes">Zamawiasz jako: <b>{userEmail}</b></div>
+            <div className="text-darktext text-sm">{t('orderModal.orderAs')}: <b>{userEmail}</b></div>
           ) : (
             <input
               type="email"
-              placeholder="Twój email"
+              placeholder={t('orderModal.email')}
               className="w-full p-2 rounded bg-darkbg border border-gray-700 text-darktext"
               value={email}
               onChange={e => setEmail(e.target.value)}
@@ -184,7 +192,7 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
           )}
           <input
             type="tel"
-            placeholder="Numer telefonu"
+            placeholder={t('orderModal.phone')}
             className="w-full p-2 rounded bg-darkbg border border-gray-700 text-darktext"
             value={phone}
             onChange={e => setPhone(e.target.value)}
@@ -199,9 +207,9 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
               required
               disabled={loading}
             >
-              <option value="" translate="yes">Wybierz kategorię projektu</option>
+              <option value="">{t('orderModal.selectCategory')}</option>
               {availableCategories.map((category) => (
-                <option key={category} value={category} translate="yes">
+                <option key={category} value={category}>
                   {category}
                 </option>
               ))}
@@ -209,8 +217,8 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
           )}
           <textarea
             placeholder={isConsultation 
-              ? "Opisz swój projekt, wymagania i oczekiwania (opcjonalnie)"
-              : "Dodatkowe informacje o stronie/aplikacji (opcjonalnie)"
+              ? t('orderModal.consultationDescription')
+              : t('orderModal.demoDescription')
             }
             className="w-full p-2 rounded bg-darkbg border border-gray-700 text-darktext"
             value={info}
@@ -230,13 +238,8 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
                   disabled={loading}
                   className="mt-1"
                 />
-                <span translate="yes">
-                  Oświadczam, że opłata zaliczkowa dotyczy wyłącznie przygotowania wersji demonstracyjnej aplikacji, 
-                  która zostanie udostępniona online pod linkiem przesłanym na podany adres e-mail w ciągu 7 dni roboczych 
-                  od zaksięgowania płatności. Wersja demo może zawierać błędy i ma charakter poglądowy. 
-                  Pełny dostęp do kodu źródłowego i jego przekazanie możliwe będzie po uiszczeniu pełnej kwoty za oprogramowanie. 
-                  Dostosowanie oprogramowania do potrzeb zamawiającego odbywa się na podstawie odrębnej wyceny komponentów 
-                  funkcjonalnych i wizualnych. <span className="text-red-400">*</span>
+                <span>
+                  {t('orderModal.demoConsent')} <span className="text-red-400">*</span>
                 </span>
               </label>
             </div>
@@ -246,11 +249,11 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
             <>
               <label className="flex items-center gap-2 text-sm text-darksubtle">
                 <input type="checkbox" checked={termsAccepted} onChange={e => setTermsAccepted(e.target.checked)} required disabled={loading} />
-                <span translate="yes">Akceptuję</span> <a href="/regulamin" target="_blank" className="underline text-primary-400" translate="yes">regulamin.</a> <span className="text-red-400">*</span>
+                <span>{t('orderModal.termsAccept')}</span> <a href="/regulamin" target="_blank" className="underline text-primary-400">{t('orderModal.termsLink')}</a> <span className="text-red-400">*</span>
               </label>
               <label className="flex items-center gap-2 text-sm text-darksubtle">
                 <input type="checkbox" checked={marketingAccepted} onChange={e => setMarketingAccepted(e.target.checked)} disabled={loading} />
-                <span translate="yes">Chcę otrzymywać informacje marketingowe (opcjonalnie)</span>
+                <span>{t('orderModal.marketingAccept')}</span>
               </label>
             </>
           )}
@@ -258,13 +261,12 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
             type="submit"
             className="btn-primary w-full"
             disabled={loading}
-            translate="yes"
           >
-            {loading ? "..." : `Zamów ${isConsultation ? 'wycenę' : 'demo'} i przejdź do płatności`}
+            {loading ? t('orderModal.submitButtonLoading') : t('orderModal.submitButton').replace('{type}', isConsultation ? 'wycenę' : 'demo')}
           </button>
           <div className="text-center text-darksubtle text-sm mt-4">
-            <span translate="yes">lub</span><br />
-            <span className="font-semibold" translate="yes">Zadzwoń na</span> <br /><a href="tel:+48 502 600 739" className="underline hover:text-primary-400" translate="no">+48 502 600 739</a>
+            <span>{t('orderModal.or')}</span><br />
+            <span className="font-semibold">{t('orderModal.callUs')}</span> <br /><a href="tel:+48 502 600 739" className="underline hover:text-primary-400">{t('orderModal.phoneNumber')}</a>
           </div>
         </form>
       </div>

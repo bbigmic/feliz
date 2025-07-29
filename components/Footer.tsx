@@ -3,8 +3,10 @@
 import { motion } from 'framer-motion'
 import { Mail, Phone, MapPin, Globe, Github, Linkedin } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function Footer() {
+  const { t } = useLanguage()
   const pathname = usePathname();
   const router = useRouter();
 
@@ -42,9 +44,8 @@ export default function Footer() {
               />
               <span className="text-xl font-bold" translate="no">FelizTrade</span>
             </div>
-            <p className="text-gray-300 mb-4 max-w-md" translate="yes">
-              Profesjonalna platforma sprzedaży oprogramowań WWW. 
-              Oferujemy gotowe rozwiązania webowe oraz dostosowane do Twoich potrzeb.
+            <p className="text-gray-300 mb-4 max-w-md">
+              {t('footer.description')}
             </p>
             <div className="flex space-x-4">
               <a href="#" className="text-gray-400 hover:text-white transition-colors">
@@ -65,21 +66,26 @@ export default function Footer() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <h3 className="text-lg font-semibold mb-4" translate="yes">Szybkie linki</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('footer.quickLinks')}</h3>
             <ul className="space-y-2">
               <li>
-                <a href="/" className="text-gray-300 hover:text-white transition-colors" translate="yes">
-                  Strona główna
+                <a href="/" className="text-gray-300 hover:text-white transition-colors">
+                  {t('header.home')}
                 </a>
               </li>
               <li>
-                <a href="#main-content" className="text-gray-300 hover:text-white transition-colors" translate="yes" onClick={handleNavScroll('main-content')}>
-                  Oprogramowania
+                <a href="#main-content" className="text-gray-300 hover:text-white transition-colors" onClick={handleNavScroll('main-content')}>
+                  {t('header.software')}
                 </a>
               </li>
               <li>
-                <a href="#cta-section" className="text-gray-300 hover:text-white transition-colors" translate="yes" onClick={handleNavScroll('cta-section')}>
-                  Kontakt
+                <a href="#pricing" className="text-gray-300 hover:text-white transition-colors" onClick={handleNavScroll('pricing')}>
+                  {t('header.pricing')}
+                </a>
+              </li>
+              <li>
+                <a href="#cta-section" className="text-gray-300 hover:text-white transition-colors" onClick={handleNavScroll('cta-section')}>
+                  {t('header.contact')}
                 </a>
               </li>
             </ul>
@@ -91,7 +97,7 @@ export default function Footer() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <h3 className="text-lg font-semibold mb-4" translate="yes">Kontakt</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('footer.contact')}</h3>
             <ul className="space-y-3">
               <li className="flex items-center space-x-2">
                 <Mail className="w-4 h-4 text-gray-400" />
@@ -117,7 +123,7 @@ export default function Footer() {
           className="border-t border-gray-800 mt-8 pt-8 text-center"
         >
           <p className="text-gray-400">
-            © 2025 <span translate="no">FelizTrade</span>. <span translate="yes">Wszystkie prawa zastrzeżone.</span>
+            © 2025 <span translate="no">FelizTrade</span>. <span>{t('footer.allRightsReserved')}</span>
           </p>
         </motion.div>
       </div>

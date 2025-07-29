@@ -6,8 +6,11 @@ import { Menu, X, ShoppingCart, User } from 'lucide-react'
 import AuthModal from './AuthModal'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import LanguageSwitcher from './LanguageSwitcher'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function Header() {
+  const { t } = useLanguage()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [isAuthOpen, setIsAuthOpen] = useState(false)
@@ -76,29 +79,29 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link href="/" className="text-darktext hover:text-primary-300 transition-colors" translate="yes">
-              Strona główna
+            <Link href="/" className="text-darktext hover:text-primary-300 transition-colors">
+              {t('header.home')}
             </Link>
-            <a href="#main-content" className="text-darktext hover:text-primary-300 transition-colors" translate="yes" onClick={handleNavScroll('main-content')}>
-              Oprogramowania
+            <a href="#main-content" className="text-darktext hover:text-primary-300 transition-colors" onClick={handleNavScroll('main-content')}>
+              {t('header.software')}
             </a>
-            <a href="#pricing" className="text-darktext hover:text-primary-300 transition-colors" translate="yes" onClick={handleNavScroll('pricing')}>
-              Cennik
+            <a href="#pricing" className="text-darktext hover:text-primary-300 transition-colors" onClick={handleNavScroll('pricing')}>
+              {t('header.pricing')}
             </a>
-            <a href="#cta-section" className="text-darktext hover:text-primary-300 transition-colors" translate="yes" onClick={handleNavScroll('cta-section')}>
-              Kontakt
+            <a href="#cta-section" className="text-darktext hover:text-primary-300 transition-colors" onClick={handleNavScroll('cta-section')}>
+              {t('header.contact')}
             </a>
           </nav>
 
           {/* Desktop Actions */}
-          {/* <div className="hidden md:flex items-center space-x-4">
-            ...logowanie ukryte...
-          </div> */}
+          <div className="hidden md:flex items-center space-x-4">
+            <LanguageSwitcher />
+          </div>
 
           {/* Mobile Menu Button */}
           <button
             className="md:hidden p-2 text-darktext"
-            aria-label={isMenuOpen ? 'Zamknij menu' : 'Otwórz menu'}
+            aria-label={isMenuOpen ? t('header.closeMenu') : t('header.openMenu')}
             aria-expanded={isMenuOpen}
             aria-controls="mobile-menu"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -122,19 +125,24 @@ export default function Header() {
             className="md:hidden overflow-hidden border-t border-gray-800 bg-darkpanel/95 rounded-b-2xl shadow-2xl px-4 py-6 mt-2 mx-[-1rem] sm:mx-0"
           >
             <nav className="flex flex-col gap-5">
-              <a href="#" className="text-lg font-semibold text-darktext rounded-xl px-4 py-3 hover:bg-primary-600/20 hover:text-primary-300 transition-all duration-150 active:bg-primary-700/30" translate="yes" onClick={() => setIsMenuOpen(false)}>
-                Strona główna
+              <a href="#" className="text-lg font-semibold text-darktext rounded-xl px-4 py-3 hover:bg-primary-600/20 hover:text-primary-300 transition-all duration-150 active:bg-primary-700/30" onClick={() => setIsMenuOpen(false)}>
+                {t('header.home')}
               </a>
-              <a href="#main-content" className="text-lg font-semibold text-darktext rounded-xl px-4 py-3 hover:bg-primary-600/20 hover:text-primary-300 transition-all duration-150 active:bg-primary-700/30" translate="yes" onClick={e => { setIsMenuOpen(false); setTimeout(() => handleNavScroll('main-content')(e), 200); }}>
-                Oprogramowania
+              <a href="#main-content" className="text-lg font-semibold text-darktext rounded-xl px-4 py-3 hover:bg-primary-600/20 hover:text-primary-300 transition-all duration-150 active:bg-primary-700/30" onClick={e => { setIsMenuOpen(false); setTimeout(() => handleNavScroll('main-content')(e), 200); }}>
+                {t('header.software')}
               </a>
-              <a href="#pricing" className="text-lg font-semibold text-darktext rounded-xl px-4 py-3 hover:bg-primary-600/20 hover:text-primary-300 transition-all duration-150 active:bg-primary-700/30" translate="yes" onClick={e => { setIsMenuOpen(false); setTimeout(() => handleNavScroll('pricing')(e), 200); }}>
-                Cennik
+              <a href="#pricing" className="text-lg font-semibold text-darktext rounded-xl px-4 py-3 hover:bg-primary-600/20 hover:text-primary-300 transition-all duration-150 active:bg-primary-700/30" onClick={e => { setIsMenuOpen(false); setTimeout(() => handleNavScroll('pricing')(e), 200); }}>
+                {t('header.pricing')}
               </a>
-              <a href="#cta-section" className="text-lg font-semibold text-darktext rounded-xl px-4 py-3 hover:bg-primary-600/20 hover:text-primary-300 transition-all duration-150 active:bg-primary-700/30" translate="yes" onClick={e => { setIsMenuOpen(false); setTimeout(() => handleNavScroll('cta-section')(e), 200); }}>
-                Kontakt
+              <a href="#cta-section" className="text-lg font-semibold text-darktext rounded-xl px-4 py-3 hover:bg-primary-600/20 hover:text-primary-300 transition-all duration-150 active:bg-primary-700/30" onClick={e => { setIsMenuOpen(false); setTimeout(() => handleNavScroll('cta-section')(e), 200); }}>
+                {t('header.contact')}
               </a>
-              <div className="pt-6 mt-2 border-t border-gray-800">
+              <div className="pt-4 border-t border-gray-800">
+                <div className="flex justify-center mb-4">
+                  <LanguageSwitcher />
+                </div>
+              </div>
+              <div className="pt-2 border-t border-gray-800">
                   {/* <button className="flex items-center space-x-2 text-darktext hover:text-primary-300 transition-colors mb-2">
                     <ShoppingCart className="w-5 h-5" />
                     <span>Koszyk</span>
@@ -145,17 +153,16 @@ export default function Header() {
                       <span className="text-darktext font-medium text-base truncate max-w-[120px]">{user.email}</span>
                       <button
                         className="ml-auto btn-primary px-4 py-2 rounded-lg text-sm font-semibold"
-                        translate="yes"
                         onClick={() => {
                           document.cookie = 'token=; Max-Age=0; path=/;'
                           setUser(null)
                           setIsMenuOpen(false)
                         }}
-                      >Wyloguj się</button>
+                      >{t('header.logout')}</button>
                     </div>
                   ) : (
-                    <button className="btn-primary w-full py-3 text-lg rounded-xl mt-2" translate="yes" onClick={() => { setIsAuthOpen(true); setIsMenuOpen(false); }}>
-                      Zaloguj się
+                    <button className="btn-primary w-full py-3 text-lg rounded-xl mt-2" onClick={() => { setIsAuthOpen(true); setIsMenuOpen(false); }}>
+                      {t('header.login')}
                     </button>
                   )}
                 </div>

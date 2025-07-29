@@ -6,9 +6,21 @@ import nodemailer from 'nodemailer'
 const prisma = new PrismaClient()
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2023-10-16' })
 
+// Funkcje walutowe
+function getCurrency(lang: string): string {
+  return lang === 'en' ? 'gbp' : 'pln'
+}
+
+function convertPrice(price: number, lang: string): number {
+  if (lang === 'en') {
+    return Math.round(price / 4) // Konwersja PLN na GBP (przybliżony kurs)
+  }
+  return price
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const { userId, productId, email, phone, info, orderType, termsAccepted, marketingAccepted, demoConsentAccepted, selectedCategory } = await request.json()
+    const { userId, productId, email, phone, info, orderType, termsAccepted, marketingAccepted, demoConsentAccepted, selectedCategory, language = 'pl' } = await request.json()
     if (!phone) {
       return NextResponse.json({ error: 'Brak wymaganych danych.' }, { status: 400 })
     }
@@ -38,6 +50,7 @@ export async function POST(request: NextRequest) {
         marketingAccepted: !!marketingAccepted,
         demoConsentAccepted: !!demoConsentAccepted,
         selectedCategory: selectedCategory || null,
+        language: language || 'pl',
       },
     })
     
@@ -69,11 +82,13 @@ export async function POST(request: NextRequest) {
     if (isConsultation) {
       productName = 'Konsultacja/Wycena'
       productDescription = 'Zamówienie konsultacji lub wyceny FelizTrade'
-      unitAmount = 20000 // 200 PLN w groszach
+      unitAmount = convertPrice(20000, language) // 200 PLN w groszach
     } else {
       productName = 'Zaliczka za demo'
       productDescription = `Zaliczka za demo: ${software?.name || 'Oprogramowanie'}`
-      unitAmount = Math.round((software?.price || 0) * 0.2 * 100) // 20% ceny w groszach
+      // Cena demo to 20% ceny oprogramowania, konwertujemy tylko raz
+      const demoPrice = Math.round((software?.price || 0) * 0.2)
+      unitAmount = convertPrice(demoPrice, language) * 100 // Konwertujemy PLN na GBP jeśli EN, potem na grosze
     }
     
     // Debug URL-i
@@ -98,7 +113,7 @@ export async function POST(request: NextRequest) {
       line_items: [
         {
           price_data: {
-            currency: 'pln',
+            currency: getCurrency(language),
             product_data: {
               name: productName,
               description: productDescription,

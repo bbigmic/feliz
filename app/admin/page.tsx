@@ -1065,12 +1065,18 @@ export default function AdminPanel() {
               <>
                 <div className="card">
                   <h3 className="text-lg font-semibold text-darktext mb-4">Statystyki sprzedaży</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div className="text-center p-4 bg-darkbg rounded-lg">
                       <p className="text-2xl font-bold text-primary-400">
-                        {statistics.totalRevenue?.toLocaleString('pl-PL')} PLN
+                        {statistics.totalRevenuePLN?.toLocaleString('pl-PL')} PLN
                       </p>
-                      <p className="text-sm text-darksubtle">Całkowity przychód</p>
+                      <p className="text-sm text-darksubtle">Przychód PLN ({statistics.totalRevenuePLNCount} zamówień)</p>
+                    </div>
+                    <div className="text-center p-4 bg-darkbg rounded-lg">
+                      <p className="text-2xl font-bold text-blue-400">
+                        {statistics.totalRevenueGBP?.toLocaleString('en-GB')} GBP
+                      </p>
+                      <p className="text-sm text-darksubtle">Przychód GBP ({statistics.totalRevenueGBPCount} zamówień)</p>
                     </div>
                     <div className="text-center p-4 bg-darkbg rounded-lg">
                       <p className="text-2xl font-bold text-green-400">

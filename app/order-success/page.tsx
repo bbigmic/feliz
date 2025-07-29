@@ -4,8 +4,10 @@ import { CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useEffect, useState, Suspense } from 'react'
+import { useLanguage } from "@/contexts/LanguageContext"
 
 function OrderSuccessContent() {
+  const { t } = useLanguage()
   const searchParams = useSearchParams()
   const orderId = searchParams.get('orderId')
   const [orderType, setOrderType] = useState<'demo' | 'consultation' | null>(null)
@@ -33,18 +35,18 @@ function OrderSuccessContent() {
 
   const isConsultation = orderType === 'consultation'
   const title = isConsultation 
-    ? 'Dziękujemy za zamówienie wyceny/konsultacji!' 
-    : 'Dziękujemy za zamówienie demo!'
+    ? t('orderSuccess.consultationTitle')
+    : t('orderSuccess.demoTitle')
   
   const description = isConsultation
-    ? 'Skontaktujemy się z Tobą pod wskazany numer telefonu, aby omówić szczegóły projektu i przygotować wycenę.'
-    : 'Skontaktujemy się z Tobą pod wskazany numer telefonu, aby ustalić szczegóły i uruchomić demo.'
+    ? t('orderSuccess.consultationDescription')
+    : t('orderSuccess.demoDescription')
 
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-darkbg text-darktext">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
-        <p className="mt-4 text-darksubtle">Ładowanie...</p>
+        <p className="mt-4 text-darksubtle">{t('orderSuccess.loading')}</p>
       </div>
     )
   }
@@ -56,7 +58,7 @@ function OrderSuccessContent() {
       <p className="text-lg mb-4 text-center max-w-md">
         {description}
       </p>
-      <Link href="/" className="btn-primary mt-4">Wróć na stronę główną</Link>
+      <Link href="/" className="btn-primary mt-4">{t('orderSuccess.backToHome')}</Link>
     </div>
   )
 }

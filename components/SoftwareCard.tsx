@@ -6,16 +6,21 @@ import { Star, Eye, Play, ShoppingCart, ExternalLink } from 'lucide-react'
 import toast from 'react-hot-toast'
 import OrderModal from './OrderModal'
 import SoftwareGalleryModal from './SoftwareGalleryModal'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { formatPrice } from '@/lib/i18n'
 
 interface Software {
   id: number
   name: string
+  nameEn?: string
   description: string
+  descriptionEn?: string
   price: number
   categories?: string[] | string
   demoUrl: string
   image: string
   features: string[]
+  featuresEn?: string[]
   rating: number
   sales: number
   images?: { url: string; isThumbnail: boolean }[]
@@ -29,6 +34,7 @@ interface SoftwareCardProps {
 }
 
 export default function SoftwareCard({ software, onOrderClick, onGalleryClick }: SoftwareCardProps) {
+  const { t, language } = useLanguage()
   const [isHovered, setIsHovered] = useState(false)
   const [isGalleryOpen, setIsGalleryOpen] = useState(false)
 
@@ -117,23 +123,24 @@ export default function SoftwareCard({ software, onOrderClick, onGalleryClick }:
       {/* Content */}
       <div className="space-y-3">
         <div className="flex items-start justify-between">
-          <h3 className="text-lg font-semibold text-darktext" translate="yes">{software.name}</h3>
+          <h3 className="text-lg font-semibold text-darktext">{language === 'en' && software.nameEn ? software.nameEn : software.name}</h3>
           <div className="flex items-center space-x-1">
             <Star className="w-4 h-4 text-yellow-400 fill-current" />
             <span className="text-sm text-gray-200">{software.rating}</span>
           </div>
         </div>
 
-        <p className="text-gray-100 text-sm" translate="yes">{software.description}</p>
+        <p className="text-gray-100 text-sm">{language === 'en' && software.descriptionEn ? software.descriptionEn : software.description}</p>
 
         {/* Features */}
         <div className="flex flex-wrap gap-1">
-          {(Array.isArray(software.features) ? software.features : JSON.parse(software.features || '[]'))
+          {(language === 'en' && software.featuresEn 
+            ? (Array.isArray(software.featuresEn) ? software.featuresEn : JSON.parse(software.featuresEn || '[]'))
+            : (Array.isArray(software.features) ? software.features : JSON.parse(software.features || '[]')))
             .map((feature: string, index: number) => (
               <span
                 key={index}
                 className="bg-gray-700 text-gray-100 px-2 py-1 rounded-full text-xs"
-                translate="yes"
               >
                 {feature}
               </span>
@@ -143,15 +150,15 @@ export default function SoftwareCard({ software, onOrderClick, onGalleryClick }:
         {/* Stats */}
         <div className="flex items-center justify-between text-sm text-gray-400">
           {/* <span>{software.sales} sprzedaży</span> */}
-          <span translate="no">ID: {software.id}</span>
+          <span translate="no">{t('softwareCard.id')}: {software.id}</span>
         </div>
 
         {/* Price and Actions */}
         <div className="flex items-center justify-between pt-3 border-t border-gray-700">
           <div>
-            <span className="text-base text-darksubtle block leading-tight" translate="yes">od</span>
+            <span className="text-base text-darksubtle block leading-tight">{t('softwareCard.from')}</span>
             <span className="text-2xl font-bold text-white block leading-tight" translate="no">
-              {software.price.toLocaleString('pl-PL')} PLN
+              {formatPrice(software.price, language)}
             </span>
           </div>
           <div className="flex space-x-2">
@@ -167,7 +174,7 @@ export default function SoftwareCard({ software, onOrderClick, onGalleryClick }:
               className="btn-primary flex items-center space-x-1"
             >
               <ShoppingCart className="w-4 h-4" />
-              <span translate="yes">Zamów</span>
+              <span>{t('softwareCard.order')}</span>
             </button>
           </div>
         </div>

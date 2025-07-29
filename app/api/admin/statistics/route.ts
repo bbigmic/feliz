@@ -18,6 +18,18 @@ function getEndOfMonth(date: Date) {
   return new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999)
 }
 
+// Funkcje konwersji walut
+function getCurrency(lang: string): string {
+  return lang === 'en' ? 'gbp' : 'pln'
+}
+
+function convertPrice(price: number, lang: string): number {
+  if (lang === 'en') {
+    return Math.round(price / 4) // Konwersja PLN na GBP (przybliżony kurs)
+  }
+  return price
+}
+
 export async function GET() {
   try {
     // Pobierz podstawowe statystyki
@@ -51,22 +63,37 @@ export async function GET() {
     const allSoftware = await prisma.software.findMany({ select: { id: true, price: true } })
     const softwarePriceMap = new Map(allSoftware.map(s => [s.id, s.price]))
 
-    // Pobierz wszystkie opłacone zamówienia
+    // Pobierz wszystkie opłacone zamówienia z informacją o języku
+    // @ts-ignore - language field exists in database but TypeScript doesn't recognize it yet
     const paidOrdersData = await prisma.order.findMany({
       where: { status: 'paid' },
-      select: { id: true, productId: true, createdAt: true, orderType: true }
+      select: { id: true, productId: true, createdAt: true, orderType: true, language: true }
+    }) as any[]
+
+    // Rozdziel przychody według walut
+    let totalRevenuePLN = 0
+    let totalRevenueGBP = 0
+    let totalRevenuePLNCount = 0
+    let totalRevenueGBPCount = 0
+
+    paidOrdersData.forEach(order => {
+      let price = 0
+      if (order.orderType === 'consultation') {
+        price = 200 // 200 PLN za konsultację (cena z API)
+      } else if (order.orderType === 'demo' && order.productId) {
+        price = Math.round((softwarePriceMap.get(order.productId) || 0) * 0.2) // 20% ceny za demo
+      }
+
+      if (order.language === 'en') {
+        totalRevenueGBP += convertPrice(price, 'en')
+        totalRevenueGBPCount++
+      } else {
+        totalRevenuePLN += price
+        totalRevenuePLNCount++
+      }
     })
 
-    // Całkowity przychód
-    const totalRevenue = paidOrdersData.reduce((sum, order) => {
-      if (order.orderType === 'consultation') {
-        return sum + 500 // 500 PLN za konsultację
-      } else if (order.orderType === 'demo' && order.productId) {
-        const price = softwarePriceMap.get(order.productId) || 0
-        return sum + Math.round(price * 0.2) // 20% ceny za demo
-      }
-      return sum
-    }, 0)
+    const totalRevenue = totalRevenuePLN + (totalRevenueGBP * 4) // Konwertuj GBP z powrotem na PLN dla porównania
     const averageOrderValue = paidOrdersData.length > 0 ? totalRevenue / paidOrdersData.length : 0
 
     // Statystyki dzienne (ostatnie 7 i 30 dni)
@@ -141,6 +168,10 @@ export async function GET() {
       totalOrders,
       paidOrders,
       totalRevenue,
+      totalRevenuePLN,
+      totalRevenueGBP,
+      totalRevenuePLNCount,
+      totalRevenueGBPCount,
       averageOrderValue,
       topSoftware,
       recentOrders,
