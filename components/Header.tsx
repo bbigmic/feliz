@@ -101,19 +101,19 @@ export default function Header() {
           {/* Mobile Actions */}
           <div className="md:hidden flex items-center space-x-2">
             <LanguageSwitcher />
-            <button
+          <button
               className="p-2 text-darktext"
               aria-label={isMenuOpen ? t('header.closeMenu') : t('header.openMenu')}
-              aria-expanded={isMenuOpen}
-              aria-controls="mobile-menu"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              {isMenuOpen ? (
-                <X className="w-6 h-6" />
-              ) : (
-                <Menu className="w-6 h-6" />
-              )}
-            </button>
+            aria-expanded={isMenuOpen}
+            aria-controls="mobile-menu"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            {isMenuOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
+          </button>
           </div>
         </div>
 

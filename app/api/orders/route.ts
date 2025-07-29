@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
         from: `FelizTrade <${process.env.EMAIL_USER}>`,
         to: process.env.EMAIL_USER,
         subject: order.orderType === 'consultation' ? 'Nowa wycena/konsultacja' : 'Nowe zamówienie demo',
-        text: `Nowe zamówienie (${order.orderType === 'consultation' ? 'wycena/konsultacja' : 'demo'}):\nEmail: ${order.email || 'zalogowany użytkownik'}\nTelefon: ${order.phone}\nInfo: ${order.info || '-'}\nID zamówienia: ${order.id}${software ? `\nOprogramowanie: ${software.name}\nCena demo: ${Math.round(software.price * 0.2)} PLN` : ''}`
+        text: `Nowe zamówienie (${order.orderType === 'consultation' ? 'wycena/konsultacja' : 'demo'}):\nEmail: ${order.email || 'zalogowany użytkownik'}\nTelefon: ${order.phone}\nInfo: ${order.info || '-'}\nID zamówienia: ${order.id}${software ? `\nOprogramowanie: ${software.name}\Zaliczka za demo: ${Math.round(software.price * 0.2)} PLN` : ''}`
       })
     } catch (err) {
       console.error('Błąd wysyłki maila:', err)
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
     } else {
       productName = 'Zaliczka za demo'
       productDescription = `Zaliczka za demo: ${software?.name || 'Oprogramowanie'}`
-      // Cena demo to 20% ceny oprogramowania, konwertujemy tylko raz
+      // Zaliczka za demo to 20% ceny oprogramowania, konwertujemy tylko raz
       const demoPrice = Math.round((software?.price || 0) * 0.2)
       unitAmount = convertPrice(demoPrice, language) * 100 // Konwertujemy PLN na GBP jeśli EN, potem na grosze
     }

@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'FelizTrade - Platforma Sprzedaży Oprogramowań WWW',
   description: 'Profesjonalna platforma do sprzedaży oprogramowań WWW z automatycznym systemem demo',
-  keywords: 'oprogramowanie, aplikacje web, sprzedaż, demo, proxy',
+  keywords: 'oprogramowanie, aplikacje web, sprzedaż, demo, sklep internetowy, cpm, monetyzacja, budowanie aplikacji',
 }
 
 export default function RootLayout({
@@ -20,11 +20,11 @@ export default function RootLayout({
   return (
     <html lang="pl" className="dark" translate="yes">
       <head>
-        <title>Budowanie aplikacji | FelizTrade - Platforma Sprzedaży Oprogramowań WWW</title>
+        <title>Budowanie aplikacji | FelizTrade - Platforma Sprzedaży Oprogramowań</title>
         <meta name="description" content="Budowanie aplikacji - Profesjonalna platforma do sprzedaży oprogramowań WWW z automatycznym systemem demo" />
-        <meta name="keywords" content="budowanie aplikacji, oprogramowanie, aplikacje web, sprzedaż, demo, proxy" />
+        <meta name="keywords" content="budowanie aplikacji, oprogramowanie, aplikacje web, sprzedaż, demo, sklep internetowy, cpm, monetyzacja" />
         <meta property="og:title" content="Budowanie aplikacji | FelizTrade" />
-        <meta property="og:description" content="Budowanie aplikacji - Profesjonalna platforma do sprzedaży oprogramowań WWW z automatycznym systemem demo" />
+        <meta property="og:description" content="Budowanie aplikacji - Profesjonalna platforma do sprzedaży oprogramowań z automatycznym systemem demo" />
         <meta property="og:type" content="website" />
         <meta property="og:locale" content="pl_PL" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -33,7 +33,7 @@ export default function RootLayout({
       <body className={inter.className} translate="yes">
         <Toaster position="top-right" />
         <LanguageProvider>
-          {children}
+        {children}
         </LanguageProvider>
       </body>
     </html>

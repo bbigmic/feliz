@@ -43,6 +43,7 @@ model Software {
   description   String
   price         Int
   categories    String          @default("[]")
+  categoriesEn  String?
   demoUrl       String
   features      String
   rating        Float

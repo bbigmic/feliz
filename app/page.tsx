@@ -209,7 +209,11 @@ export default function Home() {
   // Kategorie wyliczane dynamicznie na podstawie danych z API
   const allCategories = softwares.flatMap(item => {
     try {
-      return JSON.parse(item.categories || '[]')
+      // Użyj angielskich kategorii gdy język jest angielski
+      const categories = language === 'en' && item.categoriesEn 
+        ? JSON.parse(item.categoriesEn || '[]')
+        : JSON.parse(item.categories || '[]')
+      return categories
     } catch {
       return []
     }
@@ -225,7 +229,10 @@ export default function Home() {
       const categoryMatch = selectedCategory === 'all' || 
         (() => {
           try {
-            const itemCategories = JSON.parse(item.categories || '[]')
+            // Użyj angielskich kategorii gdy język jest angielski
+            const itemCategories = language === 'en' && item.categoriesEn 
+              ? JSON.parse(item.categoriesEn || '[]')
+              : JSON.parse(item.categories || '[]')
             return itemCategories.includes(selectedCategory)
           } catch {
             return false
@@ -454,56 +461,110 @@ export default function Home() {
           )}
         </main>
         {/* Sekcja cennika komponentów funkcjonalnych */}
-        <section id="pricing" className="container mx-auto px-4 py-12">
-          <h2 className="text-3xl font-bold mb-6 text-center">{t('pricing.title')}</h2>
-          {/* Desktop table */}
-          <div className="overflow-x-auto hidden md:block">
-            <table className="w-full bg-darkpanel rounded-lg shadow-lg">
-              <thead>
-                <tr className="border-b border-gray-800">
-                  <th className="py-3 px-4 text-left font-semibold text-darksubtle">{t('pricing.component')}</th>
-                  <th className="py-3 px-4 text-left font-semibold text-darksubtle">{t('pricing.cost')}</th>
-                  <th className="py-3 px-4 text-left font-semibold text-darksubtle">{t('pricing.notes')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {components.map((item) => (
-                  <tr key={item.id} className="border-b border-gray-900 hover:bg-darkbg/60">
-                    <td className="py-3 px-4">{language === 'en' && item.nameEn ? item.nameEn : item.name}</td>
-                    <td className="py-3 px-4" translate="no">{formatPrice(item.priceFrom, language)} – {formatPrice(item.priceTo, language)}</td>
-                    <td className="py-3 px-4">{language === 'en' && item.notesEn ? item.notesEn : item.notes}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <section id="pricing" className="container mx-auto px-4 py-16">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary-400 to-primary-600 bg-clip-text text-transparent">
+              {t('pricing.title')}
+            </h2>
+            <p className="text-lg text-darksubtle max-w-2xl mx-auto">
+              {language === 'en' 
+                ? 'Transparent pricing for functional components. Choose what you need and get a custom quote.'
+                : 'Przejrzyste ceny komponentów funkcjonalnych. Wybierz to, czego potrzebujesz i otrzymaj indywidualną wycenę.'
+              }
+            </p>
           </div>
+          
+          {/* Desktop table */}
+          <div className="hidden md:block">
+            <div className="bg-darkpanel rounded-2xl shadow-2xl border border-gray-800 overflow-hidden">
+              <div className="bg-gradient-to-r from-primary-600/20 to-primary-800/20 px-6 py-4 border-b border-gray-800">
+                <h3 className="text-xl font-semibold text-white">
+                  {language === 'en' ? 'Component Pricing' : 'Cennik komponentów'}
+                </h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-gray-800 bg-darkbg/50">
+                      <th className="py-4 px-6 text-left font-semibold text-darksubtle">
+                        {t('pricing.component')}
+                      </th>
+                      <th className="py-4 px-6 text-left font-semibold text-darksubtle">
+                        {t('pricing.cost')}
+                      </th>
+                      <th className="py-4 px-6 text-left font-semibold text-darksubtle">
+                        {t('pricing.notes')}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {components.map((item, index) => (
+                      <tr key={item.id} className={`border-b border-gray-900/50 hover:bg-primary-600/10 transition-colors duration-200 ${
+                        index % 2 === 0 ? 'bg-darkbg/30' : 'bg-darkbg/10'
+                      }`}>
+                        <td className="py-4 px-6">
+                          <div className="font-semibold text-white">
+                            {language === 'en' && item.nameEn ? item.nameEn : item.name}
+                          </div>
+                        </td>
+                        <td className="py-4 px-6">
+                          <div className="text-primary-400 text-sm" translate="no">
+                            {formatPrice(item.priceFrom, language)} – {formatPrice(item.priceTo, language)}
+                          </div>
+                        </td>
+                        <td className="py-4 px-6">
+                          <div className="text-white text-sm leading-relaxed font-medium">
+                            {language === 'en' && item.notesEn ? item.notesEn : item.notes}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          
           {/* Mobile cards */}
-          <div className="flex flex-col gap-4 md:hidden">
+          <div className="grid grid-cols-1 gap-4 md:hidden">
             {components.map((item) => (
-              <div key={item.id} className="bg-darkpanel rounded-xl shadow-lg p-4 border border-gray-800">
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-lg text-white" translate="yes">{item.name}</span>
-                    <span className="text-primary-400 font-bold text-base text-right block min-w-[110px]" translate="no">{formatPrice(item.priceFrom, language)} – {formatPrice(item.priceTo, language)}</span>
-                  </div>
-                  {item.notes && (
-                    <div className="text-darksubtle text-sm mt-1" translate="yes">{item.notes}</div>
-                  )}
+              <div
+                key={item.id}
+                className="bg-darkpanel rounded-lg shadow-lg border border-gray-800 p-4"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-white text-base">
+                    {language === 'en' && item.nameEn ? item.nameEn : item.name}
+                  </h3>
+                  <span className="text-primary-400 font-medium text-sm" translate="no">
+                    {formatPrice(item.priceFrom, language)} – {formatPrice(item.priceTo, language)}
+                  </span>
                 </div>
+                {item.notes && (
+                  <div className="text-gray-300 text-sm leading-relaxed">
+                    {language === 'en' && item.notesEn ? item.notesEn : item.notes}
+                  </div>
+                )}
               </div>
             ))}
           </div>
+          
+
         </section>
         {/* Sekcja CTA Zamów własną aplikację */}
         <section id="cta-section" className="container mx-auto px-4 py-12 mb-12 flex flex-col items-center">
-          <h2 className="text-3xl font-bold mb-4 text-center">{t('cta.title')}</h2>
-          <p className="text-lg text-darksubtle mb-6 text-center max-w-2xl">{t('cta.description')}</p>
-          <button
-            className="btn-primary text-lg px-8 py-4 rounded-full shadow-lg hover:scale-105 transition-transform"
-            onClick={() => { setOrderProduct(null); setOrderModalOpen(true) }}
-          >
-            {t('cta.button')}
-          </button>
+          <div className="bg-gradient-to-r from-primary-600/10 to-primary-800/10 rounded-2xl p-8 border border-primary-600/20 w-full max-w-4xl">
+            <h2 className="text-3xl font-bold mb-4 text-center">{t('cta.title')}</h2>
+            <p className="text-lg text-darksubtle mb-6 text-center max-w-2xl mx-auto">{t('cta.description')}</p>
+            <div className="text-center">
+              <button
+                className="btn-primary text-lg px-8 py-4 rounded-full shadow-lg hover:scale-105 transition-transform"
+                onClick={() => { setOrderProduct(null); setOrderModalOpen(true) }}
+              >
+                {t('cta.button')}
+              </button>
+            </div>
+          </div>
         </section>
         <Footer />
       </div>

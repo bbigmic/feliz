@@ -17,6 +17,7 @@ interface Software {
   descriptionEn?: string
   price: number
   categories?: string[] | string
+  categoriesEn?: string[] | string
   demoUrl: string
   image: string
   features: string[]
@@ -75,14 +76,14 @@ export default function SoftwareCard({ software, onOrderClick, onGalleryClick }:
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       whileHover={{ y: -5 }}
-      onClick={openGallery} // Cała karta otwiera galerię
+      // Usunięto onClick={openGallery} - galeria nie otwiera się po kliknięciu w całą kartę
     >
       {/* Image */}
-      <div className="relative mb-4">
+      <div className="relative mb-4" onClick={openGallery}>
         <img
           src={imageSrc}
           alt={software.name}
-          className="w-full h-48 object-cover rounded-lg"
+          className="w-full h-48 object-cover rounded-lg cursor-pointer"
         />
         <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all duration-300 rounded-lg flex items-center justify-center">
           {isHovered && (
@@ -112,7 +113,10 @@ export default function SoftwareCard({ software, onOrderClick, onGalleryClick }:
           )}
         </div>
         <div className="absolute top-2 right-2 flex flex-wrap gap-1">
-          {(Array.isArray(software.categories) ? software.categories : JSON.parse(software.categories || '[]')).map((cat: string, idx: number) => (
+          {(language === 'en' && software.categoriesEn 
+            ? (Array.isArray(software.categoriesEn) ? software.categoriesEn : JSON.parse(software.categoriesEn || '[]'))
+            : (Array.isArray(software.categories) ? software.categories : JSON.parse(software.categories || '[]')))
+            .map((cat: string, idx: number) => (
             <span key={cat} className="bg-primary-600 text-white px-2 py-1 rounded-full text-xs font-medium mr-1" translate="yes">
               {cat}
             </span>
@@ -157,18 +161,18 @@ export default function SoftwareCard({ software, onOrderClick, onGalleryClick }:
         <div className="flex items-center justify-between pt-3 border-t border-gray-700">
           <div>
             <span className="text-base text-darksubtle block leading-tight">{t('softwareCard.from')}</span>
-            <span className="text-2xl font-bold text-white block leading-tight" translate="no">
+            <span className="text-xl font-bold text-white block leading-tight" translate="no">
               {formatPrice(software.price, language)}
             </span>
           </div>
           <div className="flex space-x-2">
-            {/* <button
+            <button
               onClick={handleDemoClick}
               className="btn-secondary flex items-center space-x-1"
             >
               <Eye className="w-4 h-4" />
               <span>Zobacz</span>
-            </button> */}
+            </button>
             <button
               onClick={handleBuyClick}
               className="btn-primary flex items-center space-x-1"
