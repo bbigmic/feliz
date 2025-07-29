@@ -98,20 +98,23 @@ export default function Header() {
             <LanguageSwitcher />
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden p-2 text-darktext"
-            aria-label={isMenuOpen ? t('header.closeMenu') : t('header.openMenu')}
-            aria-expanded={isMenuOpen}
-            aria-controls="mobile-menu"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? (
-              <X className="w-6 h-6" />
-            ) : (
-              <Menu className="w-6 h-6" />
-            )}
-          </button>
+          {/* Mobile Actions */}
+          <div className="md:hidden flex items-center space-x-2">
+            <LanguageSwitcher />
+            <button
+              className="p-2 text-darktext"
+              aria-label={isMenuOpen ? t('header.closeMenu') : t('header.openMenu')}
+              aria-expanded={isMenuOpen}
+              aria-controls="mobile-menu"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              {isMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Menu */}
@@ -137,11 +140,6 @@ export default function Header() {
               <a href="#cta-section" className="text-lg font-semibold text-darktext rounded-xl px-4 py-3 hover:bg-primary-600/20 hover:text-primary-300 transition-all duration-150 active:bg-primary-700/30" onClick={e => { setIsMenuOpen(false); setTimeout(() => handleNavScroll('cta-section')(e), 200); }}>
                 {t('header.contact')}
               </a>
-              <div className="pt-4 border-t border-gray-800">
-                <div className="flex justify-center mb-4">
-                  <LanguageSwitcher />
-                </div>
-              </div>
               <div className="pt-2 border-t border-gray-800">
                   {/* <button className="flex items-center space-x-2 text-darktext hover:text-primary-300 transition-colors mb-2">
                     <ShoppingCart className="w-5 h-5" />
