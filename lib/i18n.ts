@@ -122,7 +122,7 @@ export const translations: Record<Language, Translations> = {
       login: 'Zaloguj się'
     },
     footer: {
-      description: 'Profesjonalna platforma sprzedaży oprogramowań WWW. Oferujemy gotowe rozwiązania webowe oraz dostosowane do Twoich potrzeb.',
+      description: 'Profesjonalna platforma sprzedaży oprogramowań WWW i mobilnych. Oferujemy gotowe rozwiązania webowe oraz dostosowane do Twoich potrzeb.',
       quickLinks: 'Szybkie linki',
       contact: 'Kontakt',
       allRightsReserved: 'Wszystkie prawa zastrzeżone.'
@@ -206,7 +206,7 @@ export const translations: Record<Language, Translations> = {
       login: 'Login'
     },
     footer: {
-      description: 'Professional web software sales platform. We offer ready-made web solutions tailored to your needs.',
+      description: 'Professional web and mobile software sales platform. We offer ready-made web and mobile solutions tailored to your needs.',
       quickLinks: 'Quick Links',
       contact: 'Contact',
       allRightsReserved: 'All rights reserved.'
