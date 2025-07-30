@@ -171,7 +171,7 @@ export default function SoftwareCard({ software, onOrderClick, onGalleryClick }:
               className="btn-secondary flex items-center space-x-1"
             >
               <Eye className="w-4 h-4" />
-              <span>Zobacz</span>
+              <span>{t('softwareCard.view')}</span>
             </button>
             <button
               onClick={handleBuyClick}

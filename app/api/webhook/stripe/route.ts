@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import Stripe from 'stripe'
+import { getTranslation } from '@/lib/i18n'
 
 const prisma = new PrismaClient()
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2023-10-16' })
@@ -10,7 +11,7 @@ export async function POST(request: NextRequest) {
   const signature = request.headers.get('stripe-signature')
 
   if (!signature) {
-    return NextResponse.json({ error: 'Brak podpisu' }, { status: 400 })
+    return NextResponse.json({ error: getTranslation('pl', 'api.missingSignature') }, { status: 400 })
   }
 
   let event: Stripe.Event
@@ -19,7 +20,7 @@ export async function POST(request: NextRequest) {
     event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET!)
   } catch (err) {
     console.error('Webhook signature verification failed:', err)
-    return NextResponse.json({ error: 'Nieprawidłowy podpis' }, { status: 400 })
+    return NextResponse.json({ error: getTranslation('pl', 'api.invalidSignature') }, { status: 400 })
   }
 
   try {
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest) {
             where: { id: parseInt(orderId) },
             data: { status: 'paid' }
           })
-          console.log(`Zamówienie ${orderId} zostało opłacone`)
+          console.log(getTranslation('pl', 'api.orderPaid').replace('{orderId}', orderId))
           
           // Jeśli to demo i mamy productId, zwiększ licznik sprzedaży
           if (orderType === 'demo' && productId) {
@@ -49,9 +50,9 @@ export async function POST(request: NextRequest) {
                   }
                 }
               })
-              console.log(`Zwiększono licznik sprzedaży dla oprogramowania ${productId}`)
+              console.log(getTranslation('pl', 'api.salesIncremented').replace('{productId}', productId))
             } catch (err) {
-              console.error('Błąd podczas zwiększania licznika sprzedaży:', err)
+              console.error(getTranslation('pl', 'api.salesError'), err)
             }
           }
         }
@@ -66,18 +67,18 @@ export async function POST(request: NextRequest) {
             where: { id: parseInt(expiredOrderId) },
             data: { status: 'expired' }
           })
-          console.log(`Zamówienie ${expiredOrderId} wygasło`)
+          console.log(getTranslation('pl', 'api.orderExpired').replace('{orderId}', expiredOrderId))
         }
         break
 
       default:
-        console.log(`Nieobsługiwany typ eventu: ${event.type}`)
+        console.log(getTranslation('pl', 'api.unhandledEvent').replace('{eventType}', event.type))
     }
 
     return NextResponse.json({ received: true })
   } catch (err) {
-    console.error('Błąd podczas przetwarzania webhook:', err)
-    return NextResponse.json({ error: 'Błąd serwera' }, { status: 500 })
+    console.error(getTranslation('pl', 'api.webhookError'), err)
+    return NextResponse.json({ error: getTranslation('pl', 'api.serverError') }, { status: 500 })
   } finally {
     await prisma.$disconnect()
   }

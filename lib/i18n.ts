@@ -60,6 +60,41 @@ export interface Translations {
     backToHome: string
   }
   
+  // Stripe checkout translations
+  stripe: {
+    consultationTitle: string
+    consultationDescription: string
+    demoTitle: string
+    demoDescription: string
+  }
+  
+  // Email translations
+  email: {
+    consultationSubject: string
+    demoSubject: string
+    consultationBody: string
+    demoBody: string
+    loggedInUser: string
+    orderId: string
+    software: string
+    demoPrice: string
+  }
+  
+  // API error messages
+  api: {
+    missingData: string
+    softwareNotFound: string
+    serverError: string
+    missingSignature: string
+    invalidSignature: string
+    orderPaid: string
+    salesIncremented: string
+    salesError: string
+    orderExpired: string
+    unhandledEvent: string
+    webhookError: string
+  }
+  
   // Filters
   filters: {
     searchPlaceholder: string
@@ -75,6 +110,7 @@ export interface Translations {
     order: string
     from: string
     id: string
+    view: string
   }
   
   // Loading and errors
@@ -138,7 +174,8 @@ export const translations: Record<Language, Translations> = {
     softwareCard: {
       order: 'Zamów',
       from: 'od',
-      id: 'ID'
+      id: 'ID',
+      view: 'Zobacz'
     },
     common: {
       loading: 'Ładowanie oprogramowań...',
@@ -183,6 +220,35 @@ export const translations: Record<Language, Translations> = {
       demoDescription: 'Skontaktujemy się z Tobą pod wskazany numer telefonu, aby ustalić szczegóły i uruchomić demo.',
       loading: 'Ładowanie...',
       backToHome: 'Wróć na stronę główną'
+    },
+    stripe: {
+      consultationTitle: 'Konsultacja/Wycena',
+      consultationDescription: 'Zamówienie konsultacji lub wyceny FelizTrade',
+      demoTitle: 'Zaliczka za demo',
+      demoDescription: 'Zaliczka za demo: {softwareName}'
+    },
+    email: {
+      consultationSubject: 'Nowa wycena/konsultacja',
+      demoSubject: 'Nowe zamówienie demo',
+      consultationBody: 'Nowe zamówienie (wycena/konsultacja):',
+      demoBody: 'Nowe zamówienie (demo):',
+      loggedInUser: 'zalogowany użytkownik',
+      orderId: 'ID zamówienia',
+      software: 'Oprogramowanie',
+      demoPrice: 'Zaliczka za demo'
+    },
+    api: {
+      missingData: 'Brak wymaganych danych.',
+      softwareNotFound: 'Nie znaleziono oprogramowania.',
+      serverError: 'Błąd serwera.',
+      missingSignature: 'Brak podpisu',
+      invalidSignature: 'Nieprawidłowy podpis',
+      orderPaid: 'Zamówienie {orderId} zostało opłacone',
+      salesIncremented: 'Zwiększono licznik sprzedaży dla oprogramowania {productId}',
+      salesError: 'Błąd podczas zwiększania licznika sprzedaży:',
+      orderExpired: 'Zamówienie {orderId} wygasło',
+      unhandledEvent: 'Nieobsługiwany typ eventu: {eventType}',
+      webhookError: 'Błąd podczas przetwarzania webhook:'
     }
   },
   en: {
@@ -222,7 +288,8 @@ export const translations: Record<Language, Translations> = {
     softwareCard: {
       order: 'Order',
       from: 'from',
-      id: 'ID'
+      id: 'ID',
+      view: 'View'
     },
     common: {
       loading: 'Loading software...',
@@ -267,6 +334,35 @@ export const translations: Record<Language, Translations> = {
       demoDescription: 'We will contact you at the provided phone number to arrange details and launch the demo.',
       loading: 'Loading...',
       backToHome: 'Back to homepage'
+    },
+    stripe: {
+      consultationTitle: 'Consultation/Quote',
+      consultationDescription: 'FelizTrade consultation or quote order',
+      demoTitle: 'Demo prepayment',
+      demoDescription: 'Demo prepayment: {softwareName}'
+    },
+    email: {
+      consultationSubject: 'New quote/consultation',
+      demoSubject: 'New demo order',
+      consultationBody: 'New order (quote/consultation):',
+      demoBody: 'New order (demo):',
+      loggedInUser: 'logged in user',
+      orderId: 'Order ID',
+      software: 'Software',
+      demoPrice: 'Demo prepayment'
+    },
+    api: {
+      missingData: 'Missing required data.',
+      softwareNotFound: 'Software not found.',
+      serverError: 'Server error.',
+      missingSignature: 'Missing signature',
+      invalidSignature: 'Invalid signature',
+      orderPaid: 'Order {orderId} has been paid',
+      salesIncremented: 'Sales counter incremented for software {productId}',
+      salesError: 'Error while incrementing sales counter:',
+      orderExpired: 'Order {orderId} has expired',
+      unhandledEvent: 'Unhandled event type: {eventType}',
+      webhookError: 'Error while processing webhook:'
     }
   }
 }
