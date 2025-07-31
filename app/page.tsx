@@ -20,105 +20,6 @@ import Preloader from '@/components/Preloader'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { formatPrice } from '@/lib/i18n'
 
-// Przykładowe dane oprogramowań
-// const softwareData = [
-//     {
-//         id: 1,
-//         name: 'Platforma E-commerce',
-//         description: 'Kompletna platforma e-commerce z systemem płatności i panelem zarządzania użytkownikami i analizą',
-//         price: 8999,
-//         category: 'E-commerce',
-//         demoUrl: 'https://youngcoco.pl/',
-//         image: 'ecom.png',
-//         features: ['Responsywny design', 'System płatności', 'Panel admin', 'SEO friendly'],
-//         rating: 4.8,
-//         sales: 45
-//       },
-//     //   {
-//     //     id: 2,
-//     //     name: 'CRM System',
-//     //     description: 'System zarządzania relacjami z klientami z zaawansowanymi funkcjami',
-//     //     price: 1999,
-//     //     category: 'Business',
-//     //     demoUrl: 'https://example-crm.com',
-//     //     image: 'crm.png',
-//     //     features: ['Zarządzanie klientami', 'Analytics', 'Integracje', 'Mobile app'],
-//     //     rating: 4.9,
-//     //     sales: 32
-//     //   },
-//     //   {
-//     //     id: 3,
-//     //     name: 'Blog Platform',
-//     //     description: 'Nowoczesna platforma blogowa z systemem CMS i SEO',
-//     //     price: 899,
-//     //     category: 'Content',
-//     //     demoUrl: 'https://example-blog.com',
-//     //     image: 'blog.png',
-//     //     features: ['CMS', 'SEO tools', 'Social sharing', 'Analytics'],
-//     //     rating: 4.7,
-//     //     sales: 67
-//     //   },
-//       {
-//         id: 2,
-//         name: 'Zarządzanie restauracją',
-//         description: 'System zarządzania restauracją z zamówieniami online',
-//         price: 8999,
-//         category: 'Jedzenie',
-//         demoUrl: 'https://piecyk.vercel.app',
-//         image: 'restaurant.png',
-//         features: ['Zamawianie online', 'Zarządzanie menu', 'Śledzenie postepu zamówienia', 'Zamawianie online'],
-//         rating: 4.6,
-//         sales: 28
-//       },
-//       {
-//         id: 3,
-//         name: 'Portal Nieruchomości',
-//         description: 'Profesjonalna strona internetowa dla biura nieruchomości',
-//         price: 2499,
-//         category: 'Nieruchomości',
-//         demoUrl: 'https://grupaborys.com',
-//         image: 'realestate.png',
-//         features: ['Lista nieruchomości', 'Formularz kontaktowy', 'O firmie'],
-//         rating: 4.8,
-//         sales: 19
-//       },
-//       {
-//         id: 4,
-//         name: 'Platforma Learningowa',
-//         description: 'Platforma e-learningowa z kursami online i zarządzaniem ofertą edukacyjną',
-//         price: 11999,
-//         category: 'Edukacja',
-//         demoUrl: 'https://trawersadr.pl/',
-//         image: 'education.png',
-//         features: ['Kursy i szkolenia', 'Testy dla studentów', 'Transfer dokumentów', 'Certyfikaty'],
-//         rating: 4.9,
-//         sales: 41
-//       },
-//       {
-//         id: 5,
-//         name: 'Landing page usług Twojej firmy',
-//         description: 'Strona lądowania z ofertą usług',
-//         price: 7999,
-//         category: 'Usługi', 
-//         demoUrl: 'https://www.grupaautospectrum.com/',
-//         image: 'services.png',
-//         features: ['Responsywny design', 'Oferta z cennikiem', 'Kontakt', 'Integracja social media'],
-//         rating: 4.9,
-//         sales: 41
-//       },
-//       {
-//         id: 6,
-//         name: 'Aplikacja SaaS (Software as a Service)',
-//         description: 'Apliakcja do generowanie QR kodów do wystawiania opinii w Google Twojej firmie',
-//         price: 9999,
-//         category: 'SaaS', 
-//         demoUrl: 'https://www.qropinie.pl/',
-//         image: 'SaaS.png',
-//         features: ['Generowanie QR kodu', 'API Google', 'Panel analityczny', 'Program afiliacyjny'],
-//         rating: 4.9,
-//         sales: 41
-//       }
-// ]
 
 const VIDEO_FADE_DURATION = 0 // sekundy
 
@@ -419,7 +320,7 @@ export default function Home() {
               <polyline points="19 12 12 19 5 12"></polyline>
             </svg>
           </motion.div>
-          <span className="mt-2 text-primary-500 text-sm font-medium animate-pulse">{t('hero.scrollDown')}</span>
+          <span className="mt-2 mb-12 text-primary-500 text-sm font-medium animate-pulse">{t('hero.scrollDown')}</span>
         </div>
       </div>
       <div className="relative z-20" id="main-content">
