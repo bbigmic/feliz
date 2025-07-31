@@ -64,8 +64,8 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
-      <div className="bg-darkpanel rounded-xl shadow-lg p-8 w-full max-w-sm relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 p-4">
+      <div className="bg-darkpanel rounded-xl shadow-lg p-8 w-full max-w-sm relative max-h-[90vh] overflow-y-auto">
         <button
           className="absolute top-3 right-3 text-gray-400 hover:text-white"
           onClick={onClose}
