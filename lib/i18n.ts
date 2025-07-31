@@ -50,6 +50,8 @@ export interface Translations {
     or: string
     callUs: string
     phoneNumber: string
+    loadingSoftware: string
+    softwareNotFound: string
   }
   orderSuccess: {
     consultationTitle: string
@@ -93,6 +95,11 @@ export interface Translations {
     orderExpired: string
     unhandledEvent: string
     webhookError: string
+  }
+  
+  // Preloader
+  preloader: {
+    loading: string
   }
   
   // Filters
@@ -211,7 +218,9 @@ export const translations: Record<Language, Translations> = {
       submitButtonLoading: '...',
       or: 'lub',
       callUs: 'Zadzwoń na',
-      phoneNumber: '+48 502 600 739'
+      phoneNumber: '+48 502 600 739',
+      loadingSoftware: 'Ładowanie informacji o oprogramowaniu...',
+      softwareNotFound: 'Nie znaleziono oprogramowania'
     },
     orderSuccess: {
       consultationTitle: 'Dziękujemy za zamówienie wyceny/konsultacji!',
@@ -249,6 +258,9 @@ export const translations: Record<Language, Translations> = {
       orderExpired: 'Zamówienie {orderId} wygasło',
       unhandledEvent: 'Nieobsługiwany typ eventu: {eventType}',
       webhookError: 'Błąd podczas przetwarzania webhook:'
+    },
+    preloader: {
+      loading: 'Ładowanie...'
     }
   },
   en: {
@@ -325,7 +337,9 @@ export const translations: Record<Language, Translations> = {
       submitButtonLoading: '...',
       or: 'or',
       callUs: 'Call us at',
-      phoneNumber: '+48 502 600 739'
+      phoneNumber: '+48 502 600 739',
+      loadingSoftware: 'Loading software information...',
+      softwareNotFound: 'Software not found'
     },
     orderSuccess: {
       consultationTitle: 'Thank you for ordering a quote/consultation!',
@@ -363,6 +377,9 @@ export const translations: Record<Language, Translations> = {
       orderExpired: 'Order {orderId} has expired',
       unhandledEvent: 'Unhandled event type: {eventType}',
       webhookError: 'Error while processing webhook:'
+    },
+    preloader: {
+      loading: 'Loading...'
     }
   }
 }

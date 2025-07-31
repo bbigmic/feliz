@@ -16,6 +16,7 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import OrderModal from '@/components/OrderModal'
 import SoftwareGalleryModal from '@/components/SoftwareGalleryModal'
+import Preloader from '@/components/Preloader'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { formatPrice } from '@/lib/i18n'
 
@@ -131,6 +132,8 @@ export default function Home() {
   const [user, setUser] = useState<{ email: string, id?: number } | null>(null)
   const [galleryOpen, setGalleryOpen] = useState(false)
   const [galleryImages, setGalleryImages] = useState<{ url: string }[]>([])
+  const [isVideoLoaded, setIsVideoLoaded] = useState(false)
+  const [isPageReady, setIsPageReady] = useState(false)
 
   // Stan na komponenty funkcjonalne
   type ComponentType = { id: number; name: string; nameEn?: string; priceFrom: number; priceTo: number; notes: string; notesEn?: string };
@@ -206,6 +209,47 @@ export default function Home() {
       })
   }, [])
 
+  // Sprawdź czy wideo jest gotowe do odtwarzania
+  useEffect(() => {
+    const handleVideoCanPlay = () => {
+      setIsVideoLoaded(true)
+    }
+
+    const video = videoRefs[0].current
+    if (video) {
+      // Sprawdź czy wideo jest już gotowe
+      if (video.readyState >= 3) { // HAVE_FUTURE_DATA
+        setIsVideoLoaded(true)
+      } else {
+        video.addEventListener('canplay', handleVideoCanPlay)
+        return () => video.removeEventListener('canplay', handleVideoCanPlay)
+      }
+    }
+  }, [])
+
+  // Sprawdź czy strona jest gotowa do wyświetlenia
+  useEffect(() => {
+    if (isVideoLoaded && !loading) {
+      // Dodaj małe opóźnienie dla płynnego przejścia
+      const timer = setTimeout(() => {
+        setIsPageReady(true)
+      }, 500)
+      return () => clearTimeout(timer)
+    }
+  }, [isVideoLoaded, loading])
+
+  // Uruchom wideo gdy strona jest gotowa
+  useEffect(() => {
+    if (isPageReady) {
+      const video = videoRefs[0].current
+      if (video && video.paused) {
+        video.play().catch(err => {
+          console.error('Błąd odtwarzania wideo:', err)
+        })
+      }
+    }
+  }, [isPageReady])
+
   // Kategorie wyliczane dynamicznie na podstawie danych z API
   const allCategories = softwares.flatMap(item => {
     try {
@@ -271,8 +315,10 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen relative">
-      <Header />
+    <>
+      <Preloader isLoading={!isPageReady} />
+      <div className="min-h-screen relative">
+        <Header />
       {/* WIDEO W TLE + HERO */}
       <div className="relative w-full h-[100vh] overflow-hidden">
         {/* Crossfade video */}
@@ -280,7 +326,7 @@ export default function Home() {
           <video
             key={idx}
             ref={videoRefs[idx]}
-            autoPlay
+            autoPlay={isPageReady}
             loop={false}
             muted
             playsInline
@@ -582,5 +628,6 @@ export default function Home() {
         images={galleryImages}
       />
     </div>
+    </>
   )
 } 

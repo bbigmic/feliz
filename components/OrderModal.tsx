@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { motion } from "framer-motion"
 import toast from "react-hot-toast"
 import { useLanguage } from "@/contexts/LanguageContext"
 import { formatPrice } from "@/lib/i18n"
@@ -19,6 +20,7 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
   const [phone, setPhone] = useState("")
   const [info, setInfo] = useState("")
   const [loading, setLoading] = useState(false)
+  const [softwareLoading, setSoftwareLoading] = useState(false)
   const [termsAccepted, setTermsAccepted] = useState(false)
   const [marketingAccepted, setMarketingAccepted] = useState(false)
   const [demoConsentAccepted, setDemoConsentAccepted] = useState(false)
@@ -34,6 +36,7 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
     if (productId) {
       // Resetuj software gdy zmienia się productId
       setSoftware(null)
+      setSoftwareLoading(true)
       
       fetch(`/api/admin/softwares`)
         .then(res => res.json())
@@ -46,9 +49,13 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
         .catch(err => {
           console.error('Błąd pobierania danych oprogramowania:', err)
         })
+        .finally(() => {
+          setSoftwareLoading(false)
+        })
     } else {
       // Resetuj software gdy nie ma productId (konsultacja)
       setSoftware(null)
+      setSoftwareLoading(false)
     }
   }, [productId])
 
@@ -161,18 +168,44 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
           {isConsultation ? t('orderModal.consultationTitle') : t('orderModal.demoTitle')}
         </h2>
         
-        {!isConsultation && software && (
+        {!isConsultation && (
           <div className="mb-4 p-4 bg-darkbg rounded-lg border border-gray-700">
-            <h3 className="font-semibold text-white mb-2">
-              {language === 'en' && software.nameEn ? software.nameEn : software.name}
-            </h3>
-            <div className="text-sm text-gray-300 mb-2">
-              {language === 'en' && software.descriptionEn ? software.descriptionEn : software.description}
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-darksubtle text-sm">{t('orderModal.demoPrice')}</span>
-              <span className="text-xl font-bold text-primary-400">{formatPrice(demoPrice, language)}</span>
-            </div>
+            {softwareLoading ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex flex-col items-center justify-center py-8"
+              >
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full mb-4"
+                />
+                <p className="text-gray-400 text-sm">{t('orderModal.loadingSoftware')}</p>
+              </motion.div>
+            ) : software ? (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <h3 className="font-semibold text-white mb-2">
+                  {language === 'en' && software.nameEn ? software.nameEn : software.name}
+                </h3>
+                <div className="text-sm text-gray-300 mb-2">
+                  {language === 'en' && software.descriptionEn ? software.descriptionEn : software.description}
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-darksubtle text-sm">{t('orderModal.demoPrice')}</span>
+                  <span className="text-xl font-bold text-primary-400">{formatPrice(demoPrice, language)}</span>
+                </div>
+              </motion.div>
+            ) : (
+              <div className="text-red-400 text-sm text-center py-4">
+                {t('orderModal.softwareNotFound')}
+              </div>
+            )}
           </div>
         )}
         
