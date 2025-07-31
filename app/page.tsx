@@ -130,12 +130,30 @@ export default function Home() {
 
   // Sprawdź czy strona jest gotowa do wyświetlenia
   useEffect(() => {
-    if (isVideoLoaded && !loading) {
-      // Dodaj małe opóźnienie dla płynnego przejścia
-      const timer = setTimeout(() => {
-        setIsPageReady(true)
-      }, 500)
-      return () => clearTimeout(timer)
+    // Limit 3 sekund dla preloadera
+    const maxLoadingTime = 3000 // 3 sekundy
+    
+    const checkIfReady = () => {
+      if (isVideoLoaded && !loading) {
+        // Dodaj małe opóźnienie dla płynnego przejścia
+        const timer = setTimeout(() => {
+          setIsPageReady(true)
+        }, 500)
+        return () => clearTimeout(timer)
+      }
+    }
+    
+    // Sprawdź czy już gotowe
+    const readyCheck = checkIfReady()
+    if (readyCheck) return readyCheck
+    
+    // Ustaw limit czasowy - preloader zniknie po 3 sekundach maksymalnie
+    const maxTimer = setTimeout(() => {
+      setIsPageReady(true)
+    }, maxLoadingTime)
+    
+    return () => {
+      clearTimeout(maxTimer)
     }
   }, [isVideoLoaded, loading])
 
