@@ -253,7 +253,7 @@ export default function Home() {
         {/* Warstwa przyciemniająca */}
         <div className="absolute top-0 left-0 w-full h-full z-10 bg-black bg-opacity-40 pointer-events-none" />
         {/* Hero content */}
-        <div className="relative z-20 flex flex-col justify-center items-center h-full px-4 pt-24 sm:px-8 sm:pt-0">
+        <div className="pb-8 relative z-20 flex flex-col justify-center items-center h-full px-4 pt-24 sm:px-8 sm:pt-0">
           {/* Hero Section */}
           <motion.section 
             initial="hidden"
@@ -320,7 +320,7 @@ export default function Home() {
               <polyline points="19 12 12 19 5 12"></polyline>
             </svg>
           </motion.div>
-          <span className="mt-2 mb-12 text-primary-500 text-sm font-medium animate-pulse">{t('hero.scrollDown')}</span>
+          <span className="mb-12 mt-2 text-primary-500 text-sm font-medium animate-pulse">{t('hero.scrollDown')}</span>
         </div>
       </div>
       <div className="relative z-20" id="main-content">
