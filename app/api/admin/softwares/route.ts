@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { translateToEnglish, translateCategoriesToEnglish } from '@/lib/translate'
 
 const prisma = new PrismaClient()
 
@@ -10,6 +11,15 @@ export async function POST(request: NextRequest) {
     if (!name || !description || !categories || !demoUrl) {
       return NextResponse.json({ error: 'Brak wymaganych danych.' }, { status: 400 })
     }
+
+    // Automatyczne tłumaczenie pól na angielski
+    const [nameEn, descriptionEn, featuresEn, categoriesEn] = await Promise.all([
+      translateToEnglish(name),
+      translateToEnglish(description),
+      translateToEnglish(features),
+      translateCategoriesToEnglish(categories)
+    ])
+
     // 1. Dodaj oprogramowanie
     const software = await prisma.software.create({
       data: {
@@ -22,6 +32,11 @@ export async function POST(request: NextRequest) {
         rating: Number(rating),
         sales: Number(sales),
         status,
+        // Dodaj tłumaczenia angielskie
+        nameEn,
+        descriptionEn,
+        featuresEn,
+        categoriesEn,
       }
     })
     // 2. Dodaj zdjęcia
@@ -96,6 +111,14 @@ export async function PATCH(request: NextRequest) {
     if (!id || !name || !description || !categories || !demoUrl || !features || rating === undefined || sales === undefined || !status || images === undefined || thumbnailIdx === undefined) {
       return NextResponse.json({ error: 'Brak wymaganych danych.', details: { id, name, description, price, categories, demoUrl, features, rating, sales, status, images, thumbnailIdx } }, { status: 400 })
     }
+
+    // Automatyczne tłumaczenie pól na angielski
+    const [nameEn, descriptionEn, featuresEn, categoriesEn] = await Promise.all([
+      translateToEnglish(name),
+      translateToEnglish(description),
+      translateToEnglish(features),
+      translateCategoriesToEnglish(categories)
+    ])
     
     // Usuń stare zdjęcia
     await prisma.softwareImage.deleteMany({ where: { softwareId: id } })
@@ -112,6 +135,11 @@ export async function PATCH(request: NextRequest) {
         rating: Number(rating),
         sales: Number(sales),
         status,
+        // Dodaj tłumaczenia angielskie
+        nameEn,
+        descriptionEn,
+        featuresEn,
+        categoriesEn,
       }
     })
     // Dodaj nowe zdjęcia

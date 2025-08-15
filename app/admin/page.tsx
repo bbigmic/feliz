@@ -849,28 +849,96 @@ export default function AdminPanel() {
             {loadingUsers ? (
               <div className="text-center py-12 text-lg text-darksubtle">Ładowanie danych...</div>
             ) : (
-              <table className="w-full text-left">
-                <thead>
-                  <tr>
-                    <th className="py-2">ID</th>
-                    <th className="py-2">Email</th>
-                    <th className="py-2">Data rejestracji</th>
-                    <th className="py-2">Zgoda na regulamin</th>
-                    <th className="py-2">Zgoda marketingowa</th>
-                  </tr>
-                </thead>
-                <tbody>
+              <>
+                {/* Mobile: karty */}
+                <div className="flex flex-col gap-4 sm:hidden">
                   {users.map(user => (
-                    <tr key={user.id} className="border-t border-gray-700">
-                      <td className="py-2">{user.id}</td>
-                      <td className="py-2">{user.email}</td>
-                      <td className="py-2">{new Date(user.createdAt).toLocaleString('pl-PL')}</td>
-                      <td className="py-2">{user.termsAccepted ? '✔️' : '❌'}</td>
-                      <td className="py-2">{user.marketingAccepted ? '✔️' : '❌'}</td>
-                    </tr>
+                    <div key={user.id} className="bg-darkbg rounded-xl shadow-lg p-4 border border-gray-800">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                            {user.email.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <p className="font-medium text-darktext">{user.email}</p>
+                            <p className="text-xs text-darksubtle">ID: {user.id}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs text-darksubtle">
+                            {new Date(user.createdAt).toLocaleDateString('pl-PL')}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div className="flex items-center gap-2">
+                          <span className="text-darksubtle">Regulamin:</span>
+                          <span className={user.termsAccepted ? 'text-green-400' : 'text-red-400'}>
+                            {user.termsAccepted ? '✔️' : '❌'}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-darksubtle">Marketing:</span>
+                          <span className={user.marketingAccepted ? 'text-green-400' : 'text-red-400'}>
+                            {user.marketingAccepted ? '✔️' : '❌'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   ))}
-                </tbody>
-              </table>
+                </div>
+                
+                {/* Desktop: tabela */}
+                <div className="hidden sm:block overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="border-b border-gray-700">
+                        <th className="py-3 px-4 font-medium text-darksubtle">ID</th>
+                        <th className="py-3 px-4 font-medium text-darksubtle">Email</th>
+                        <th className="py-3 px-4 font-medium text-darksubtle">Data rejestracji</th>
+                        <th className="py-3 px-4 font-medium text-darksubtle">Zgoda na regulamin</th>
+                        <th className="py-3 px-4 font-medium text-darksubtle">Zgoda marketingowa</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {users.map(user => (
+                        <tr key={user.id} className="border-t border-gray-700 hover:bg-darkbg/60">
+                          <td className="py-3 px-4 font-mono text-sm">{user.id}</td>
+                          <td className="py-3 px-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                                {user.email.charAt(0).toUpperCase()}
+                              </div>
+                              <span className="font-medium">{user.email}</span>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-sm text-darksubtle">
+                            {new Date(user.createdAt).toLocaleDateString('pl-PL')}
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              user.termsAccepted 
+                                ? 'bg-green-900 text-green-300 border border-green-800' 
+                                : 'bg-red-900 text-red-300 border border-red-800'
+                            }`}>
+                              {user.termsAccepted ? 'Zaakceptowano' : 'Brak'}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              user.marketingAccepted 
+                                ? 'bg-green-900 text-green-300 border border-green-800' 
+                                : 'bg-red-900 text-red-300 border border-red-800'
+                            }`}>
+                              {user.marketingAccepted ? 'Zaakceptowano' : 'Brak'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
           </motion.section>
         )}
@@ -885,30 +953,36 @@ export default function AdminPanel() {
             {loadingOrders ? (
               <div className="text-center py-12 text-lg text-darksubtle">Ładowanie danych...</div>
             ) : (
-              <table className="w-full text-left">
-                <thead>
-                  <tr>
-                    <th className="py-2">ID</th>
-                    <th className="py-2">Email</th>
-                    <th className="py-2">Typ</th>
-                    <th className="py-2">Produkt/Kategoria</th>
-                    <th className="py-2">Telefon</th>
-                    <th className="py-2">Status</th>
-                    <th className="py-2">Data</th>
-                    <th className="py-2">Zgoda na regulamin</th>
-                    <th className="py-2">Zgoda marketingowa</th>
-                    <th className="py-2">Zgoda na współpracę</th>
-                    <th className="py-2">Zgoda na kod</th>
-                    <th className="py-2">Akcje</th>
-                  </tr>
-                </thead>
-                <tbody>
+              <>
+                {/* Mobile: karty */}
+                <div className="flex flex-col gap-4 sm:hidden">
                   {orders.map(order => (
-                    <>
-                      <tr key={order.id} className="border-t border-gray-700">
-                        <td className="py-2">{order.id}</td>
-                        <td className="py-2">{order.email || order.user?.email || 'Brak'}</td>
-                        <td className="py-2">
+                    <div key={order.id} className="bg-darkbg rounded-xl shadow-lg p-4 border border-gray-800">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                            #{order.id}
+                          </div>
+                          <div>
+                            <p className="font-medium text-darktext">{order.email || order.user?.email || 'Brak email'}</p>
+                            <p className="text-xs text-darksubtle">
+                              {new Date(order.createdAt).toLocaleDateString('pl-PL')}
+                            </p>
+                          </div>
+                        </div>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          order.status === 'paid' 
+                            ? 'bg-green-900 text-green-300 border border-green-800' 
+                            : order.status === 'pending'
+                            ? 'bg-yellow-900 text-yellow-300 border border-yellow-800'
+                            : 'bg-red-900 text-red-300 border border-red-800'
+                        }`}>
+                          {order.status === 'paid' ? 'Opłacone' : order.status === 'pending' ? 'Oczekujące' : 'Wygasłe'}
+                        </span>
+                      </div>
+                      
+                      <div className="space-y-2 mb-3">
+                        <div className="flex items-center gap-2">
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                             order.orderType === 'consultation' 
                               ? 'bg-blue-600 text-white' 
@@ -920,73 +994,251 @@ export default function AdminPanel() {
                              order.orderType === 'collaboration' ? 'Współpraca' : 
                              order.orderType === 'code' ? 'Kod' : order.orderType}
                           </span>
-                        </td>
-                        <td className="py-2">
-                          {order.orderType === 'consultation' 
-                            ? (order.selectedCategory || 'N/A')
-                            : (order.productId || 'N/A')
-                          }
-                        </td>
-                        <td className="py-2">{order.phone}</td>
-                        <td className="py-2">{order.status}</td>
-                        <td className="py-2">{new Date(order.createdAt).toLocaleString('pl-PL')}</td>
-                        <td className="py-2">{order.termsAccepted ? '✔️' : '❌'}</td>
-                        <td className="py-2">{order.marketingAccepted ? '✔️' : '❌'}</td>
-                        <td className="py-2">{order.collaborationConsentAccepted ? '✔️' : '❌'}</td>
-                        <td className="py-2">{order.codeConsentAccepted ? '✔️' : '❌'}</td>
-                        <td className="py-2">
-                          <button
-                            className="btn-secondary text-xs px-3 py-1"
-                            onClick={() => setExpandedOrderId(expandedOrderId === order.id ? null : order.id)}
-                          >
-                            {expandedOrderId === order.id ? 'Ukryj' : 'Szczegóły'}
-                          </button>
-                        </td>
-                      </tr>
+                          {order.phone && (
+                            <span className="text-xs text-darksubtle">📞 {order.phone}</span>
+                          )}
+                        </div>
+                        
+                        <div className="text-sm">
+                          <span className="text-darksubtle">Produkt/Kategoria: </span>
+                          <span className="font-medium">
+                            {order.orderType === 'consultation' 
+                              ? (order.selectedCategory || 'N/A')
+                              : (order.productId || 'N/A')
+                            }
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* Zgody - kompaktowo */}
+                      <div className="grid grid-cols-2 gap-2 mb-3">
+                        <div className="flex items-center gap-1 text-xs">
+                          <span className={order.termsAccepted ? 'text-green-400' : 'text-red-400'}>
+                            {order.termsAccepted ? '✔️' : '❌'}
+                          </span>
+                          <span className="text-darksubtle">Regulamin</span>
+                        </div>
+                        <div className="flex items-center gap-1 text-xs">
+                          <span className={order.marketingAccepted ? 'text-green-400' : 'text-red-400'}>
+                            {order.marketingAccepted ? '✔️' : '❌'}
+                          </span>
+                          <span className="text-darksubtle">Marketing</span>
+                        </div>
+                        <div className="flex items-center gap-1 text-xs">
+                          <span className={order.collaborationConsentAccepted ? 'text-green-400' : 'text-red-400'}>
+                            {order.collaborationConsentAccepted ? '✔️' : '❌'}
+                          </span>
+                          <span className="text-darksubtle">Współpraca</span>
+                        </div>
+                        <div className="flex items-center gap-1 text-xs">
+                          <span className={order.codeConsentAccepted ? 'text-green-400' : 'text-red-400'}>
+                            {order.codeConsentAccepted ? '✔️' : '❌'}
+                          </span>
+                          <span className="text-darksubtle">Kod</span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <button
+                          className="btn-secondary flex-1 py-2 text-xs"
+                          onClick={() => setExpandedOrderId(expandedOrderId === order.id ? null : order.id)}
+                        >
+                          {expandedOrderId === order.id ? 'Ukryj szczegóły' : 'Pokaż szczegóły'}
+                        </button>
+                      </div>
+                      
+                      {/* Rozszerzone szczegóły */}
                       {expandedOrderId === order.id && (
-                        <tr>
-                          <td colSpan={12} className="bg-darkbg/80 p-4 border-t border-b border-primary-700 text-sm">
-                            <div className="space-y-4">
+                        <div className="mt-3 p-3 bg-darkpanel rounded-lg border border-gray-700">
+                          <div className="space-y-4 text-sm">
+                            {order.info && (
                               <div>
-                                <b>Dodatkowe informacje od zamawiającego:</b><br />
-                                {order.info ? order.info : <span className="text-darksubtle">Brak dodatkowych informacji</span>}
+                                <span className="font-medium text-darksubtle">Dodatkowe informacje:</span>
+                                <p className="mt-1">{order.info}</p>
                               </div>
-                              
-                              {/* Załączone pliki */}
-                              {order.files && order.files.length > 0 && (
-                                <div>
-                                  <b>Załączone pliki:</b><br />
-                                  <div className="mt-2 space-y-2">
-                                    {order.files.map((file: any) => (
-                                      <div key={file.id} className="flex items-center justify-between p-2 bg-darkbg rounded-lg">
-                                        <div className="flex items-center gap-2">
-                                          <File className="w-4 h-4 text-primary-400" />
-                                          <span className="text-sm">{file.originalName}</span>
-                                          <span className="text-xs text-darksubtle">
-                                            ({(file.size / 1024 / 1024).toFixed(2)} MB)
-                                          </span>
-                                        </div>
-                                        <a
-                                          href={`/api/orders/download-file?id=${file.id}`}
-                                          download={file.originalName}
-                                          className="flex items-center gap-1 px-2 py-1 bg-primary-600 hover:bg-primary-700 text-white rounded text-xs transition-colors"
-                                        >
-                                          <Download className="w-3 h-3" />
-                                          Pobierz
-                                        </a>
+                            )}
+                            
+                            {order.files && order.files.length > 0 && (
+                              <div>
+                                <span className="font-medium text-darksubtle">Załączone pliki:</span>
+                                <div className="mt-2 space-y-2">
+                                  {order.files.map((file: any) => (
+                                    <div key={file.id} className="flex items-center justify-between p-2 bg-darkbg rounded-lg">
+                                      <div className="flex items-center gap-2">
+                                        <File className="w-4 h-4 text-primary-400" />
+                                        <span className="text-sm">{file.originalName}</span>
+                                        <span className="text-xs text-darksubtle">
+                                          ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                                        </span>
                                       </div>
-                                    ))}
-                                  </div>
+                                      <a
+                                        href={`/api/orders/download-file?id=${file.id}`}
+                                        download={file.originalName}
+                                        className="flex items-center gap-1 px-2 py-1 bg-primary-600 hover:bg-primary-700 text-white rounded text-xs transition-colors"
+                                      >
+                                        <Download className="w-3 h-3" />
+                                        Pobierz
+                                      </a>
+                                    </div>
+                                  ))}
                                 </div>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       )}
-                    </>
+                    </div>
                   ))}
-                </tbody>
-              </table>
+                </div>
+                
+                {/* Desktop: tabela */}
+                <div className="hidden sm:block overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="border-b border-gray-700">
+                        <th className="py-3 px-4 font-medium text-darksubtle">ID</th>
+                        <th className="py-3 px-4 font-medium text-darksubtle">Email</th>
+                        <th className="py-3 px-4 font-medium text-darksubtle">Typ</th>
+                        <th className="py-3 px-4 font-medium text-darksubtle">Produkt/Kategoria</th>
+                        <th className="py-3 px-4 font-medium text-darksubtle">Telefon</th>
+                        <th className="py-3 px-4 font-medium text-darksubtle">Status</th>
+                        <th className="py-3 px-4 font-medium text-darksubtle">Data</th>
+                        <th className="py-3 px-4 font-medium text-darksubtle">Zgody</th>
+                        <th className="py-3 px-4 font-medium text-darksubtle">Akcje</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {orders.map(order => (
+                        <>
+                          <tr key={order.id} className="border-t border-gray-700 hover:bg-darkbg/60">
+                            <td className="py-3 px-4 font-mono text-sm">{order.id}</td>
+                            <td className="py-3 px-4">
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                                  {order.email?.charAt(0).toUpperCase() || '?'}
+                                </div>
+                                <span className="font-medium">{order.email || order.user?.email || 'Brak'}</span>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                order.orderType === 'consultation' 
+                                  ? 'bg-blue-600 text-white' 
+                                  : order.orderType === 'collaboration'
+                                  ? 'bg-green-600 text-white'
+                                  : 'bg-purple-600 text-white'
+                              }`}>
+                                {order.orderType === 'consultation' ? 'Wycena' : 
+                                 order.orderType === 'collaboration' ? 'Współpraca' : 
+                                 order.orderType === 'code' ? 'Kod' : order.orderType}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-sm">
+                              {order.orderType === 'consultation' 
+                                ? (order.selectedCategory || 'N/A')
+                                : (order.productId || 'N/A')
+                              }
+                            </td>
+                            <td className="py-3 px-4 text-sm text-darksubtle">
+                              {order.phone || '-'}
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                order.status === 'paid' 
+                                  ? 'bg-green-900 text-green-300 border border-green-800' 
+                                  : order.status === 'pending'
+                                  ? 'bg-yellow-900 text-yellow-300 border border-yellow-800'
+                                  : 'bg-red-900 text-red-300 border border-red-800'
+                              }`}>
+                                {order.status === 'paid' ? 'Opłacone' : order.status === 'pending' ? 'Oczekujące' : 'Wygasłe'}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-sm text-darksubtle">
+                              {new Date(order.createdAt).toLocaleDateString('pl-PL')}
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="flex flex-col gap-1 text-xs">
+                                <div className="flex items-center gap-1">
+                                  <span className={order.termsAccepted ? 'text-green-400' : 'text-red-400'}>
+                                    {order.termsAccepted ? '✔️' : '❌'}
+                                  </span>
+                                  <span className="text-darksubtle">Reg</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <span className={order.marketingAccepted ? 'text-green-400' : 'text-red-400'}>
+                                    {order.marketingAccepted ? '✔️' : '❌'}
+                                  </span>
+                                  <span className="text-darksubtle">Mkt</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <span className={order.collaborationConsentAccepted ? 'text-green-400' : 'text-red-400'}>
+                                    {order.collaborationConsentAccepted ? '✔️' : '❌'}
+                                  </span>
+                                  <span className="text-darksubtle">Wsp</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <span className={order.codeConsentAccepted ? 'text-green-400' : 'text-red-400'}>
+                                    {order.codeConsentAccepted ? '✔️' : '❌'}
+                                  </span>
+                                  <span className="text-darksubtle">Kod</span>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4">
+                              <button
+                                className="btn-secondary text-xs px-3 py-1"
+                                onClick={() => setExpandedOrderId(expandedOrderId === order.id ? null : order.id)}
+                              >
+                                {expandedOrderId === order.id ? 'Ukryj' : 'Szczegóły'}
+                              </button>
+                            </td>
+                          </tr>
+                          {expandedOrderId === order.id && (
+                            <tr>
+                              <td colSpan={9} className="bg-darkbg/80 p-4 border-t border-b border-primary-700 text-sm">
+                                <div className="space-y-4">
+                                  <div>
+                                    <b>Dodatkowe informacje od zamawiającego:</b><br />
+                                    {order.info ? order.info : <span className="text-darksubtle">Brak dodatkowych informacji</span>}
+                                  </div>
+                                  
+                                  {/* Załączone pliki */}
+                                  {order.files && order.files.length > 0 && (
+                                    <div>
+                                      <b>Załączone pliki:</b><br />
+                                      <div className="mt-2 space-y-2">
+                                        {order.files.map((file: any) => (
+                                          <div key={file.id} className="flex items-center justify-between p-2 bg-darkbg rounded-lg">
+                                            <div className="flex items-center gap-2">
+                                              <File className="w-4 h-4 text-primary-400" />
+                                              <span className="text-sm">{file.originalName}</span>
+                                              <span className="text-xs text-darksubtle">
+                                                ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                                              </span>
+                                            </div>
+                                            <a
+                                              href={`/api/orders/download-file?id=${file.id}`}
+                                              download={file.originalName}
+                                              className="flex items-center gap-1 px-2 py-1 bg-primary-600 hover:bg-primary-700 text-white rounded text-xs transition-colors"
+                                            >
+                                              <Download className="w-3 h-3" />
+                                              Pobierz
+                                            </a>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
           </motion.section>
         )}
@@ -1007,52 +1259,127 @@ export default function AdminPanel() {
             {loadingComponents ? (
               <div className="text-center py-12 text-lg text-darksubtle">Ładowanie danych...</div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-800">
-                      <th className="text-left py-3 px-4 font-medium text-darksubtle">Nazwa</th>
-                      <th className="text-left py-3 px-4 font-medium text-darksubtle">Koszt od (PLN)</th>
-                      <th className="text-left py-3 px-4 font-medium text-darksubtle">Koszt do (PLN)</th>
-                      <th className="text-left py-3 px-4 font-medium text-darksubtle">Uwagi</th>
-                      <th className="text-left py-3 px-4 font-medium text-darksubtle">Akcje</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {components.map((item) => (
-                      <tr key={item.id} className="border-b border-gray-900 hover:bg-darkbg/60">
-                        <td className="py-4 px-4">{item.name}</td>
-                        <td className="py-4 px-4">{item.priceFrom.toLocaleString('pl-PL')}</td>
-                        <td className="py-4 px-4">{item.priceTo.toLocaleString('pl-PL')}</td>
-                        <td className="py-4 px-4">{item.notes}</td>
-                        <td className="py-4 px-4">
-                          <div className="flex space-x-2">
-                            <button
-                              onClick={() => { setEditComponent(item); setIsEditComponentModalOpen(true) }}
-                              className="text-primary-500 hover:text-primary-300 p-1"
-                              title="Edytuj"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={async () => {
-                                if (confirm('Czy na pewno chcesz usunąć ten komponent?')) {
-                                  await fetch(`/api/admin/components?id=${item.id}`, { method: 'DELETE' })
-                                  fetchComponents()
-                                }
-                              }}
-                              className="text-red-400 hover:text-red-300 p-1"
-                              title="Usuń"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+              <>
+                {/* Mobile: karty */}
+                <div className="flex flex-col gap-4 sm:hidden">
+                  {components.map((item) => (
+                    <div key={item.id} className="bg-darkbg rounded-xl shadow-lg p-4 border border-gray-800">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                            {item.name.charAt(0).toUpperCase()}
                           </div>
-                        </td>
+                          <div>
+                            <p className="font-medium text-darktext text-lg">{item.name}</p>
+                            <p className="text-xs text-darksubtle">ID: {item.id}</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4 mb-3">
+                        <div className="text-center p-3 bg-darkpanel rounded-lg border border-gray-700">
+                          <p className="text-xs text-darksubtle mb-1">Koszt od</p>
+                          <p className="text-lg font-bold text-green-400">{item.priceFrom.toLocaleString('pl-PL')} PLN</p>
+                        </div>
+                        <div className="text-center p-3 bg-darkpanel rounded-lg border border-gray-700">
+                          <p className="text-xs text-darksubtle mb-1">Koszt do</p>
+                          <p className="text-lg font-bold text-blue-400">{item.priceTo.toLocaleString('pl-PL')} PLN</p>
+                        </div>
+                      </div>
+                      
+                      {item.notes && (
+                        <div className="mb-3 p-3 bg-darkpanel rounded-lg border border-gray-700">
+                          <p className="text-xs text-darksubtle mb-1">Uwagi</p>
+                          <p className="text-sm text-darktext">{item.notes}</p>
+                        </div>
+                      )}
+                      
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => { setEditComponent(item); setIsEditComponentModalOpen(true) }}
+                          className="btn-primary flex-1 py-2 text-xs flex items-center justify-center gap-2"
+                        >
+                          <Edit className="w-4 h-4" />
+                          Edytuj
+                        </button>
+                        <button
+                          onClick={async () => {
+                            if (confirm('Czy na pewno chcesz usunąć ten komponent?')) {
+                              await fetch(`/api/admin/components?id=${item.id}`, { method: 'DELETE' })
+                              fetchComponents()
+                            }
+                          }}
+                          className="bg-red-700 hover:bg-red-800 text-white rounded-lg px-3 py-2 text-xs flex items-center justify-center gap-2"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          Usuń
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Desktop: tabela */}
+                <div className="hidden sm:block overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-gray-800">
+                        <th className="text-left py-3 px-4 font-medium text-darksubtle">Nazwa</th>
+                        <th className="text-left py-3 px-4 font-medium text-darksubtle">Koszt od (PLN)</th>
+                        <th className="text-left py-3 px-4 font-medium text-darksubtle">Koszt do (PLN)</th>
+                        <th className="text-left py-3 px-4 font-medium text-darksubtle">Uwagi</th>
+                        <th className="text-left py-3 px-4 font-medium text-darksubtle">Akcje</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {components.map((item) => (
+                        <tr key={item.id} className="border-b border-gray-900 hover:bg-darkbg/60">
+                          <td className="py-4 px-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                                {item.name.charAt(0).toUpperCase()}
+                              </div>
+                              <span className="font-medium">{item.name}</span>
+                            </div>
+                          </td>
+                          <td className="py-4 px-4 font-medium text-green-400">
+                            {item.priceFrom.toLocaleString('pl-PL')} PLN
+                          </td>
+                          <td className="py-4 px-4 font-medium text-blue-400">
+                            {item.priceTo.toLocaleString('pl-PL')} PLN
+                          </td>
+                          <td className="py-4 px-4 text-sm text-darksubtle max-w-xs">
+                            {item.notes || '-'}
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => { setEditComponent(item); setIsEditComponentModalOpen(true) }}
+                                className="text-primary-500 hover:text-primary-300 p-1"
+                                title="Edytuj"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  if (confirm('Czy na pewno chcesz usunąć ten komponent?')) {
+                                    await fetch(`/api/admin/components?id=${item.id}`, { method: 'DELETE' })
+                                    fetchComponents()
+                                  }
+                                }}
+                                className="text-red-400 hover:text-red-300 p-1"
+                                title="Usuń"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
           </motion.section>
         )}

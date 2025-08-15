@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { translateToEnglish } from '@/lib/translate'
 
 const prisma = new PrismaClient()
 
@@ -18,8 +19,23 @@ export async function POST(req: NextRequest) {
   try {
     const data = await req.json()
     const { name, priceFrom, priceTo, notes } = data
+    
+    // Automatyczne tłumaczenie pól na angielski
+    const [nameEn, notesEn] = await Promise.all([
+      translateToEnglish(name),
+      translateToEnglish(notes)
+    ])
+    
     const component = await prisma.component.create({
-      data: { name, priceFrom, priceTo, notes }
+      data: { 
+        name, 
+        priceFrom, 
+        priceTo, 
+        notes,
+        // Dodaj tłumaczenia angielskie
+        nameEn,
+        notesEn
+      }
     })
     return NextResponse.json({ component })
   } catch (error) {
@@ -35,9 +51,24 @@ export async function PATCH(req: NextRequest) {
     const id = Number(url.searchParams.get('id'))
     const data = await req.json()
     const { name, priceFrom, priceTo, notes } = data
+    
+    // Automatyczne tłumaczenie pól na angielski
+    const [nameEn, notesEn] = await Promise.all([
+      translateToEnglish(name),
+      translateToEnglish(notes)
+    ])
+    
     const component = await prisma.component.update({
       where: { id },
-      data: { name, priceFrom, priceTo, notes }
+      data: { 
+        name, 
+        priceFrom, 
+        priceTo, 
+        notes,
+        // Dodaj tłumaczenia angielskie
+        nameEn,
+        notesEn
+      }
     })
     return NextResponse.json({ component })
   } catch (error) {
