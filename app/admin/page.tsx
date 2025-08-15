@@ -10,7 +10,9 @@ import {
   Settings,
   BarChart3,
   Users,
-  Package
+  Package,
+  File,
+  Download
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import SoftwareFormModal from '@/components/SoftwareFormModal'
@@ -455,10 +457,13 @@ export default function AdminPanel() {
                           })
                           .reduce((sum, order) => {
                             if (order.orderType === 'consultation') {
-                              return sum + 500 // 500 PLN za konsultację
-                            } else if (order.orderType === 'demo' && order.productId) {
+                              return sum + 200 // 200 PLN za konsultację
+                            } else if (order.orderType === 'collaboration' && order.productId) {
                               const foundSoftware = software.find(s => s.id === order.productId)
-                              return sum + Math.round((foundSoftware?.price || 0) * 0.2) // 20% ceny za demo
+                              return sum + Math.round((foundSoftware?.price || 0) * 0.3) // 30% ceny za współpracę
+                            } else if (order.orderType === 'code' && order.productId) {
+                              const foundSoftware = software.find(s => s.id === order.productId)
+                              return sum + (foundSoftware?.price || 0) // 100% ceny za kod
                             }
                             return sum
                           }, 0)
@@ -492,10 +497,13 @@ export default function AdminPanel() {
                           })
                           .reduce((sum, order) => {
                             if (order.orderType === 'consultation') {
-                              return sum + 500 // 500 PLN za konsultację
-                            } else if (order.orderType === 'demo' && order.productId) {
+                              return sum + 200 // 200 PLN za konsultację
+                            } else if (order.orderType === 'collaboration' && order.productId) {
                               const foundSoftware = software.find(s => s.id === order.productId)
-                              return sum + Math.round((foundSoftware?.price || 0) * 0.2) // 20% ceny za demo
+                              return sum + Math.round((foundSoftware?.price || 0) * 0.3) // 30% ceny za współpracę
+                            } else if (order.orderType === 'code' && order.productId) {
+                              const foundSoftware = software.find(s => s.id === order.productId)
+                              return sum + (foundSoftware?.price || 0) // 100% ceny za kod
                             }
                             return sum
                           }, 0)
@@ -524,9 +532,9 @@ export default function AdminPanel() {
                 ) : orders.length > 0 ? (
                   <div className="space-y-3">
                     {orders.slice(0, 5).map((order) => {
-                      // Znajdź nazwę oprogramowania dla demo
-                      const softwareName = order.orderType === 'demo' && order.productId 
-                        ? software.find(s => s.id === order.productId)?.name || `Demo #${order.productId}`
+                      // Znajdź nazwę oprogramowania dla collaboration i code
+                      const softwareName = (order.orderType === 'collaboration' || order.orderType === 'code') && order.productId 
+                        ? software.find(s => s.id === order.productId)?.name || `${order.orderType === 'collaboration' ? 'Współpraca' : 'Kod'} #${order.productId}`
                         : null
                       
                       return (
@@ -535,15 +543,21 @@ export default function AdminPanel() {
                             <p className="font-medium text-darktext">{order.email || 'Brak email'}</p>
                             <div className="flex items-center gap-2">
                               <p className="text-sm text-darksubtle">
-                                {order.orderType === 'consultation' ? 'Wycena' : 'Demo'}
+                                {order.orderType === 'consultation' ? 'Wycena' : 
+                                 order.orderType === 'collaboration' ? 'Współpraca' : 
+                                 order.orderType === 'code' ? 'Kod' : order.orderType}
                               </p>
                               {order.orderType === 'consultation' && order.selectedCategory && (
                                 <span className="text-xs bg-primary-600 text-white px-2 py-1 rounded-full">
                                   {order.selectedCategory}
                                 </span>
                               )}
-                              {order.orderType === 'demo' && softwareName && (
-                                <span className="text-xs bg-green-600 text-white px-2 py-1 rounded-full">
+                              {(order.orderType === 'collaboration' || order.orderType === 'code') && softwareName && (
+                                <span className={`text-xs px-2 py-1 rounded-full ${
+                                  order.orderType === 'collaboration' 
+                                    ? 'bg-green-600 text-white' 
+                                    : 'bg-purple-600 text-white'
+                                }`}>
                                   {softwareName}
                                 </span>
                               )}
@@ -867,7 +881,7 @@ export default function AdminPanel() {
             transition={{ delay: 0.2 }}
             className="card"
           >
-            <h2 className="text-xl font-bold mb-4">Zamówienia demo</h2>
+            <h2 className="text-xl font-bold mb-4">Zamówienia</h2>
             {loadingOrders ? (
               <div className="text-center py-12 text-lg text-darksubtle">Ładowanie danych...</div>
             ) : (
@@ -883,7 +897,8 @@ export default function AdminPanel() {
                     <th className="py-2">Data</th>
                     <th className="py-2">Zgoda na regulamin</th>
                     <th className="py-2">Zgoda marketingowa</th>
-                    <th className="py-2">Zgoda o demo</th>
+                    <th className="py-2">Zgoda na współpracę</th>
+                    <th className="py-2">Zgoda na kod</th>
                     <th className="py-2">Akcje</th>
                   </tr>
                 </thead>
@@ -897,9 +912,13 @@ export default function AdminPanel() {
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                             order.orderType === 'consultation' 
                               ? 'bg-blue-600 text-white' 
-                              : 'bg-green-600 text-white'
+                              : order.orderType === 'collaboration'
+                              ? 'bg-green-600 text-white'
+                              : 'bg-purple-600 text-white'
                           }`}>
-                            {order.orderType === 'consultation' ? 'Wycena' : 'Demo'}
+                            {order.orderType === 'consultation' ? 'Wycena' : 
+                             order.orderType === 'collaboration' ? 'Współpraca' : 
+                             order.orderType === 'code' ? 'Kod' : order.orderType}
                           </span>
                         </td>
                         <td className="py-2">
@@ -913,7 +932,8 @@ export default function AdminPanel() {
                         <td className="py-2">{new Date(order.createdAt).toLocaleString('pl-PL')}</td>
                         <td className="py-2">{order.termsAccepted ? '✔️' : '❌'}</td>
                         <td className="py-2">{order.marketingAccepted ? '✔️' : '❌'}</td>
-                        <td className="py-2">{order.demoConsentAccepted ? '✔️' : '❌'}</td>
+                        <td className="py-2">{order.collaborationConsentAccepted ? '✔️' : '❌'}</td>
+                        <td className="py-2">{order.codeConsentAccepted ? '✔️' : '❌'}</td>
                         <td className="py-2">
                           <button
                             className="btn-secondary text-xs px-3 py-1"
@@ -925,10 +945,40 @@ export default function AdminPanel() {
                       </tr>
                       {expandedOrderId === order.id && (
                         <tr>
-                          <td colSpan={10} className="bg-darkbg/80 p-4 border-t border-b border-primary-700 text-sm">
-                            <div>
-                              <b>Dodatkowe informacje od zamawiającego:</b><br />
-                              {order.info ? order.info : <span className="text-darksubtle">Brak dodatkowych informacji</span>}
+                          <td colSpan={12} className="bg-darkbg/80 p-4 border-t border-b border-primary-700 text-sm">
+                            <div className="space-y-4">
+                              <div>
+                                <b>Dodatkowe informacje od zamawiającego:</b><br />
+                                {order.info ? order.info : <span className="text-darksubtle">Brak dodatkowych informacji</span>}
+                              </div>
+                              
+                              {/* Załączone pliki */}
+                              {order.files && order.files.length > 0 && (
+                                <div>
+                                  <b>Załączone pliki:</b><br />
+                                  <div className="mt-2 space-y-2">
+                                    {order.files.map((file: any) => (
+                                      <div key={file.id} className="flex items-center justify-between p-2 bg-darkbg rounded-lg">
+                                        <div className="flex items-center gap-2">
+                                          <File className="w-4 h-4 text-primary-400" />
+                                          <span className="text-sm">{file.originalName}</span>
+                                          <span className="text-xs text-darksubtle">
+                                            ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                                          </span>
+                                        </div>
+                                        <a
+                                          href={`/api/orders/download-file?id=${file.id}`}
+                                          download={file.originalName}
+                                          className="flex items-center gap-1 px-2 py-1 bg-primary-600 hover:bg-primary-700 text-white rounded text-xs transition-colors"
+                                        >
+                                          <Download className="w-3 h-3" />
+                                          Pobierz
+                                        </a>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           </td>
                         </tr>

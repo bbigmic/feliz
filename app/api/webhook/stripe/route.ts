@@ -39,8 +39,8 @@ export async function POST(request: NextRequest) {
           })
           console.log(getTranslation('pl', 'api.orderPaid').replace('{orderId}', orderId))
           
-          // Jeśli to demo i mamy productId, zwiększ licznik sprzedaży
-          if (orderType === 'demo' && productId) {
+          // Jeśli to collaboration lub code i mamy productId, zwiększ licznik sprzedaży
+          if ((orderType === 'collaboration' || orderType === 'code') && productId) {
             try {
               await prisma.software.update({
                 where: { id: parseInt(productId) },

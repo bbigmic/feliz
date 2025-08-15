@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
 import toast from "react-hot-toast"
 import { useLanguage } from "@/contexts/LanguageContext"
 import { formatPrice } from "@/lib/i18n"
+import { Upload, X, File, Download } from "lucide-react"
 
 interface OrderModalProps {
   isOpen: boolean
@@ -23,15 +24,21 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
   const [softwareLoading, setSoftwareLoading] = useState(false)
   const [termsAccepted, setTermsAccepted] = useState(false)
   const [marketingAccepted, setMarketingAccepted] = useState(false)
-  const [demoConsentAccepted, setDemoConsentAccepted] = useState(false)
+  const [collaborationConsentAccepted, setCollaborationConsentAccepted] = useState(false)
+  const [codeConsentAccepted, setCodeConsentAccepted] = useState(false)
   const [software, setSoftware] = useState<any>(null)
   const [selectedCategory, setSelectedCategory] = useState("")
   const [availableCategories, setAvailableCategories] = useState<string[]>([])
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  const [uploadedFiles, setUploadedFiles] = useState<any[]>([])
+  const [uploadingFiles, setUploadingFiles] = useState(false)
+  const [orderType, setOrderType] = useState<'collaboration' | 'code' | 'consultation'>('collaboration')
+  const fileInputRef = useRef<HTMLInputElement>(null)
   
   const isConsultation = !productId
-  const orderType = isConsultation ? 'consultation' : 'demo'
+  const showOrderTypeSelection = !isConsultation && productId
 
-  // Pobierz dane oprogramowania jeśli to demo
+  // Pobierz dane oprogramowania jeśli to collaboration lub code
   useEffect(() => {
     if (productId) {
       // Resetuj software gdy zmienia się productId
@@ -85,15 +92,17 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
     }
   }, [isConsultation])
 
-
-
   useEffect(() => {
     if (userEmail) setEmail(userEmail)
     else setEmail("")
     if (isOpen) {
       setTermsAccepted(false)
       setMarketingAccepted(false)
-      setDemoConsentAccepted(false)
+      setCollaborationConsentAccepted(false)
+      setCodeConsentAccepted(false)
+      setSelectedFiles([])
+      setUploadedFiles([])
+      setOrderType('collaboration')
     }
   }, [userEmail, isOpen])
 
@@ -108,8 +117,13 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
       return
     }
     
-    if (!isConsultation && !demoConsentAccepted) {
-      toast.error('Musisz zaakceptować warunki demo!')
+    if (!isConsultation && orderType === 'collaboration' && !collaborationConsentAccepted) {
+      toast.error('Musisz zaakceptować warunki współpracy!')
+      return
+    }
+    
+    if (!isConsultation && orderType === 'code' && !codeConsentAccepted) {
+      toast.error('Musisz zaakceptować warunki dostarczenia kodu!')
       return
     }
     
@@ -124,23 +138,31 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
           email: userEmail || email,
           phone,
           info,
-          orderType,
+          orderType: isConsultation ? 'consultation' : orderType,
           termsAccepted: userEmail ? true : termsAccepted,
           marketingAccepted: userEmail ? false : marketingAccepted,
-          demoConsentAccepted: !isConsultation ? demoConsentAccepted : true,
+          collaborationConsentAccepted: orderType === 'collaboration' ? collaborationConsentAccepted : false,
+          codeConsentAccepted: orderType === 'code' ? codeConsentAccepted : false,
           selectedCategory: isConsultation ? selectedCategory : null,
           language
         })
       })
       const data = await res.json()
-      if (res.ok && data.url) {
-        toast.success("Przekierowuję do płatności...")
-        window.location.href = data.url
-        return
-      }
-      if (res.ok) {
-        toast.success("Zamówienie utworzone! Przekierowuję do płatności...")
-        onClose()
+      
+      if (res.ok && data.orderId) {
+        // Upload plików jeśli zostały wybrane
+        if (selectedFiles.length > 0) {
+          await uploadFiles(data.orderId)
+        }
+        
+        if (data.url) {
+          toast.success("Przekierowuję do płatności...")
+          window.location.href = data.url
+          return
+        } else {
+          toast.success("Zamówienie utworzone!")
+          onClose()
+        }
       } else {
         toast.error(data.error || "Błąd!")
       }
@@ -151,8 +173,51 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
     }
   }
 
-  // Oblicz cenę demo (20% ceny oprogramowania)
-  const demoPrice = software ? Math.round(software.price * 0.2) : 0
+  // Oblicz cenę collaboration (30% ceny oprogramowania) i code (100% ceny)
+  const collaborationPrice = software ? Math.round(software.price * 0.3) : 0
+  const codePrice = software ? software.price : 0
+
+  // Funkcje do obsługi plików
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    setSelectedFiles(prev => [...prev, ...files])
+  }
+
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const uploadFiles = async (orderId: number) => {
+    if (selectedFiles.length === 0) return
+
+    setUploadingFiles(true)
+    try {
+      const formData = new FormData()
+      formData.append('orderId', orderId.toString())
+      selectedFiles.forEach(file => {
+        formData.append('files', file)
+      })
+
+      const response = await fetch('/api/orders/upload-files', {
+        method: 'POST',
+        body: formData
+      })
+
+      const data = await response.json()
+      
+      if (response.ok) {
+        setUploadedFiles(prev => [...prev, ...data.files])
+        setSelectedFiles([])
+        toast.success(data.message)
+      } else {
+        toast.error(data.error || 'Błąd podczas uploadu plików')
+      }
+    } catch (error) {
+      toast.error('Błąd podczas uploadu plików')
+    } finally {
+      setUploadingFiles(false)
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 p-4">
@@ -165,7 +230,7 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
           ✕
         </button>
         <h2 className="text-2xl font-bold mb-4 text-center text-darktext">
-          {isConsultation ? t('orderModal.consultationTitle') : t('orderModal.demoTitle')}
+          {isConsultation ? t('orderModal.consultationTitle') : t('orderModal.collaborationTitle')}
         </h2>
         
         {!isConsultation && (
@@ -196,9 +261,62 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
                 <div className="text-sm text-gray-300 mb-2">
                   {language === 'en' && software.descriptionEn ? software.descriptionEn : software.description}
                 </div>
+                
+                {/* Wybór typu zamówienia */}
+                {showOrderTypeSelection && (
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-darksubtle mb-2">
+                      {language === 'en' ? 'Choose order type:' : 'Wybierz typ zamówienia:'}
+                    </label>
+                    <div className="space-y-2">
+                      <label className="flex items-center space-x-3 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="orderType"
+                          value="collaboration"
+                          checked={orderType === 'collaboration'}
+                          onChange={(e) => setOrderType(e.target.value as 'collaboration' | 'code')}
+                          className="text-primary-600 focus:ring-primary-500"
+                        />
+                        <div className="flex-1">
+                          <div className="text-white font-medium">
+                            {language === 'en' ? 'Collaboration (30% advance)' : 'Współpraca (30% zaliczka)'}
+                          </div>
+                          <div className="text-sm text-gray-400">
+                            {language === 'en' ? 'We will contact you within 24h to arrange next steps' : 'Skontaktujemy się w ciągu 24h aby ustalić dalsze kroki'}
+                          </div>
+                        </div>
+                      </label>
+                      <label className="flex items-center space-x-3 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="orderType"
+                          value="code"
+                          checked={orderType === 'code'}
+                          onChange={(e) => setOrderType(e.target.value as 'collaboration' | 'code')}
+                          className="text-primary-600 focus:ring-primary-500"
+                        />
+                        <div className="flex-1">
+                          <div className="text-white font-medium">
+                            {language === 'en' ? 'Code with instructions (100%)' : 'Kod z instrukcjami (100%)'}
+                          </div>
+                          <div className="text-sm text-gray-400">
+                            {language === 'en' ? 'Delivered within 7 working days' : 'Dostarczone w ciągu 7 dni roboczych'}
+                          </div>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Wyświetl cenę na podstawie wybranego typu */}
                 <div className="flex justify-between items-center">
-                  <span className="text-darksubtle text-sm">{t('orderModal.demoPrice')}</span>
-                  <span className="text-xl font-bold text-primary-400">{formatPrice(demoPrice, language)}</span>
+                  <span className="text-darksubtle text-sm">
+                    {orderType === 'collaboration' ? t('orderModal.collaborationPrice') : t('orderModal.codePrice')}
+                  </span>
+                  <span className="text-xl font-bold text-primary-400">
+                    {formatPrice(orderType === 'collaboration' ? collaborationPrice : codePrice, language)}
+                  </span>
                 </div>
               </motion.div>
             ) : (
@@ -251,7 +369,7 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
           <textarea
             placeholder={isConsultation 
               ? t('orderModal.consultationDescription')
-              : t('orderModal.demoDescription')
+              : (orderType === 'collaboration' ? t('orderModal.collaborationDescription') : t('orderModal.codeDescription'))
             }
             className="w-full p-2 rounded bg-darkbg border border-gray-700 text-darktext"
             value={info}
@@ -260,19 +378,112 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
             disabled={loading}
           />
           
-          {!isConsultation && (
+          {/* Sekcja załączania plików */}
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif"
+                onChange={handleFileSelect}
+                className="hidden"
+                disabled={loading}
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={loading}
+                className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors disabled:opacity-50"
+              >
+                <Upload className="w-4 h-4" />
+                <span>{t('orderModal.attachFiles')}</span>
+              </button>
+              <div className="text-sm text-darksubtle">
+                (PDF, DOC, DOCX, TXT, JPG, PNG, GIF - max 10MB każdy)
+              </div>
+            </div>
+            
+            {/* Wybrane pliki */}
+            {selectedFiles.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium text-darktext">{t('orderModal.selectedFiles')}</h4>
+                {selectedFiles.map((file, index) => (
+                  <div key={index} className="flex items-center justify-between p-2 bg-darkbg rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <File className="w-4 h-4 text-primary-400" />
+                      <span className="text-sm text-darktext">{file.name}</span>
+                      <span className="text-xs text-darksubtle">
+                        ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeFile(index)}
+                      className="text-red-400 hover:text-red-300 p-1"
+                      disabled={loading}
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {/* Załączone pliki */}
+            {uploadedFiles.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium text-darktext">{t('orderModal.attachedFiles')}</h4>
+                {uploadedFiles.map((file, index) => (
+                  <div key={index} className="flex items-center justify-between p-2 bg-green-900/20 border border-green-700 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <File className="w-4 h-4 text-green-400" />
+                      <span className="text-sm text-darktext">{file.originalName}</span>
+                      <span className="text-xs text-darksubtle">
+                        ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-green-400">✓ Załączony</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          
+          {/* Zgody na podstawie typu zamówienia */}
+          {!isConsultation && orderType === 'collaboration' && (
             <div className="space-y-3">
               <label className="flex items-start gap-2 text-sm text-darksubtle">
                 <input 
                   type="checkbox" 
-                  checked={demoConsentAccepted} 
-                  onChange={e => setDemoConsentAccepted(e.target.checked)} 
+                  checked={collaborationConsentAccepted} 
+                  onChange={e => setCollaborationConsentAccepted(e.target.checked)} 
                   required 
                   disabled={loading}
                   className="mt-1"
                 />
                 <span>
-                  {t('orderModal.demoConsent')} <span className="text-red-400">*</span>
+                  {t('orderModal.collaborationConsent')} <span className="text-red-400">*</span>
+                </span>
+              </label>
+            </div>
+          )}
+          
+          {!isConsultation && orderType === 'code' && (
+            <div className="space-y-3">
+              <label className="flex items-start gap-2 text-sm text-darksubtle">
+                <input 
+                  type="checkbox" 
+                  checked={codeConsentAccepted} 
+                  onChange={e => setCodeConsentAccepted(e.target.checked)} 
+                  required 
+                  disabled={loading}
+                  className="mt-1"
+                />
+                <span>
+                  {t('orderModal.codeConsent')} <span className="text-red-400">*</span>
                 </span>
               </label>
             </div>
@@ -295,7 +506,7 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
             className="btn-primary w-full"
             disabled={loading}
           >
-            {loading ? t('orderModal.submitButtonLoading') : t('orderModal.submitButton').replace('{type}', isConsultation ? 'wycenę' : 'demo')}
+            {loading ? t('orderModal.submitButtonLoading') : t('orderModal.submitButton').replace('{type}', isConsultation ? 'wycenę' : (orderType === 'collaboration' ? 'współpracę' : 'kod'))}
           </button>
           <div className="text-center text-darksubtle text-sm mt-4">
             <span>{t('orderModal.or')}</span><br />

@@ -21,14 +21,14 @@ function convertPrice(price: number, lang: string): number {
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, productId, email, phone, info, orderType, termsAccepted, marketingAccepted, demoConsentAccepted, selectedCategory, language = 'pl' } = await request.json()
+    const { userId, productId, email, phone, info, orderType, termsAccepted, marketingAccepted, collaborationConsentAccepted, codeConsentAccepted, selectedCategory, language = 'pl' } = await request.json()
     if (!phone) {
       return NextResponse.json({ error: getTranslation(language as 'pl' | 'en', 'api.missingData') }, { status: 400 })
     }
     
-    // Pobierz dane oprogramowania jeśli to demo
+    // Pobierz dane oprogramowania jeśli to collaboration lub code
     let software = null
-    if (productId && orderType === 'demo') {
+    if (productId && (orderType === 'collaboration' || orderType === 'code')) {
       software = await prisma.software.findUnique({
         where: { id: productId }
       })
@@ -45,11 +45,12 @@ export async function POST(request: NextRequest) {
         email: email || null,
         phone,
         info: info || null,
-        orderType: orderType || 'demo',
+        orderType: orderType || 'collaboration',
         status: 'pending',
         termsAccepted: !!termsAccepted,
         marketingAccepted: !!marketingAccepted,
-        demoConsentAccepted: !!demoConsentAccepted,
+        collaborationConsentAccepted: !!collaborationConsentAccepted,
+        codeConsentAccepted: !!codeConsentAccepted,
         selectedCategory: selectedCategory || null,
         language: language || 'pl',
       },
@@ -66,46 +67,66 @@ export async function POST(request: NextRequest) {
           pass: process.env.EMAIL_PASS,
         },
       })
-      const emailSubject = order.orderType === 'consultation' 
-        ? getTranslation(language as 'pl' | 'en', 'email.consultationSubject')
-        : getTranslation(language as 'pl' | 'en', 'email.demoSubject')
       
-      const emailBody = order.orderType === 'consultation'
-        ? getTranslation(language as 'pl' | 'en', 'email.consultationBody')
-        : getTranslation(language as 'pl' | 'en', 'email.demoBody')
+      let emailSubject, emailBody
+      if (order.orderType === 'consultation') {
+        emailSubject = getTranslation(language as 'pl' | 'en', 'email.consultationSubject')
+        emailBody = getTranslation(language as 'pl' | 'en', 'email.consultationBody')
+      } else if (order.orderType === 'collaboration') {
+        emailSubject = getTranslation(language as 'pl' | 'en', 'email.collaborationSubject')
+        emailBody = getTranslation(language as 'pl' | 'en', 'email.collaborationBody')
+      } else if (order.orderType === 'code') {
+        emailSubject = getTranslation(language as 'pl' | 'en', 'email.codeSubject')
+        emailBody = getTranslation(language as 'pl' | 'en', 'email.codeBody')
+      }
       
       const loggedInUserText = getTranslation(language as 'pl' | 'en', 'email.loggedInUser')
       const orderIdText = getTranslation(language as 'pl' | 'en', 'email.orderId')
       const softwareText = getTranslation(language as 'pl' | 'en', 'email.software')
-      const demoPriceText = getTranslation(language as 'pl' | 'en', 'email.demoPrice')
+      const collaborationPriceText = getTranslation(language as 'pl' | 'en', 'email.collaborationPrice')
+      const codePriceText = getTranslation(language as 'pl' | 'en', 'email.codePrice')
       
       const softwareName = language === 'en' && software?.nameEn ? software.nameEn : software?.name || softwareText
+      
+      let priceInfo = ''
+      if (order.orderType === 'collaboration' && software) {
+        priceInfo = `\n${softwareText}: ${softwareName}\n${collaborationPriceText}: ${Math.round(software.price * 0.3)} PLN`
+      } else if (order.orderType === 'code' && software) {
+        priceInfo = `\n${softwareText}: ${softwareName}\n${codePriceText}: ${software.price} PLN`
+      }
       
       await transporter.sendMail({
         from: `FelizTrade <${process.env.EMAIL_USER}>`,
         to: process.env.EMAIL_USER,
         subject: emailSubject,
-        text: `${emailBody}\nEmail: ${order.email || loggedInUserText}\nTelefon: ${order.phone}\nInfo: ${order.info || '-'}\n${orderIdText}: ${order.id}${software ? `\n${softwareText}: ${softwareName}\n${demoPriceText}: ${Math.round(software.price * 0.2)} PLN` : ''}`
+        text: `${emailBody}\nEmail: ${order.email || loggedInUserText}\nTelefon: ${order.phone}\nInfo: ${order.info || '-'}\n${orderIdText}: ${order.id}${priceInfo}`
       })
     } catch (err) {
       console.error('Błąd wysyłki maila:', err)
     }
     
     // 2. Utwórz sesję Stripe Checkout
-    const isConsultation = orderType === 'consultation' || !productId
+    const isConsultation = orderType === 'consultation'
     let productName, productDescription, unitAmount
     
     if (isConsultation) {
       productName = getTranslation(language as 'pl' | 'en', 'stripe.consultationTitle')
       productDescription = getTranslation(language as 'pl' | 'en', 'stripe.consultationDescription')
       unitAmount = convertPrice(20000, language) // 200 PLN w groszach
-    } else {
-      productName = getTranslation(language as 'pl' | 'en', 'stripe.demoTitle')
+    } else if (orderType === 'collaboration' && software) {
+      productName = getTranslation(language as 'pl' | 'en', 'stripe.collaborationTitle')
       const softwareName = language === 'en' && software?.nameEn ? software.nameEn : software?.name || 'Oprogramowanie'
-      productDescription = getTranslation(language as 'pl' | 'en', 'stripe.demoDescription').replace('{softwareName}', softwareName)
-      // Zaliczka za demo to 20% ceny oprogramowania, konwertujemy tylko raz
-      const demoPrice = Math.round((software?.price || 0) * 0.2)
-      unitAmount = convertPrice(demoPrice, language) * 100 // Konwertujemy PLN na GBP jeśli EN, potem na grosze
+      productDescription = getTranslation(language as 'pl' | 'en', 'stripe.collaborationDescription').replace('{softwareName}', softwareName)
+      // Zaliczka za współpracę to 30% ceny oprogramowania
+      const collaborationPrice = Math.round((software?.price || 0) * 0.3)
+      unitAmount = convertPrice(collaborationPrice, language) * 100
+    } else if (orderType === 'code' && software) {
+      productName = getTranslation(language as 'pl' | 'en', 'stripe.codeTitle')
+      const softwareName = language === 'en' && software?.nameEn ? software.nameEn : software?.name || 'Oprogramowanie'
+      productDescription = getTranslation(language as 'pl' | 'en', 'stripe.codeDescription').replace('{softwareName}', softwareName)
+      // Pełna cena za kod to 100% ceny oprogramowania
+      const codePrice = software?.price || 0
+      unitAmount = convertPrice(codePrice, language) * 100
     }
     
     // Debug URL-i
@@ -132,10 +153,10 @@ export async function POST(request: NextRequest) {
           price_data: {
             currency: getCurrency(language),
             product_data: {
-              name: productName,
-              description: productDescription,
+              name: productName || '',
+              description: productDescription || '',
             },
-            unit_amount: unitAmount,
+            unit_amount: unitAmount || 0,
           },
           quantity: 1,
         },
@@ -146,7 +167,7 @@ export async function POST(request: NextRequest) {
       metadata: {
         orderId: order.id.toString(),
         productId: productId?.toString() || '',
-        orderType: orderType || 'demo',
+        orderType: orderType || 'collaboration',
       },
       customer_email: userId ? (await prisma.user.findUnique({ where: { id: userId } }))?.email : email,
     })
@@ -154,8 +175,11 @@ export async function POST(request: NextRequest) {
     // 3. Zaktualizuj zamówienie o stripeSessionId
     await prisma.order.update({ where: { id: order.id }, data: { stripeSessionId: session.id } })
     
-    // 4. Zwróć url do przekierowania
-    return NextResponse.json({ url: session.url }, { status: 201 })
+    // 4. Zwróć url do przekierowania i ID zamówienia
+    return NextResponse.json({ 
+      url: session.url, 
+      orderId: order.id 
+    }, { status: 201 })
   } catch (err) {
     console.error('ORDER error:', err)
     return NextResponse.json({ error: getTranslation('pl', 'api.serverError'), details: String(err) }, { status: 500 })

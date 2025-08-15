@@ -25,16 +25,29 @@ model Order {
   email               String?
   phone               String
   info                String?
-  orderType           String   @default("demo")
+  orderType           String   @default("collaboration") // collaboration, code, consultation
   status              String   @default("pending")
   createdAt           DateTime @default(now())
   stripeSessionId     String?
   termsAccepted       Boolean  @default(false)
   marketingAccepted   Boolean  @default(false)
-  demoConsentAccepted Boolean  @default(false)
+  collaborationConsentAccepted Boolean  @default(false) // Nowe pole dla zgody na współpracę
+  codeConsentAccepted Boolean  @default(false) // Nowe pole dla zgody na kod
   selectedCategory    String?
   language            String   @default("pl")
   user                User?    @relation(fields: [userId], references: [id])
+  files               OrderFile[]
+}
+
+model OrderFile {
+  id        Int      @id @default(autoincrement())
+  filename  String
+  originalName String
+  mimeType  String
+  size      Int
+  orderId   Int
+  order     Order    @relation(fields: [orderId], references: [id])
+  createdAt DateTime @default(now())
 }
 
 model Software {

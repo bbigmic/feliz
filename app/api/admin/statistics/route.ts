@@ -80,8 +80,10 @@ export async function GET() {
       let price = 0
       if (order.orderType === 'consultation') {
         price = 200 // 200 PLN za konsultację (cena z API)
-      } else if (order.orderType === 'demo' && order.productId) {
-        price = Math.round((softwarePriceMap.get(order.productId) || 0) * 0.2) // 20% ceny za demo
+      } else if (order.orderType === 'collaboration' && order.productId) {
+        price = Math.round((softwarePriceMap.get(order.productId) || 0) * 0.3) // 30% ceny za współpracę
+      } else if (order.orderType === 'code' && order.productId) {
+        price = softwarePriceMap.get(order.productId) || 0 // 100% ceny za kod
       }
 
       if (order.language === 'en') {
@@ -118,9 +120,11 @@ export async function GET() {
       const dateStr = order.createdAt.toISOString().slice(0, 10)
       let price = 0
       if (order.orderType === 'consultation') {
-        price = 500 // 500 PLN za konsultację
-      } else if (order.orderType === 'demo' && order.productId) {
-        price = Math.round((softwarePriceMap.get(order.productId) || 0) * 0.2) // 20% ceny za demo
+        price = 200 // 200 PLN za konsultację
+      } else if (order.orderType === 'collaboration' && order.productId) {
+        price = Math.round((softwarePriceMap.get(order.productId) || 0) * 0.3) // 30% ceny za współpracę
+      } else if (order.orderType === 'code' && order.productId) {
+        price = softwarePriceMap.get(order.productId) || 0 // 100% ceny za kod
       }
       // 30 dni
       const stat30 = dailyStats30.find(d => d.date === dateStr)
@@ -147,16 +151,20 @@ export async function GET() {
       if (order.createdAt >= startOfThisMonth) {
         thisMonthOrders++
         if (order.orderType === 'consultation') {
-          thisMonthRevenue += 500 // 500 PLN za konsultację
-        } else if (order.orderType === 'demo' && order.productId) {
-          thisMonthRevenue += Math.round((softwarePriceMap.get(order.productId) || 0) * 0.2) // 20% ceny za demo
+          thisMonthRevenue += 200 // 200 PLN za konsultację
+        } else if (order.orderType === 'collaboration' && order.productId) {
+          thisMonthRevenue += Math.round((softwarePriceMap.get(order.productId) || 0) * 0.3) // 30% ceny za współpracę
+        } else if (order.orderType === 'code' && order.productId) {
+          thisMonthRevenue += softwarePriceMap.get(order.productId) || 0 // 100% ceny za kod
         }
       } else if (order.createdAt >= startOfLastMonth && order.createdAt <= endOfLastMonth) {
         lastMonthOrders++
         if (order.orderType === 'consultation') {
-          lastMonthRevenue += 500 // 500 PLN za konsultację
-        } else if (order.orderType === 'demo' && order.productId) {
-          lastMonthRevenue += Math.round((softwarePriceMap.get(order.productId) || 0) * 0.2) // 20% ceny za demo
+          lastMonthRevenue += 200 // 200 PLN za konsultację
+        } else if (order.orderType === 'collaboration' && order.productId) {
+          lastMonthRevenue += Math.round((softwarePriceMap.get(order.productId) || 0) * 0.3) // 30% ceny za współpracę
+        } else if (order.orderType === 'code' && order.productId) {
+          lastMonthRevenue += softwarePriceMap.get(order.productId) || 0 // 100% ceny za kod
         }
       }
     })

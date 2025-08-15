@@ -24,7 +24,10 @@ export async function GET() {
     // Pobierz wszystkie zamówienia
     const orders = await prisma.order.findMany({ 
       orderBy: { createdAt: 'desc' },
-      include: { user: true }
+      include: { 
+        user: true,
+        files: true
+      }
     })
     
     console.log(`Found ${orders.length} orders in query`)

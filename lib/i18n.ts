@@ -33,15 +33,19 @@ export interface Translations {
   }
   orderModal: {
     consultationTitle: string
-    demoTitle: string
+    collaborationTitle: string
+    codeTitle: string
     orderAs: string
     email: string
     phone: string
     selectCategory: string
     consultationDescription: string
-    demoDescription: string
-    demoPrice: string
-    demoConsent: string
+    collaborationDescription: string
+    codeDescription: string
+    collaborationPrice: string
+    codePrice: string
+    collaborationConsent: string
+    codeConsent: string
     termsAccept: string
     termsLink: string
     marketingAccept: string
@@ -52,12 +56,21 @@ export interface Translations {
     phoneNumber: string
     loadingSoftware: string
     softwareNotFound: string
+    attachFiles: string
+    selectedFiles: string
+    attachedFiles: string
+    fileSize: string
+    removeFile: string
+    uploadSuccess: string
+    uploadError: string
   }
   orderSuccess: {
     consultationTitle: string
-    demoTitle: string
+    collaborationTitle: string
+    codeTitle: string
     consultationDescription: string
-    demoDescription: string
+    collaborationDescription: string
+    codeDescription: string
     loading: string
     backToHome: string
   }
@@ -66,20 +79,25 @@ export interface Translations {
   stripe: {
     consultationTitle: string
     consultationDescription: string
-    demoTitle: string
-    demoDescription: string
+    collaborationTitle: string
+    collaborationDescription: string
+    codeTitle: string
+    codeDescription: string
   }
   
   // Email translations
   email: {
     consultationSubject: string
-    demoSubject: string
+    collaborationSubject: string
+    codeSubject: string
     consultationBody: string
-    demoBody: string
+    collaborationBody: string
+    codeBody: string
     loggedInUser: string
     orderId: string
     software: string
-    demoPrice: string
+    collaborationPrice: string
+    codePrice: string
   }
   
   // API error messages
@@ -202,15 +220,19 @@ export const translations: Record<Language, Translations> = {
     },
     orderModal: {
       consultationTitle: 'Zamów konsultację i wycenę',
-      demoTitle: 'Zamów demo',
+      collaborationTitle: 'Zamów współpracę',
+      codeTitle: 'Zamów kod',
       orderAs: 'Zamawiasz jako',
       email: 'Twój email',
       phone: 'Numer telefonu',
       selectCategory: 'Wybierz kategorię projektu',
       consultationDescription: 'Opisz swój projekt, wymagania i oczekiwania (opcjonalnie)',
-      demoDescription: 'Dodatkowe informacje o stronie/aplikacji (opcjonalnie)',
-      demoPrice: 'Zaliczka netto (20%):',
-      demoConsent: 'Oświadczam, że opłata zaliczkowa dotyczy wyłącznie przygotowania wersji demonstracyjnej aplikacji, która zostanie udostępniona online pod linkiem przesłanym na podany adres e-mail w ciągu 7 dni roboczych od zaksięgowania płatności. Wersja demo może zawierać błędy i ma charakter poglądowy. Pełny dostęp do kodu źródłowego i jego przekazanie możliwe będzie po uiszczeniu pełnej kwoty za oprogramowanie. Dostosowanie oprogramowania do potrzeb zamawiającego odbywa się na podstawie odrębnej wyceny komponentów funkcjonalnych i wizualnych.',
+      collaborationDescription: 'Dodatkowe informacje o współpracy (opcjonalnie)',
+      codeDescription: 'Dodatkowe informacje o kodzie (opcjonalnie)',
+             collaborationPrice: 'Zaliczka netto (30%):',
+       codePrice: 'Cena netto (100%):',
+       collaborationConsent: 'Oświadczam, że opłata zaliczkowa w wysokości 30% ceny oprogramowania dotyczy rozpoczęcia współpracy. Skontaktujemy się z Tobą w ciągu 24 godzin w celu ustalenia dalszych kroków i harmonogramu realizacji projektu.',
+       codeConsent: 'Oświadczam, że opłata w wysokości 100% ceny oprogramowania dotyczy dostarczenia repozytorium kodu z instrukcjami uruchomienia i edycji. Kod zostanie dostarczony w ciągu 7 dni roboczych od zaksięgowania płatności.',
       termsAccept: 'Akceptuję',
       termsLink: 'regulamin.',
       marketingAccept: 'Chcę otrzymywać informacje marketingowe (opcjonalnie)',
@@ -220,31 +242,45 @@ export const translations: Record<Language, Translations> = {
       callUs: 'Zadzwoń na',
       phoneNumber: '+48 502 600 739',
       loadingSoftware: 'Ładowanie informacji o oprogramowaniu...',
-      softwareNotFound: 'Nie znaleziono oprogramowania'
+      softwareNotFound: 'Nie znaleziono oprogramowania',
+      attachFiles: 'Chcę załączyć pliki',
+      selectedFiles: 'Wybrane pliki:',
+      attachedFiles: 'Załączone pliki:',
+      fileSize: 'MB',
+      removeFile: 'Usuń',
+      uploadSuccess: 'Pliki zostały załączone pomyślnie',
+      uploadError: 'Błąd podczas załączania plików'
     },
     orderSuccess: {
       consultationTitle: 'Dziękujemy za zamówienie wyceny/konsultacji!',
-      demoTitle: 'Dziękujemy za zamówienie demo!',
+      collaborationTitle: 'Dziękujemy za zamówienie współpracy!',
+      codeTitle: 'Dziękujemy za zamówienie kodu!',
       consultationDescription: 'Skontaktujemy się z Tobą pod wskazany numer telefonu, aby omówić szczegóły projektu i przygotować wycenę.',
-      demoDescription: 'Skontaktujemy się z Tobą pod wskazany numer telefonu, aby ustalić szczegóły i uruchomić demo.',
+             collaborationDescription: 'Skontaktujemy się z Tobą w ciągu 24 godzin pod wskazany numer telefonu, aby ustalić dalsze kroki współpracy i harmonogram realizacji projektu.',
+       codeDescription: 'Kod z instrukcjami uruchomienia i edycji zostanie dostarczony w ciągu 7 dni roboczych na podany adres email.',
       loading: 'Ładowanie...',
       backToHome: 'Wróć na stronę główną'
     },
     stripe: {
       consultationTitle: 'Konsultacja/Wycena',
       consultationDescription: 'Zamówienie konsultacji lub wyceny FelizTrade',
-      demoTitle: 'Zaliczka za demo',
-      demoDescription: 'Zaliczka za demo: {softwareName}'
+      collaborationTitle: 'Zamówienie współpracy',
+      collaborationDescription: 'Zamówienie współpracy FelizTrade',
+      codeTitle: 'Zamówienie kodu',
+      codeDescription: 'Zamówienie kodu FelizTrade'
     },
     email: {
       consultationSubject: 'Nowa wycena/konsultacja',
-      demoSubject: 'Nowe zamówienie demo',
+      collaborationSubject: 'Nowe zamówienie współpracy',
+      codeSubject: 'Nowe zamówienie kodu',
       consultationBody: 'Nowe zamówienie (wycena/konsultacja):',
-      demoBody: 'Nowe zamówienie (demo):',
+      collaborationBody: 'Nowe zamówienie (współpraca):',
+      codeBody: 'Nowe zamówienie (kod):',
       loggedInUser: 'zalogowany użytkownik',
       orderId: 'ID zamówienia',
       software: 'Oprogramowanie',
-      demoPrice: 'Zaliczka za demo'
+      collaborationPrice: 'Zaliczka za współpracę',
+      codePrice: 'Zaliczka za kod'
     },
     api: {
       missingData: 'Brak wymaganych danych.',
@@ -321,15 +357,19 @@ export const translations: Record<Language, Translations> = {
     },
     orderModal: {
       consultationTitle: 'Order consultation and quote',
-      demoTitle: 'Order demo',
+      collaborationTitle: 'Order collaboration',
+      codeTitle: 'Order code',
       orderAs: 'Ordering as',
       email: 'Your email',
       phone: 'Phone number',
       selectCategory: 'Select project category',
       consultationDescription: 'Describe your project, requirements and expectations (optional)',
-      demoDescription: 'Additional information about website/application (optional)',
-      demoPrice: 'Net prepayment (20%):',
-      demoConsent: 'I declare that the advance payment applies only to the preparation of a demonstration version of the application, which will be made available online under a link sent to the provided e-mail address within 7 working days from the payment being credited. The demo version may contain errors and is for illustrative purposes only. Full access to the source code and its transfer will be possible after paying the full amount for the software. Adaptation of the software to the needs of the ordering party takes place on the basis of a separate valuation of functional and visual components.',
+             collaborationDescription: 'Additional information about collaboration and project requirements (optional)',
+       codeDescription: 'Additional information about code requirements and customization needs (optional)',
+             collaborationPrice: 'Net prepayment (30%):',
+       codePrice: 'Net price (100%):',
+       collaborationConsent: 'I declare that the advance payment of 30% of the software price applies to starting collaboration. We will contact you within 24 hours to arrange next steps and project implementation schedule.',
+       codeConsent: 'I declare that the payment of 100% of the software price applies to delivery of code repository with installation and editing instructions. Code will be delivered within 7 working days from payment being credited.',
       termsAccept: 'I accept',
       termsLink: 'terms and conditions.',
       marketingAccept: 'I want to receive marketing information (optional)',
@@ -339,31 +379,45 @@ export const translations: Record<Language, Translations> = {
       callUs: 'Call us at',
       phoneNumber: '+48 502 600 739',
       loadingSoftware: 'Loading software information...',
-      softwareNotFound: 'Software not found'
+      softwareNotFound: 'Software not found',
+      attachFiles: 'I want to attach files',
+      selectedFiles: 'Selected files:',
+      attachedFiles: 'Attached files:',
+      fileSize: 'MB',
+      removeFile: 'Remove',
+      uploadSuccess: 'Files attached successfully',
+      uploadError: 'Error attaching files'
     },
     orderSuccess: {
       consultationTitle: 'Thank you for ordering a quote/consultation!',
-      demoTitle: 'Thank you for ordering a demo!',
+      collaborationTitle: 'Thank you for ordering a collaboration!',
+      codeTitle: 'Thank you for ordering a code!',
       consultationDescription: 'We will contact you at the provided phone number to discuss project details and prepare a quote.',
-      demoDescription: 'We will contact you at the provided phone number to arrange details and launch the demo.',
+             collaborationDescription: 'We will contact you within 24 hours at the provided phone number to arrange next collaboration steps and project implementation schedule.',
+       codeDescription: 'Code with installation and editing instructions will be delivered within 7 working days to the provided email address.',
       loading: 'Loading...',
       backToHome: 'Back to homepage'
     },
     stripe: {
       consultationTitle: 'Consultation/Quote',
       consultationDescription: 'FelizTrade consultation or quote order',
-      demoTitle: 'Demo prepayment',
-      demoDescription: 'Demo prepayment: {softwareName}'
+      collaborationTitle: 'Collaboration order',
+      collaborationDescription: 'FelizTrade collaboration order',
+      codeTitle: 'Code order',
+      codeDescription: 'FelizTrade code order'
     },
     email: {
       consultationSubject: 'New quote/consultation',
-      demoSubject: 'New demo order',
+      collaborationSubject: 'New collaboration order',
+      codeSubject: 'New code order',
       consultationBody: 'New order (quote/consultation):',
-      demoBody: 'New order (demo):',
+      collaborationBody: 'New order (collaboration):',
+      codeBody: 'New order (code):',
       loggedInUser: 'logged in user',
       orderId: 'Order ID',
       software: 'Software',
-      demoPrice: 'Demo prepayment'
+      collaborationPrice: 'Collaboration prepayment',
+      codePrice: 'Code prepayment'
     },
     api: {
       missingData: 'Missing required data.',

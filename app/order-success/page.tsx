@@ -10,7 +10,7 @@ function OrderSuccessContent() {
   const { t } = useLanguage()
   const searchParams = useSearchParams()
   const orderId = searchParams.get('orderId')
-  const [orderType, setOrderType] = useState<'demo' | 'consultation' | null>(null)
+  const [orderType, setOrderType] = useState<'collaboration' | 'code' | 'consultation' | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -25,7 +25,7 @@ function OrderSuccessContent() {
         })
         .catch(() => {
           // Fallback - spróbuj określić typ na podstawie URL
-          setOrderType('demo')
+          setOrderType('collaboration')
         })
         .finally(() => setLoading(false))
     } else {
@@ -34,13 +34,25 @@ function OrderSuccessContent() {
   }, [orderId])
 
   const isConsultation = orderType === 'consultation'
-  const title = isConsultation 
-    ? t('orderSuccess.consultationTitle')
-    : t('orderSuccess.demoTitle')
+  const isCollaboration = orderType === 'collaboration'
+  const isCode = orderType === 'code'
   
-  const description = isConsultation
-    ? t('orderSuccess.consultationDescription')
-    : t('orderSuccess.demoDescription')
+  let title, description
+  
+  if (isConsultation) {
+    title = t('orderSuccess.consultationTitle')
+    description = t('orderSuccess.consultationDescription')
+  } else if (isCollaboration) {
+    title = t('orderSuccess.collaborationTitle')
+    description = t('orderSuccess.collaborationDescription')
+  } else if (isCode) {
+    title = t('orderSuccess.codeTitle')
+    description = t('orderSuccess.codeDescription')
+  } else {
+    // Fallback
+    title = t('orderSuccess.collaborationTitle')
+    description = t('orderSuccess.collaborationDescription')
+  }
 
   if (loading) {
     return (
