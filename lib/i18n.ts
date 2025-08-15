@@ -220,7 +220,7 @@ export const translations: Record<Language, Translations> = {
     },
     orderModal: {
       consultationTitle: 'Zamów konsultację i wycenę',
-      collaborationTitle: 'Zamów współpracę',
+      collaborationTitle: 'Zamów MVP',
       codeTitle: 'Zamów kod',
       orderAs: 'Zamawiasz jako',
       email: 'Twój email',
@@ -357,7 +357,7 @@ export const translations: Record<Language, Translations> = {
     },
     orderModal: {
       consultationTitle: 'Order consultation and quote',
-      collaborationTitle: 'Order collaboration',
+      collaborationTitle: 'Order MVP',
       codeTitle: 'Order code',
       orderAs: 'Ordering as',
       email: 'Your email',
