@@ -5,7 +5,7 @@ import nodemailer from 'nodemailer'
 import { getTranslation } from '@/lib/i18n'
 
 const prisma = new PrismaClient()
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2023-10-16' })
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2025-07-30.basil' })
 
 // Funkcje walutowe
 function getCurrency(lang: string): string {
@@ -211,7 +211,8 @@ FelizTrade Team`
     })
     
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
+
+
       line_items: [
         {
           price_data: {
