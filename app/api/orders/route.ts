@@ -95,12 +95,76 @@ export async function POST(request: NextRequest) {
         priceInfo = `\n${softwareText}: ${softwareName}\n${codePriceText}: ${software.price} PLN`
       }
       
+      // Mail do właściciela platformy
       await transporter.sendMail({
         from: `FelizTrade <${process.env.EMAIL_USER}>`,
         to: process.env.EMAIL_USER,
         subject: emailSubject,
         text: `${emailBody}\nEmail: ${order.email || loggedInUserText}\nTelefon: ${order.phone}\nInfo: ${order.info || '-'}\n${orderIdText}: ${order.id}${priceInfo}`
       })
+
+      // Mail potwierdzający do klienta
+      if (order.email) {
+        try {
+          let customerSubject, customerBody, customerNextSteps
+          
+          if (order.orderType === 'consultation') {
+            customerSubject = getTranslation(language as 'pl' | 'en', 'email.customerConsultationSubject')
+            customerBody = getTranslation(language as 'pl' | 'en', 'email.customerConsultationBody')
+            customerNextSteps = language === 'en' 
+              ? 'We will contact you at the provided phone number to discuss project details and prepare a quote.'
+              : 'Skontaktujemy się z Tobą pod wskazany numer telefonu, aby omówić szczegóły projektu i przygotować wycenę.'
+          } else if (order.orderType === 'collaboration') {
+            customerSubject = getTranslation(language as 'pl' | 'en', 'email.customerCollaborationSubject')
+            customerBody = getTranslation(language as 'pl' | 'en', 'email.customerCollaborationBody')
+            customerNextSteps = language === 'en'
+              ? 'We will contact you within 24 hours at the provided phone number to arrange next collaboration steps and project implementation schedule.'
+              : 'Skontaktujemy się z Tobą w ciągu 24 godzin pod wskazany numer telefonu, aby ustalić dalsze kroki współpracy i harmonogram realizacji projektu.'
+          } else if (order.orderType === 'code') {
+            customerSubject = getTranslation(language as 'pl' | 'en', 'email.customerCodeSubject')
+            customerBody = getTranslation(language as 'pl' | 'en', 'email.customerCodeBody')
+            customerNextSteps = language === 'en'
+              ? 'Code with installation and editing instructions will be delivered within 7 working days to the provided email address.'
+              : 'Kod z instrukcjami uruchomienia i edycji zostanie dostarczony w ciągu 7 dni roboczych na podany adres email.'
+          }
+
+          const greeting = getTranslation(language as 'pl' | 'en', 'email.customerGreeting')
+          const orderDetails = getTranslation(language as 'pl' | 'en', 'email.customerOrderDetails')
+          const contactInfo = getTranslation(language as 'pl' | 'en', 'email.customerContactInfo')
+          const thankYou = getTranslation(language as 'pl' | 'en', 'email.customerThankYou')
+          
+          const customerEmailText = `${greeting}!
+
+${customerBody}
+
+${orderDetails}:
+${orderIdText}: ${order.id}
+${language === 'en' ? 'Order Type' : 'Typ zamówienia'}: ${order.orderType === 'consultation' ? (language === 'en' ? 'Consultation/Quote' : 'Konsultacja/Wycena') : order.orderType === 'collaboration' ? (language === 'en' ? 'Collaboration' : 'Współpraca') : (language === 'en' ? 'Code' : 'Kod')}
+${language === 'en' ? 'Phone' : 'Telefon'}: ${order.phone}
+${order.info ? `${language === 'en' ? 'Additional Information' : 'Dodatkowe informacje'}: ${order.info}` : ''}
+
+${customerNextSteps}
+
+${contactInfo}:
+${language === 'en' ? 'Email' : 'Email'}: ${process.env.EMAIL_USER}
+${language === 'en' ? 'Phone' : 'Telefon'}: +48 502 600 739
+${language === 'en' ? 'Website' : 'Strona internetowa'}: https://feliztradeltd.com
+
+${thankYou}
+
+---
+FelizTrade Team`
+
+          await transporter.sendMail({
+            from: `FelizTrade <${process.env.EMAIL_USER}>`,
+            to: order.email,
+            subject: customerSubject,
+            text: customerEmailText
+          })
+        } catch (customerEmailErr) {
+          console.error('Błąd wysyłki maila do klienta:', customerEmailErr)
+        }
+      }
     } catch (err) {
       console.error('Błąd wysyłki maila:', err)
     }

@@ -63,6 +63,9 @@ export interface Translations {
     removeFile: string
     uploadSuccess: string
     uploadError: string
+    orderTypeConsultation: string
+    orderTypeCollaboration: string
+    orderTypeCode: string
   }
   orderSuccess: {
     consultationTitle: string
@@ -98,6 +101,18 @@ export interface Translations {
     software: string
     collaborationPrice: string
     codePrice: string
+    // Customer confirmation emails
+    customerConsultationSubject: string
+    customerCollaborationSubject: string
+    customerCodeSubject: string
+    customerConsultationBody: string
+    customerCollaborationBody: string
+    customerCodeBody: string
+    customerGreeting: string
+    customerOrderDetails: string
+    customerNextSteps: string
+    customerContactInfo: string
+    customerThankYou: string
   }
   
   // API error messages
@@ -249,7 +264,10 @@ export const translations: Record<Language, Translations> = {
       fileSize: 'MB',
       removeFile: 'Usuń',
       uploadSuccess: 'Pliki zostały załączone pomyślnie',
-      uploadError: 'Błąd podczas załączania plików'
+      uploadError: 'Błąd podczas załączania plików',
+      orderTypeConsultation: 'wycenę',
+      orderTypeCollaboration: 'współpracę',
+      orderTypeCode: 'kod'
     },
     orderSuccess: {
       consultationTitle: 'Dziękujemy za zamówienie wyceny/konsultacji!',
@@ -280,7 +298,19 @@ export const translations: Record<Language, Translations> = {
       orderId: 'ID zamówienia',
       software: 'Oprogramowanie',
       collaborationPrice: 'Zaliczka za współpracę',
-      codePrice: 'Zaliczka za kod'
+      codePrice: 'Zaliczka za kod',
+      // Customer confirmation emails
+      customerConsultationSubject: 'Potwierdzenie zamówienia konsultacji - FelizTrade',
+      customerCollaborationSubject: 'Potwierdzenie zamówienia współpracy - FelizTrade',
+      customerCodeSubject: 'Potwierdzenie zamówienia kodu - FelizTrade',
+      customerConsultationBody: 'Dziękujemy za zamówienie konsultacji i wyceny!',
+      customerCollaborationBody: 'Dziękujemy za zamówienie współpracy!',
+      customerCodeBody: 'Dziękujemy za zamówienie kodu!',
+      customerGreeting: 'Dzień dobry',
+      customerOrderDetails: 'Szczegóły zamówienia',
+      customerNextSteps: 'Następne kroki',
+      customerContactInfo: 'Informacje kontaktowe',
+      customerThankYou: 'Dziękujemy za wybór FelizTrade!'
     },
     api: {
       missingData: 'Brak wymaganych danych.',
@@ -386,7 +416,10 @@ export const translations: Record<Language, Translations> = {
       fileSize: 'MB',
       removeFile: 'Remove',
       uploadSuccess: 'Files attached successfully',
-      uploadError: 'Error attaching files'
+      uploadError: 'Error attaching files',
+      orderTypeConsultation: 'quote',
+      orderTypeCollaboration: 'collaboration',
+      orderTypeCode: 'code'
     },
     orderSuccess: {
       consultationTitle: 'Thank you for ordering a quote/consultation!',
@@ -417,7 +450,19 @@ export const translations: Record<Language, Translations> = {
       orderId: 'Order ID',
       software: 'Software',
       collaborationPrice: 'Collaboration prepayment',
-      codePrice: 'Code prepayment'
+      codePrice: 'Code prepayment',
+      // Customer confirmation emails
+      customerConsultationSubject: 'Consultation Order Confirmation - FelizTrade',
+      customerCollaborationSubject: 'Collaboration Order Confirmation - FelizTrade',
+      customerCodeSubject: 'Code Order Confirmation - FelizTrade',
+      customerConsultationBody: 'Thank you for ordering consultation and quote!',
+      customerCollaborationBody: 'Thank you for ordering collaboration!',
+      customerCodeBody: 'Thank you for ordering code!',
+      customerGreeting: 'Hello',
+      customerOrderDetails: 'Order Details',
+      customerNextSteps: 'Next Steps',
+      customerContactInfo: 'Contact Information',
+      customerThankYou: 'Thank you for choosing FelizTrade!'
     },
     api: {
       missingData: 'Missing required data.',

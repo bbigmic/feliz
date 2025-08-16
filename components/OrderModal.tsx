@@ -506,7 +506,7 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
             className="btn-primary w-full"
             disabled={loading}
           >
-            {loading ? t('orderModal.submitButtonLoading') : t('orderModal.submitButton').replace('{type}', isConsultation ? 'wycenę' : (orderType === 'collaboration' ? 'współpracę' : 'kod'))}
+            {loading ? t('orderModal.submitButtonLoading') : t('orderModal.submitButton').replace('{type}', isConsultation ? t('orderModal.orderTypeConsultation') : (orderType === 'collaboration' ? t('orderModal.orderTypeCollaboration') : t('orderModal.orderTypeCode')))}
           </button>
           <div className="text-center text-darksubtle text-sm mt-4">
             <span>{t('orderModal.or')}</span><br />
