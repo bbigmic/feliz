@@ -8,8 +8,8 @@ import DynamicHtmlLang from '@/components/DynamicHtmlLang'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'FelizTrade - Platforma Sprzedaży Oprogramowań WWW',
-  description: 'Profesjonalna platforma do sprzedaży oprogramowań WWW z automatycznym systemem demo',
+  title: 'FelizTrade - Platforma Zakupu Oprogramowań WWW',
+  description: 'Profesjonalna platforma do zakupu oprogramowań WWW z automatycznym systemem demo',
   keywords: 'oprogramowanie, aplikacje web, sprzedaż, demo, sklep internetowy, cpm, monetyzacja, budowanie aplikacji',
 }
 
