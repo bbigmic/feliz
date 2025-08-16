@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { Toaster } from 'react-hot-toast'
 import { LanguageProvider } from '@/contexts/LanguageContext'
+import DynamicHtmlLang from '@/components/DynamicHtmlLang'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -18,13 +19,12 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="pl" className="dark" translate="yes">
+    <html className="dark" translate="yes">
       <head>
-        <title>Budowanie aplikacji | FelizTrade - Platforma Sprzedaży Oprogramowań</title>
-        <meta name="description" content="Budowanie aplikacji - Profesjonalna platforma do sprzedaży oprogramowań WWW z automatycznym systemem demo" />
-        <meta name="keywords" content="budowanie aplikacji, oprogramowanie, aplikacje web, sprzedaż, demo, sklep internetowy, cpm, monetyzacja" />
-        <meta property="og:title" content="Budowanie aplikacji | FelizTrade" />
-        <meta property="og:description" content="Budowanie aplikacji - Profesjonalna platforma do sprzedaży oprogramowań z automatycznym systemem demo" />
+        <meta name="description" content="Profesjonalna platforma do sprzedaży oprogramowań WWW z automatycznym systemem demo" />
+        <meta name="keywords" content="oprogramowanie, aplikacje web, sprzedaż, demo, sklep internetowy, cpm, monetyzacja, budowanie aplikacji" />
+        <meta property="og:title" content="FelizTrade - Platforma Sprzedaży Oprogramowań" />
+        <meta property="og:description" content="Profesjonalna platforma do sprzedaży oprogramowań z automatycznym systemem demo" />
         <meta property="og:type" content="website" />
         <meta property="og:locale" content="pl_PL" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -33,7 +33,8 @@ export default function RootLayout({
       <body className={inter.className} translate="yes">
         <Toaster position="top-right" />
         <LanguageProvider>
-        {children}
+          <DynamicHtmlLang />
+          {children}
         </LanguageProvider>
       </body>
     </html>

@@ -1,9 +1,11 @@
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
+import DynamicTitle from '@/components/DynamicTitle'
 
 export default function About() {
   return (
     <div className="min-h-screen flex flex-col bg-darkbg text-darktext">
+      <DynamicTitle titleKey="about" fallbackTitle="O nas - FelizTrade" />
       <Header />
       <main className="flex-1 container mx-auto px-4 py-12 pt-20">
         <section className="mb-12 text-center">

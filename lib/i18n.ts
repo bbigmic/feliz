@@ -174,6 +174,14 @@ export interface Translations {
     description: string
     button: string
   }
+  
+  // Page titles
+  pageTitles: {
+    home: string
+    about: string
+    regulamin: string
+    orderSuccess: string
+  }
 }
 
 export const translations: Record<Language, Translations> = {
@@ -327,7 +335,13 @@ export const translations: Record<Language, Translations> = {
     },
     preloader: {
       loading: 'Ładowanie...'
-    }
+    },
+         pageTitles: {
+       home: 'Budowanie aplikacji | FelizTrade - Platforma Zakupu Oprogramowań',
+       about: 'O nas',
+       regulamin: 'Regulamin',
+       orderSuccess: 'Dziękujemy za zamówienie wyceny/konsultacji!'
+     }
   },
   en: {
     hero: {
@@ -479,7 +493,13 @@ export const translations: Record<Language, Translations> = {
     },
     preloader: {
       loading: 'Loading...'
-    }
+    },
+         pageTitles: {
+       home: 'Building Applications | FelizTrade - Software Purchase Platform',
+       about: 'About',
+       regulamin: 'Terms and Conditions',
+       orderSuccess: 'Thank you for ordering a quote/consultation!'
+     }
   }
 }
 

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useEffect, useState, Suspense } from 'react'
 import { useLanguage } from "@/contexts/LanguageContext"
+import DynamicTitle from '@/components/DynamicTitle'
 
 function OrderSuccessContent() {
   const { t } = useLanguage()
@@ -65,6 +66,7 @@ function OrderSuccessContent() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-darkbg text-darktext">
+      <DynamicTitle titleKey="orderSuccess" fallbackTitle="Dziękujemy za zamówienie - FelizTrade" />
       <CheckCircle className="w-20 h-20 text-green-500 mb-6" />
       <h1 className="text-3xl font-bold mb-4">{title}</h1>
       <p className="text-lg mb-4 text-center max-w-md">

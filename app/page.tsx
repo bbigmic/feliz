@@ -19,6 +19,7 @@ import SoftwareGalleryModal from '@/components/SoftwareGalleryModal'
 import Preloader from '@/components/Preloader'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { formatPrice } from '@/lib/i18n'
+import DynamicTitle from '@/components/DynamicTitle'
 
 
 const VIDEO_FADE_DURATION = 0 // sekundy
@@ -235,6 +236,7 @@ export default function Home() {
 
   return (
     <>
+      <DynamicTitle titleKey="home" fallbackTitle="FelizTrade - Platforma Sprzedaży Oprogramowań" />
       <Preloader isLoading={!isPageReady} />
       <div className="min-h-screen relative">
         <Header />

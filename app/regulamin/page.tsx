@@ -1,9 +1,11 @@
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
+import DynamicTitle from '@/components/DynamicTitle'
 
 export default function Regulamin() {
   return (
     <div className="min-h-screen flex flex-col bg-darkbg text-darktext">
+      <DynamicTitle titleKey="regulamin" fallbackTitle="Regulamin - FelizTrade" />
       <Header />
       <main className="flex-1 container mx-auto px-4 py-12 pt-20">
         <div className="max-w-4xl mx-auto">
