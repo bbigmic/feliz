@@ -21,10 +21,10 @@ export default function RootLayout({
   return (
     <html className="dark" translate="yes">
       <head>
-        <meta name="description" content="Profesjonalna platforma do sprzedaży oprogramowań WWW z automatycznym systemem demo" />
+        <meta name="description" content="Profesjonalna platforma do zakupu oprogramowań" />
         <meta name="keywords" content="oprogramowanie, aplikacje web, sprzedaż, demo, sklep internetowy, cpm, monetyzacja, budowanie aplikacji" />
         <meta property="og:title" content="FelizTrade - Platforma Sprzedaży Oprogramowań" />
-        <meta property="og:description" content="Profesjonalna platforma do sprzedaży oprogramowań z automatycznym systemem demo" />
+        <meta property="og:description" content="Profesjonalna platforma do zakupu oprogramowań" />
         <meta property="og:type" content="website" />
         <meta property="og:locale" content="pl_PL" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
