@@ -78,53 +78,81 @@ export interface Translations {
         }
       }
     }
-    generalProvisions: {
+    scope: {
       title: string
-      scope: string
-      changes: string
-      acceptance: string
+      points: string[]
     }
-    services: {
+    servicesKinds: {
       title: string
-      software: string
-      consultation: string
-      collaboration: string
-      code: string
-      pricing: string
-      hosting: string
+      softwareSales: {
+        title: string
+        items: string[]
+      }
+      technicalConsulting: {
+        title: string
+        items: string[]
+      }
+      devCollaboration: {
+        title: string
+        items: string[]
+      }
+      sourceCodeDelivery: {
+        title: string
+        items: string[]
+      }
+      appHosting: {
+        title: string
+        items: string[]
+      }
     }
-    hosting: {
+          hosting: {
+        title: string
+        period: {
+          title: string
+          items: string[]
+        }
+        maintenanceFee: {
+          title: string
+          items: string[]
+        }
+        consequences: {
+          title: string
+          items: string[]
+        }
+        renewal: {
+          title: string
+          items: string[]
+        }
+      }
+    ordering: {
       title: string
-      period: string
-      maintenanceFee: string
-      consequences: string
-      renewal: string
-      hostingPeriod: string
-      maintenanceFeeAmount: string
-      feeDetermination: string
-      noPaymentConsequences: string
-      dataArchiving: string
-      renewalPossibility: string
-      reactivationFee: string
-    }
-    orders: {
-      title: string
-      process: string
-      requiredData: string
-      consents: string
-      termsConsent: string
-      marketingConsent: string
-      collaborationConsent: string
-      codeConsent: string
+      process: {
+        title: string
+        steps: string[]
+      }
+      requiredData: {
+        title: string
+        items: string[]
+      }
+      requiredConsents: {
+        title: string
+        items: string[]
+      }
     }
     payments: {
       title: string
-      methods: string
-      currencies: string
-      consultationPrice: string
-      collaborationPrice: string
-      codePrice: string
-      invoices: string
+      methods: {
+        title: string
+        items: string[]
+      }
+      pricing: {
+        title: string
+        items: string[]
+      }
+      settlements: {
+        title: string
+        items: string[]
+      }
     }
     delivery: {
       title: string
