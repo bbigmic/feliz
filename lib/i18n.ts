@@ -38,19 +38,45 @@ export interface Translations {
     subtitle: string
     companyInfo: {
       title: string
+      labels: {
+        companyName: string
+        address: string
+        email: string
+        phone: string
+        regNumber: string
+        website: string
+      }
       companyName: string
       address: string
       email: string
       phone: string
       regNumber: string
+      website: string
     }
     definitions: {
       title: string
-      platform: string
-      company: string
-      user: string
-      client: string
-      services: string
+      items: {
+        platform: {
+          term: string
+          description: string
+        }
+        company: {
+          term: string
+          description: string
+        }
+        user: {
+          term: string
+          description: string
+        }
+        client: {
+          term: string
+          description: string
+        }
+        services: {
+          term: string
+          description: string
+        }
+      }
     }
     generalProvisions: {
       title: string
