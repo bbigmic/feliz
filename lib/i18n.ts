@@ -38,99 +38,48 @@ export interface Translations {
     subtitle: string
     companyInfo: {
       title: string
-      labels: {
-        companyName: string
-        address: string
-        email: string
-        phone: string
-        regNumber: string
-        website: string
-      }
       companyName: string
       address: string
       email: string
       phone: string
       regNumber: string
-      website: string
     }
     definitions: {
       title: string
-      items: {
-        platform: {
-          term: string
-          description: string
-        }
-        company: {
-          term: string
-          description: string
-        }
-        user: {
-          term: string
-          description: string
-        }
-        client: {
-          term: string
-          description: string
-        }
-        services: {
-          term: string
-          description: string
-        }
-      }
+      platform: string
+      company: string
+      user: string
+      client: string
+      services: string
     }
-    scope: {
+    generalProvisions: {
       title: string
-      points: string[]
+      scope: string
+      changes: string
+      acceptance: string
     }
-    servicesKinds: {
+    services: {
       title: string
-      softwareSales: {
-        title: string
-        items: string[]
-      }
-      technicalConsulting: {
-        title: string
-        items: string[]
-      }
-      devCollaboration: {
-        title: string
-        items: string[]
-      }
-      sourceCodeDelivery: {
-        title: string
-        items: string[]
-      }
-      appHosting: {
-        title: string
-        items: string[]
-      }
+      software: string
+      consultation: string
+      collaboration: string
+      code: string
+      pricing: string
+      hosting: string
     }
     hosting: {
       title: string
-      period: {
-        title: string
-        items: string[]
-      }
-      maintenanceFee: {
-        title: string
-        items: string[]
-      }
-      consequences: {
-        title: string
-        items: string[]
-      }
-      renewal: {
-        title: string
-        items: string[]
-      }
-      dataArchiving: {
-        title: string
-        items: string[]
-      }
-      reactivationFee: {
-        title: string
-        items: string[]
-      }
+      period: string
+      maintenanceFee: string
+      consequences: string
+      renewal: string
+      hostingPeriod: string
+      maintenanceFeeAmount: string
+      feeDetermination: string
+      noPaymentConsequences: string
+      dataArchiving: string
+      renewalPossibility: string
+      reactivationFee: string
     }
     orders: {
       title: string
