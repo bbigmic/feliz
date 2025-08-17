@@ -65,6 +65,21 @@ export interface Translations {
       collaboration: string
       code: string
       pricing: string
+      hosting: string
+    }
+    hosting: {
+      title: string
+      period: string
+      maintenanceFee: string
+      consequences: string
+      renewal: string
+      hostingPeriod: string
+      maintenanceFeeAmount: string
+      feeDetermination: string
+      noPaymentConsequences: string
+      dataArchiving: string
+      renewalPossibility: string
+      reactivationFee: string
     }
     orders: {
       title: string
@@ -436,110 +451,412 @@ export const translations: Record<Language, Translations> = {
     preloader: {
       loading: 'Ładowanie...'
     },
-         pageTitles: {
+    pageTitles: {
        home: 'Budowanie aplikacji | FelizTrade - Platforma Zakupu Oprogramowań',
        about: 'O nas',
        regulamin: 'Regulamin',
        orderSuccess: 'Dziękujemy za zamówienie wyceny/konsultacji!'
-     },
-    regulamin: {
-      title: 'Regulamin FelizTrade',
-      subtitle: 'Zasady i warunki korzystania z platformy FelizTrade',
-      companyInfo: {
-        title: 'Informacje o firmie',
-               companyName: 'FelizTrade LTD',
-       address: 'Preston, Lancashire, United Kingdom',
-       email: 'FelizTradeLTD@proton.me',
-       phone: '+48 502 600 739',
-       regNumber: '16008964'
+    },
+    "regulamin": {
+      "meta": {
+        "fallbackTitle": "Regulamin - FelizTrade"
       },
-      definitions: {
-        title: 'Definicje',
-        platform: 'Platforma FelizTrade to internetowy serwis, który umożliwia użytkownikom zakup oprogramowania, konsultacje oraz współpracę z firmami.',
-        company: 'Firma FelizTrade to osoba prawna, która prowadzi działalność gospodarczą na rzecz użytkowników platformy.',
-        user: 'Użytkownik to osoba, która korzysta z platformy FelizTrade, zarejestrowana na niej i posiadająca konto.',
-        client: 'Klient to osoba fizyczna lub prawna, która zamawia oprogramowanie lub konsultację od firmy FelizTrade.',
-        services: 'Usługi oferowane przez platformę FelizTrade obejmują: zakup oprogramowania, konsultacje, współpracę oraz dostarczanie kodu.'
+      "title": "Regulamin",
+      "subtitle": "Zapoznaj się z zasadami korzystania z Platformy.",
+      "companyInfo": {
+        "title": "Informacje o firmie",
+        "labels": {
+          "companyName": "Nazwa firmy:",
+          "address": "Adres:",
+          "email": "Email:",
+          "phone": "Telefon:",
+          "regNumber": "Numer rejestrowy:",
+          "website": "Strona internetowa:"
+        },
+        "companyName": "Feliz Trade LTD",
+        "address": "Preston, Lancashire, United Kingdom",
+        "email": "FelizTradeLTD@proton.me",
+        "phone": "+48 502 600 739",
+        "regNumber": "16008964",
+        "website": "https://feliztradeltd.com"
       },
-      generalProvisions: {
-        title: 'Ogólne postanowienia',
-        scope: 'Regulamin określa zasady korzystania z platformy FelizTrade, w tym zakup oprogramowania, konsultacje oraz współpracę.',
-        changes: 'Firma FelizTrade zastrzega sobie prawo do wprowadzania zmian w regulaminie w dowolnym momencie. Zmiany te będą obowiązywać od momentu ich opublikowania na platformie.',
-        acceptance: 'Korzystanie z platformy FelizTrade oznacza akceptację regulaminu.'
+      "definitions": {
+        "title": "Definicje",
+        "items": {
+          "platform": {
+            "term": "Platforma",
+            "description": "Strona internetowa dostępna pod adresem https://feliztradeltd.com"
+          },
+          "company": {
+            "term": "Firma",
+            "description": "FELIZ TRADE LTD, spółka z ograniczoną odpowiedzialnością zarejestrowana w Wielkiej Brytanii"
+          },
+          "user": {
+            "term": "Użytkownik",
+            "description": "Osoba fizyczna, prawna lub jednostka organizacyjna korzystająca z Platformy"
+          },
+          "client": {
+            "term": "Klient",
+            "description": "Użytkownik składający zamówienie przez Platformę"
+          },
+          "services": {
+            "term": "Usługi",
+            "description": "Oprogramowania komputerowe, konsultacje techniczne, współpraca programistyczna"
+          }
+        }
       },
-      services: {
-        title: 'Usługi',
-        software: 'Oprogramowanie dostarczane przez platformę FelizTrade jest gotowe do użycia i nie wymaga dodatkowych instalacji.',
-        consultation: 'Konsultacje odbywają się w formie online lub telefonicznej. Konsultant przeprowadza analizę potrzeb klienta i oferuje odpowiednie rozwiązania.',
-        collaboration: 'Współpraca polega na współdziałaniu klienta i firmy FelizTrade w celu realizacji projektu. Klient przekazuje wymagania i oczekiwania, a firma odpowiada na pytania i udziela porad.',
-        code: 'Dostarczanie kodu odbywa się w formie elektronicznej. Kod zawiera wszystkie niezbędne instrukcje uruchomienia i edycji.',
-        pricing: 'Ceny usług są ustalane indywidualnie i zależą od rodzaju usługi oraz złożoności projektu.'
+      "scope": {
+        "title": "Postanowienia ogólne i zakres regulaminu",
+        "points": [
+          "Regulamin określa zasady świadczenia usług drogą elektroniczną przez Firmę, zasady korzystania z Platformy, w tym zakup oprogramowania, konsultacje oraz współpracę.",
+          "Regulamin jest integralną częścią umowy o świadczenie usług",
+          "Firma zastrzega sobie prawo do wprowadzania zmian w regulaminie w dowolnym momencie. Zmiany te będą obowiązywać od momentu ich opublikowania na platformie.",
+          "Korzystanie z platformy FelizTrade oznacza akceptację regulaminu."
+        ]
       },
-      orders: {
-        title: 'Zamówienia',
-        process: 'Proces zamawiania usług odbywa się poprzez wypełnienie formularza zamówienia na platformie FelizTrade. Klient wskazuje rodzaj usługi, którą chce zamówić, oraz wymagania i oczekiwania.',
-        requiredData: 'Do realizacji zamówienia wymagane są dane osobowe klienta, takie jak imię, nazwisko, adres e-mail, numer telefonu oraz dane do płatności.',
-        consents: 'Klient musi wyrazić zgodę na przetwarzanie jego danych osobowych w celu realizacji zamówienia oraz w celu wysyłania informacji marketingowych (opcjonalnie).',
-        termsConsent: 'Klient musi zaakceptować regulamin platformy FelizTrade przed złożeniem zamówienia.',
-        marketingConsent: 'Klient może otrzymywać informacje marketingowe od firmy FelizTrade (opcjonalnie).',
-        collaborationConsent: 'Oświadczam, że opłata zaliczkowa w wysokości 30% ceny oprogramowania dotyczy rozpoczęcia współpracy. Skontaktujemy się z Tobą w ciągu 24 godzin w celu ustalenia dalszych kroków i harmonogramu realizacji projektu.',
-        codeConsent: 'Oświadczam, że opłata w wysokości 100% ceny oprogramowania dotyczy dostarczenia repozytorium kodu z instrukcjami uruchomienia i edycji. Kod zostanie dostarczony w ciągu 7 dni roboczych od zaksięgowania płatności.'
+      "servicesKinds": {
+        "title": "Rodzaje usług",
+        "softwareSales": {
+          "title": "1. Sprzedaż oprogramowań",
+          "items": [
+            "Gotowe oprogramowania internetowe z kategorii określonych na Platformie",
+            "Ceny podane w PLN lub GBP w zależności od wybranego języka",
+            "Każde oprogramowanie posiada opis, funkcje i demo"
+          ]
+        },
+        "technicalConsulting": {
+          "title": "2. Konsultacje techniczne",
+          "items": [
+            "Doradztwo w zakresie projektów IT",
+            "Wyceny projektów programistycznych",
+            "Analiza wymagań technicznych"
+          ]
+        },
+        "devCollaboration": {
+          "title": "3. Współpraca programistyczna",
+          "items": [
+            "Implementacja oprogramowań na zamówienie",
+            "Dostosowanie istniejących rozwiązań",
+            "Wsparcie techniczne i szkolenia"
+          ]
+        },
+        "sourceCodeDelivery": {
+          "title": "4. Dostarczanie kodu źródłowego",
+          "items": [
+            "Przekazanie kodu oprogramowania",
+            "Instrukcje instalacji i konfiguracji",
+            "Dokumentacja techniczna"
+          ]
+        },
+        "appHosting": {
+          "title": "5. Serwerowanie aplikacji",
+          "items": [
+            "Hosting aplikacji na serwerach zewnętrznych usługodawców",
+            "Serwerowanie świadczone na okres 1 roku od daty zakupu",
+            "Po upływie roku wymagana opłata utrzymaniowa na kolejny rok",
+            "Wysokość opłaty utrzymaniowej: zwykle ok. 10% ceny oprogramowania",
+            "Dokładna kwota ustalana indywidualnie w zależności od złożoności aplikacji",
+            "Brak opłaty utrzymaniowej skutkuje wstrzymaniem serwerowania"
+          ]
+        }
       },
-      payments: {
-        title: 'Płatności',
-        methods: 'Płatności odbywają się poprzez przelew bankowy lub przelew internetowy. Firma FelizTrade zastrzega sobie prawo do wprowadzania zmian w metodach płatności w dowolnym momencie.',
-        currencies: 'Wszystkie ceny są wyrażone w polskich złotych (PLN) lub funtach szterlingowych (GBP).',
-        consultationPrice: 'Cena konsultacji wynosi 100 PLN (netto) lub 200 GBP (netto).',
-        collaborationPrice: 'Cena współpracy wynosi 300 PLN (netto) lub 600 GBP (netto).',
-        codePrice: 'Cena kodu wynosi 1000 PLN (netto) lub 2000 GBP (netto).',
-        invoices: 'Firma FelizTrade wystawia faktury elektroniczne na wszystkie płatności.'
+      "hosting": {
+        "title": "Serwerowanie aplikacji",
+        "period": {
+          "title": "1. Okres serwerowania",
+          "items": [
+            "Serwerowanie aplikacji przez Feliz Trade świadczone jest na okres 1 roku",
+            "Okres liczony od daty zakupu oprogramowania",
+            "W trakcie okresu serwerowania zapewnione jest pełne wsparcie techniczne"
+          ]
+        },
+        "maintenanceFee": {
+          "title": "2. Opłata utrzymaniowa",
+          "items": [
+            "Po upływie roku wymagana jest opłata utrzymaniowa na kolejny rok",
+            "Wysokość opłaty: zwykle ok. 10% ceny oprogramowania",
+            "Dokładna kwota ustalana indywidualnie dla każdej aplikacji",
+            "Wpływ na wysokość opłaty ma złożoność i wymagania techniczne aplikacji"
+          ]
+        },
+        "consequences": {
+          "title": "3. Konsekwencje braku opłaty",
+          "items": [
+            "Brak opłaty utrzymaniowej skutkuje wstrzymaniem serwerowania",
+            "Aplikacja zostaje wyłączona z serwerów Feliz Trade",
+            "Dane aplikacji są archiwizowane przez maksymalnie 30 dni",
+            "Po 30 dniach dane mogą zostać usunięte"
+          ]
+        },
+        "renewal": {
+          "title": "4. Odnowienie serwerowania",
+          "items": [
+            "Możliwość odnowienia serwerowania po uiszczeniu opłaty utrzymaniowej",
+            "Odnowienie możliwe w ciągu 30 dni od wstrzymania",
+            "Po 30 dniach wymagane ponowne uruchomienie aplikacji (dodatkowa opłata)"
+          ]
+        }
       },
-      delivery: {
-        title: 'Dostawa',
-        consultationTime: 'Czas realizacji konsultacji to 24 godziny od momentu otrzymania zamówienia.',
-        collaborationTime: 'Czas realizacji współpracy to 7 dni roboczych od momentu otrzymania zamówienia.',
-        codeTime: 'Czas dostarczenia kodu to 7 dni roboczych od zaksięgowania płatności.',
-        process: 'Dostawa odbywa się poprzez wysłanie kodu na adres e-mail klienta lub bezpośrednio na platformie FelizTrade.',
-        quality: 'Kod dostarczany przez platformę FelizTrade jest pełnym i niezmienionym repozytorium kodu, zawierającym wszystkie niezbędne pliki i instrukcje.'
+      "ordering": {
+        "title": "Zasady składania zamówień",
+        "process": {
+          "title": "1. Proces zamawiania",
+          "steps": [
+            "Wybór produktu/usługi na Platformie",
+            "Wypełnienie formularza zamówienia",
+            "Akceptacja regulaminu i polityki prywatności",
+            "Wybór metody płatności (Stripe)",
+            "Potwierdzenie zamówienia (e-mail)"
+          ]
+        },
+        "requiredData": {
+          "title": "2. Wymagane dane",
+          "items": [
+            "Adres email (wymagane)",
+            "Numer telefonu (wymagane)",
+            "Dodatkowe informacje o projekcie",
+            "Zgody na przetwarzanie danych osobowych"
+          ]
+        },
+        "requiredConsents": {
+          "title": "3. Zgody wymagane",
+          "items": [
+            "Akceptacja regulaminu (obowiązkowe)",
+            "Zgoda na marketing (opcjonalne)",
+            "Zgoda na współpracę (dla zamówień collaboration)",
+            "Zgoda na kod (dla zamówień code)"
+          ]
+        }
       },
-      rights: {
-        title: 'Prawa i obowiązki',
-        companyRights: 'Firma FelizTrade ma prawo do wprowadzania zmian w regulaminie oraz do wprowadzania zmian w cenach i metodach płatności w dowolnym momencie.',
-        companyObligations: 'Firma FelizTrade jest zobowiązana do udzielania klientom pomocy technicznej oraz do współpracy w terminie.',
-        clientRights: 'Klient ma prawo do korzystania z platformy FelizTrade, do otrzymywania informacji o nowych ofertach oraz do wysyłania zapytań i propozycji.',
-        clientObligations: 'Klient jest zobowiązany do płatności za usługi, do zachowania poufności danych oraz do przestrzegania regulaminu.'
+      "payments": {
+        "title": "Płatności i rozliczenia",
+        "methods": {
+          "title": "1. Metody płatności",
+          "items": [
+            "Bramka płatnicza przez system Stripe",
+            "Waluty: PLN (Polska) lub GBP (Wielka Brytania)",
+            "Płatności online w czasie rzeczywistym"
+          ]
+        },
+        "pricing": {
+          "title": "2. Struktura cen",
+          "items": [
+            "Konsultacje: 200 PLN / 50 GBP",
+            "Współpraca: 30% ceny oprogramowania (zaliczka)",
+            "Kod źródłowy: 100% ceny oprogramowania",
+            "Ceny komponentów funkcjonalnych: od-do w zależności od złożoności"
+          ]
+        },
+        "settlements": {
+          "title": "3. Rozliczenia",
+          "items": [
+            "Płatność przed rozpoczęciem realizacji",
+            "Możliwość refundacji zgodnie z prawem"
+          ]
+        }
       },
-      dataProtection: {
-        title: 'Ochrona danych osobowych',
-        controller: 'Firma FelizTrade jest kontrolerem danych osobowych. Dane osobowe klientów są przetwarzane w celu realizacji zamówienia oraz w celu wysyłania informacji marketingowych (opcjonalnie).',
-        purposes: 'Przetwarzane dane obejmują: imię, nazwisko, adres e-mail, numer telefonu, dane do płatności oraz dane do identyfikacji użytkownika.',
-        userRights: 'Klient ma prawo do dostępu do swoich danych osobowych, do ich sprostowania, usunięcia oraz do ograniczenia przetwarzania.'
+      "fulfillment": {
+        "title": "Realizacja zamówień",
+        "leadTimes": {
+          "title": "1. Czasy realizacji",
+          "items": [
+            "Konsultacje: kontakt w ciągu 24h",
+            "Współpraca: kontakt w ciągu 24h, harmonogram ustalany indywidualnie",
+            "Kod źródłowy: dostarczenie w ciągu 7 dni roboczych"
+          ]
+        },
+        "process": {
+          "title": "2. Proces realizacji",
+          "steps": [
+            "Potwierdzenie zamówienia drogą elektroniczną",
+            "Kontakt telefoniczny w celu ustalenia szczegółów",
+            "Realizacja zgodnie z ustalonym harmonogramem",
+            "Przekazanie produktu/usługi"
+          ]
+        },
+        "quality": {
+          "title": "3. Jakość usług",
+          "items": [
+            "Usługi świadczone zgodnie z najlepszymi praktykami branżowymi",
+            "Zgodność z opisem na Platformie",
+            "Możliwość reklamacji w terminie 14 dni"
+          ]
+        }
       },
-      intellectualProperty: {
-        title: 'Własność intelektualna',
-        software: 'Oprogramowanie dostarczane przez platformę FelizTrade jest własnością intelektualną firmy FelizTrade. Klient otrzymuje licencję na używanie oprogramowania wyłącznie w zakresie określonym w regulaminie.',
-        sourceCode: 'Kod dostarczany przez platformę FelizTrade jest własnością intelektualną firmy FelizTrade. Klient otrzymuje licencję na używanie kodu wyłącznie w zakresie określonym w regulaminie.',
-        violations: 'W przypadku naruszenia praw autorskich lub innych praw własności intelektualnej, firma FelizTrade zastrzega sobie prawo do wniesienia roszczenia o odszkodowanie oraz do wniesienia roszczenia o zbanowanie użytkownika.'
+      "rightsDuties": {
+        "title": "Prawa i obowiązki stron",
+        "companyRights": {
+          "title": "1. Prawa Firmy",
+          "items": [
+            "Odmowa realizacji zamówienia bez podawania przyczyny",
+            "Zmiana cen i warunków z zachowaniem praw Klientów",
+            "Zawieszenie świadczenia usług w przypadku naruszenia regulaminu"
+          ]
+        },
+        "companyDuties": {
+          "title": "2. Obowiązki Firmy",
+          "items": [
+            "Świadczenie usług zgodnie z umową",
+            "Zachowanie poufności informacji Klienta",
+            "Przekazanie produktu/usługi w ustalonym terminie",
+            "Wsparcie techniczne w zakresie świadczonych usług"
+          ]
+        },
+        "clientRights": {
+          "title": "3. Prawa Klienta",
+          "items": [
+            "Informacja o statusie zamówienia",
+            "Reklamacja wadliwych usług",
+            "Odstąpienie od umowy w terminie 14 dni",
+            "Ochrona danych osobowych"
+          ]
+        },
+        "clientDuties": {
+          "title": "4. Obowiązki Klienta",
+          "items": [
+            "Prawdziwość podanych informacji",
+            "Terminowe płatności",
+            "Współpraca w procesie realizacji",
+            "Przestrzeganie regulaminu"
+          ]
+        }
       },
-      liability: {
-        title: 'Odpowiedzialność',
-        companyLiability: 'Firma FelizTrade nie ponosi odpowiedzialności za szkody wynikające z niewykonania lub nienależytego wykonania zobowiązań wynikających z regulaminu.',
-        complaints: 'W przypadku wystąpienia sprawy, klient może skontaktować się z firmą FelizTrade poprzez platformę lub telefonicznie.',
-        disputeResolution: 'W przypadku sporów dotyczących regulaminu lub usług, strony zobowiązane są do próby ich rozwiązania drogą pokojową.'
+      "privacy": {
+        "title": "Ochrona danych osobowych",
+        "controller": {
+          "title": "1. Administrator danych",
+          "items": [
+            "Feliz Trade LTD jako administrator danych osobowych",
+            "Przetwarzanie zgodnie z RODO (UK GDPR)"
+          ]
+        },
+        "purposes": {
+          "title": "2. Cele przetwarzania",
+          "items": [
+            "Realizacja zamówień i świadczenie usług",
+            "Marketing (za zgodą)",
+            "Analiza statystyczna i poprawa jakości usług"
+          ]
+        },
+        "userRights": {
+          "title": "3. Prawa użytkownika",
+          "items": [
+            "Dostęp do swoich danych",
+            "Poprawianie i usuwanie danych",
+            "Przenoszenie danych",
+            "Sprzeciw wobec przetwarzania"
+          ]
+        }
       },
-      finalProvisions: {
-        title: 'Zakończenie umowy',
-        changes: 'Firma FelizTrade zastrzega sobie prawo do wprowadzania zmian w regulaminie w dowolnym momencie. Zmiany te będą obowiązywać od momentu ich opublikowania na platformie.',
-        validity: 'Regulamin obowiązuje od momentu jego opublikowania na platformie FelizTrade.',
-        effectiveDate: 'Regulamin został wprowadzony z dniem 01.01.2024.'
+      "intellectualProperty": {
+        "title": "Własność intelektualna",
+        "software": {
+          "title": "1. Oprogramowania",
+          "items": [
+            "Wszystkie prawa własności intelektualnej należą do Firmy",
+            "Licencja na użytkowanie oprogramowania",
+            "Zakaz kopiowania, modyfikacji i rozpowszechniania"
+          ]
+        },
+        "sourceCode": {
+          "title": "2. Kod źródłowy",
+          "items": [
+            "Przekazanie praw do kodu po pełnej płatności",
+            "Licencja na użytkowanie i modyfikację",
+            "Zachowanie praw Firmy do wykorzystania w innych projektach"
+          ]
+        },
+        "infringements": {
+          "title": "3. Naruszenia",
+          "items": [
+            "Odpowiedzialność cywilna i karna",
+            "Możliwość zawieszenia licencji",
+            "Roszczenia o odszkodowanie"
+          ]
+        }
       },
-             contact: {
-         title: 'Kontakt',
-         email: 'FelizTradeLTD@proton.me',
-         phone: '+48 502 600 739',
-         website: 'https://feliztradeltd.com'
-       }
-    }
+      "liability": {
+        "title": "Odpowiedzialność i reklamacje",
+        "companyLiability": {
+          "title": "1. Odpowiedzialność Firmy",
+          "items": [
+            "Ograniczona do wysokości opłaty za usługę",
+            "Wyłączenie odpowiedzialności za szkody pośrednie"
+          ]
+        },
+        "complaints": {
+          "title": "2. Reklamacje",
+          "items": [
+            "Termin: 14 dni od otrzymania usługi",
+            "Forma: pisemna lub elektroniczna",
+            "Rozpatrzenie w terminie 14 dni",
+            "Możliwość odwołania się do sądu"
+          ]
+        },
+        "disputeResolution": {
+          "title": "3. Rozstrzyganie sporów",
+          "items": [
+            "Sąd właściwy: sądy Wielkiej Brytanii",
+            "Prawo właściwe: prawo angielskie",
+            "Możliwość mediacji i arbitrażu"
+          ]
+        }
+      },
+      "finalProvisions": {
+        "title": "Postanowienia końcowe",
+        "changes": {
+          "title": "1. Zmiany regulaminu",
+          "items": [
+            "Informacja o zmianach 30 dni wcześniej",
+            "Akceptacja zmian przez dalsze korzystanie",
+            "Możliwość odstąpienia od umowy"
+          ]
+        },
+        "validity": {
+          "title": "2. Ważność postanowień",
+          "items": [
+            "Nieważność pojedynczych postanowień nie wpływa na całość",
+            "Zastąpienie nieważnych postanowień zgodnymi z prawem"
+          ]
+        },
+        "entryIntoForce": {
+          "title": "3. Wejście w życie",
+          "items": [
+            "Regulamin wchodzi w życie z dniem publikacji",
+            "Obowiązuje wszystkich użytkowników Platformy"
+          ]
+        }
+      },
+      "compliance": {
+        "title": "Zgodność z przepisami",
+        "intro": "Ten regulamin jest zgodny z przepisami:",
+        "uk": [
+          "Consumer Rights Act 2015",
+          "Electronic Commerce Regulations 2002",
+          "UK GDPR"
+        ]
+      },
+      "contact": {
+        "title": "Kontakt w sprawach regulaminu",
+        "labels": {
+          "email": "Email:",
+          "phone": "Telefon:",
+          "address": "Adres:",
+          "website": "Strona:"
+        },
+        "email": "FelizTradeLTD@proton.me",
+        "phone": "+48 502 600 739",
+        "address": "Preston, Lancashire, United Kingdom",
+        "website": "https://feliztradeltd.com"
+      },
+      "updateInfo": {
+        "lastUpdatedLabel": "Data ostatniej aktualizacji:",
+        "lastUpdatedDate": "15.01.2025",
+        "versionLabel": "Wersja:",
+        "version": "1.0"
+      }
+    },
+    
   },
   en: {
     hero: {
@@ -698,103 +1015,404 @@ export const translations: Record<Language, Translations> = {
        regulamin: 'Terms and Conditions',
        orderSuccess: 'Thank you for ordering a quote/consultation!'
      },
-    regulamin: {
-      title: 'FelizTrade Terms and Conditions',
-      subtitle: 'Rules and conditions for using the FelizTrade platform',
-      companyInfo: {
-        title: 'Company Information',
-               companyName: 'FelizTrade LTD',
-       address: 'Preston, Lancashire, United Kingdom',
-       email: 'FelizTradeLTD@proton.me',
-       phone: '+48 502 600 739',
-       regNumber: '16008964'
+     "regulamin": {
+      "meta": {
+        "fallbackTitle": "Terms & Conditions - FelizTrade"
       },
-      definitions: {
-        title: 'Definitions',
-        platform: 'FelizTrade platform is an online service that allows users to purchase software, consultations, and collaborate with companies.',
-        company: 'FelizTrade company is a legal person conducting business on behalf of users of the platform.',
-        user: 'User is a person who uses the FelizTrade platform, registered on it, and has an account.',
-        client: 'Client is a natural or legal person who orders software or a consultation from FelizTrade company.',
-        services: 'Services offered by the FelizTrade platform include: software purchase, consultations, collaboration, and code delivery.'
+      "title": "Terms & Conditions",
+      "subtitle": "Review the rules for using the Platform.",
+      "companyInfo": {
+        "title": "Company Information",
+        "labels": {
+          "companyName": "Company name:",
+          "address": "Address:",
+          "email": "Email:",
+          "phone": "Phone:",
+          "regNumber": "Registration number:",
+          "website": "Website:"
+        },
+        "companyName": "Feliz Trade LTD",
+        "address": "Preston, Lancashire, United Kingdom",
+        "email": "FelizTradeLTD@proton.me",
+        "phone": "+48 502 600 739",
+        "regNumber": "16008964",
+        "website": "https://feliztradeltd.com"
       },
-      generalProvisions: {
-        title: 'General Provisions',
-        scope: 'The regulations define the rules of using the FelizTrade platform, including software purchase, consultations, and collaboration.',
-        changes: 'FelizTrade reserves the right to make changes to the regulations at any time. These changes will take effect from the moment they are published on the platform.',
-        acceptance: 'Using the FelizTrade platform means accepting the regulations.'
+      "definitions": {
+        "title": "Definitions",
+        "items": {
+          "platform": {
+            "term": "Platform",
+            "description": "Website available at https://feliztradeltd.com"
+          },
+          "company": {
+            "term": "Company",
+            "description": "FELIZ TRADE LTD, a limited company registered in the United Kingdom"
+          },
+          "user": {
+            "term": "User",
+            "description": "A natural person, legal person, or organizational unit using the Platform"
+          },
+          "client": {
+            "term": "Customer",
+            "description": "A User placing an order via the Platform"
+          },
+          "services": {
+            "term": "Services",
+            "description": "Computer software, technical consulting, developer collaboration"
+          }
+        }
       },
-      services: {
-        title: 'Services',
-        software: 'Software provided by the FelizTrade platform is ready to use and does not require additional installation.',
-        consultation: 'Consultations are conducted online or by telephone. The consultant analyzes the client\'s needs and offers appropriate solutions.',
-        collaboration: 'Collaboration involves cooperation between the client and the FelizTrade company to implement the project. The client provides requirements and expectations, and the company answers questions and provides advice.',
-        code: 'Code delivery is electronic. The code includes all necessary installation and editing instructions.',
-        pricing: 'Service prices are determined individually and depend on the type of service and the complexity of the project.'
+      "scope": {
+        "title": "General Provisions and Scope of the Terms",
+        "points": [
+          "These Terms set out the rules for the provision of electronic services by the Company and the rules for using the Platform, including the purchase of software, consultations, and collaboration.",
+          "The Terms form an integral part of the service agreement.",
+          "The Company reserves the right to amend the Terms at any time. Such changes will apply from the moment they are published on the Platform.",
+          "Use of the FelizTrade Platform constitutes acceptance of the Terms."
+        ]
       },
-      orders: {
-        title: 'Orders',
-        process: 'The order process involves filling out an order form on the FelizTrade platform. The client indicates the type of service they wish to order, as well as requirements and expectations.',
-        requiredData: 'To fulfill an order, the client\'s personal data, such as first name, last name, email address, phone number, and payment data are required.',
-        consents: 'The client must express their consent to the processing of their personal data for the purpose of fulfilling the order and for the purpose of sending marketing information (optional).',
-        termsConsent: 'The client must accept the FelizTrade platform regulations before submitting an order.',
-        marketingConsent: 'The client may receive marketing information from FelizTrade company (optional).',
-        collaborationConsent: 'I declare that the advance payment of 30% of the software price applies to starting collaboration. We will contact you within 24 hours to arrange next steps and project implementation schedule.',
-        codeConsent: 'I declare that the payment of 100% of the software price applies to delivery of code repository with installation and editing instructions. Code will be delivered within 7 working days from payment being credited.'
+      "servicesKinds": {
+        "title": "Types of Services",
+        "softwareSales": {
+          "title": "1. Software Sales",
+          "items": [
+            "Ready-made web software in categories listed on the Platform",
+            "Prices shown in PLN or GBP depending on the selected language",
+            "Each software product includes a description, features, and a demo"
+          ]
+        },
+        "technicalConsulting": {
+          "title": "2. Technical Consulting",
+          "items": [
+            "Advisory services for IT projects",
+            "Estimations for software development projects",
+            "Analysis of technical requirements"
+          ]
+        },
+        "devCollaboration": {
+          "title": "3. Developer Collaboration",
+          "items": [
+            "Custom software implementation",
+            "Adaptation of existing solutions",
+            "Technical support and training"
+          ]
+        },
+        "sourceCodeDelivery": {
+          "title": "4. Source Code Delivery",
+          "items": [
+            "Transfer of the software code",
+            "Installation and configuration instructions",
+            "Technical documentation"
+          ]
+        },
+        "appHosting": {
+          "title": "5. Application Hosting",
+          "items": [
+            "Hosting of applications on third-party providers’ servers",
+            "Hosting provided for 1 year from the purchase date",
+            "After one year, a maintenance fee is required for the next year",
+            "Maintenance fee amount: usually about 10% of the software price",
+            "The exact amount is set individually depending on application complexity",
+            "Lack of maintenance fee results in hosting suspension"
+          ]
+        }
       },
-      payments: {
-        title: 'Payments',
-        methods: 'Payments are made via bank transfer or online transfer. FelizTrade reserves the right to change payment methods at any time.',
-        currencies: 'All prices are expressed in Polish złoty (PLN) or British pounds (GBP).',
-        consultationPrice: 'Consultation price is 100 PLN (net) or 200 GBP (net).',
-        collaborationPrice: 'Collaboration price is 300 PLN (net) or 600 GBP (net).',
-        codePrice: 'Code price is 1000 PLN (net) or 2000 GBP (net).',
-        invoices: 'FelizTrade issues electronic invoices for all payments.'
+      "hosting": {
+        "title": "Application Hosting",
+        "period": {
+          "title": "1. Hosting Period",
+          "items": [
+            "Application hosting by Feliz Trade is provided for 1 year",
+            "The period is counted from the software purchase date",
+            "Full technical support is provided during the hosting period"
+          ]
+        },
+        "maintenanceFee": {
+          "title": "2. Maintenance Fee",
+          "items": [
+            "After one year, a maintenance fee is required for the next year",
+            "Fee amount: usually about 10% of the software price",
+            "The exact amount is set individually for each application",
+            "Complexity and technical requirements of the application affect the fee"
+          ]
+        },
+        "consequences": {
+          "title": "3. Consequences of Non-payment",
+          "items": [
+            "Lack of maintenance fee results in hosting suspension",
+            "The application is disabled on Feliz Trade’s servers",
+            "Application data are archived for maximum 30 days",
+            "After 30 days the data may be deleted"
+          ]
+        },
+        "renewal": {
+          "title": "4. Hosting Renewal",
+          "items": [
+            "Hosting can be renewed upon payment of the maintenance fee",
+            "Renewal is possible within 30 days of suspension",
+            "After 30 days, re-deployment is required (additional fee)"
+          ]
+        }
       },
-      delivery: {
-        title: 'Delivery',
-        consultationTime: 'Consultation time is 24 hours from the moment the order is received.',
-        collaborationTime: 'Collaboration time is 7 working days from the moment the order is received.',
-        codeTime: 'Code delivery time is 7 working days from payment being credited.',
-        process: 'Delivery is carried out by sending the code to the client\'s email address or directly on the FelizTrade platform.',
-        quality: 'The code delivered by the FelizTrade platform is a full and unmodified code repository, containing all necessary files and instructions.'
+      "ordering": {
+        "title": "Ordering Rules",
+        "process": {
+          "title": "1. Ordering Process",
+          "steps": [
+            "Select a product/service on the Platform",
+            "Fill in the order form",
+            "Accept the Terms and the Privacy Policy",
+            "Choose the payment method (Stripe)",
+            "Confirm the order (email)"
+          ]
+        },
+        "requiredData": {
+          "title": "2. Required Data",
+          "items": [
+            "Email address (required)",
+            "Phone number (required)",
+            "Additional project information",
+            "Consents for personal data processing"
+          ]
+        },
+        "requiredConsents": {
+          "title": "3. Required Consents",
+          "items": [
+            "Acceptance of the Terms (mandatory)",
+            "Marketing consent (optional)",
+            "Collaboration consent (for collaboration orders)",
+            "Code consent (for code orders)"
+          ]
+        }
       },
-      rights: {
-        title: 'Rights and Obligations',
-        companyRights: 'FelizTrade reserves the right to make changes to the regulations and to change prices and payment methods at any time.',
-        companyObligations: 'FelizTrade is obliged to provide technical assistance to clients and to cooperate within the agreed time.',
-        clientRights: 'The client has the right to use the FelizTrade platform, to receive information about new offers, and to send inquiries and proposals.',
-        clientObligations: 'The client is obliged to pay for services, to maintain confidentiality of data, and to comply with the regulations.'
+      "payments": {
+        "title": "Payments and Billing",
+        "methods": {
+          "title": "1. Payment Methods",
+          "items": [
+            "Payment gateway via Stripe",
+            "Currencies: PLN (Poland) or GBP (United Kingdom)",
+            "Real-time online payments"
+          ]
+        },
+        "pricing": {
+          "title": "2. Pricing Structure",
+          "items": [
+            "Consultations: 200 PLN / 50 GBP",
+            "Collaboration: 30% of the software price (deposit)",
+            "Source code: 100% of the software price",
+            "Functional component prices: vary depending on complexity"
+          ]
+        },
+        "settlements": {
+          "title": "3. Billing",
+          "items": [
+            "Payment before work commences",
+            "Refunds available in accordance with the law"
+          ]
+        }
       },
-      dataProtection: {
-        title: 'Data Protection',
-        controller: 'FelizTrade is the data controller. The personal data of clients are processed for the purpose of fulfilling the order and for the purpose of sending marketing information (optional).',
-        purposes: 'The data processed include: first name, last name, email address, phone number, payment data, and user identification data.',
-        userRights: 'The client has the right to access their personal data, to correct them, to delete them, and to limit processing.'
+      "fulfillment": {
+        "title": "Order Fulfillment",
+        "leadTimes": {
+          "title": "1. Lead Times",
+          "items": [
+            "Consultations: contact within 24h",
+            "Collaboration: contact within 24h, schedule set individually",
+            "Source code: delivery within 7 business days"
+          ]
+        },
+        "process": {
+          "title": "2. Fulfillment Process",
+          "steps": [
+            "Order confirmation by electronic means",
+            "Phone contact to arrange details",
+            "Execution according to the agreed schedule",
+            "Delivery of the product/service"
+          ]
+        },
+        "quality": {
+          "title": "3. Service Quality",
+          "items": [
+            "Services provided in line with best industry practices",
+            "Compliance with the description on the Platform",
+            "Possibility to file a complaint within 14 days"
+          ]
+        }
       },
-      intellectualProperty: {
-        title: 'Intellectual Property',
-        software: 'The software provided by the FelizTrade platform is intellectual property of FelizTrade company. The client receives a license to use the software only within the scope defined in the regulations.',
-        sourceCode: 'The code delivered by the FelizTrade platform is intellectual property of FelizTrade company. The client receives a license to use the code only within the scope defined in the regulations.',
-        violations: 'In case of intellectual property rights or other intellectual property rights violations, FelizTrade reserves the right to claim compensation and to ban the user.'
+      "rightsDuties": {
+        "title": "Rights and Obligations of the Parties",
+        "companyRights": {
+          "title": "1. Company Rights",
+          "items": [
+            "Refusal to fulfill an order without stating a reason",
+            "Change of prices and terms while respecting Customers’ rights",
+            "Suspension of services in case of a breach of the Terms"
+          ]
+        },
+        "companyDuties": {
+          "title": "2. Company Obligations",
+          "items": [
+            "Provision of services in accordance with the agreement",
+            "Confidentiality of Customer information",
+            "Delivery of the product/service within the agreed timeframe",
+            "Technical support within the scope of the services provided"
+          ]
+        },
+        "clientRights": {
+          "title": "3. Customer Rights",
+          "items": [
+            "Information about order status",
+            "Complaint of defective services",
+            "Right to withdraw from the contract within 14 days",
+            "Protection of personal data"
+          ]
+        },
+        "clientDuties": {
+          "title": "4. Customer Obligations",
+          "items": [
+            "Accuracy of the information provided",
+            "Timely payments",
+            "Cooperation during fulfillment",
+            "Compliance with the Terms"
+          ]
+        }
       },
-      liability: {
-        title: 'Liability',
-        companyLiability: 'FelizTrade is not liable for damages resulting from non-fulfillment or improper fulfillment of obligations arising from the regulations.',
-        complaints: 'In case of a dispute, the client can contact FelizTrade via the platform or by telephone.',
-        disputeResolution: 'In case of disputes regarding the regulations or services, the parties are obliged to try to resolve them by peaceful means.'
+      "privacy": {
+        "title": "Personal Data Protection",
+        "controller": {
+          "title": "1. Data Controller",
+          "items": [
+            "Feliz Trade LTD as the personal data controller",
+            "Processing in accordance with GDPR (UK GDPR)"
+          ]
+        },
+        "purposes": {
+          "title": "2. Purposes of Processing",
+          "items": [
+            "Order fulfillment and service provision",
+            "Marketing (with consent)",
+            "Statistical analysis and service quality improvement"
+          ]
+        },
+        "userRights": {
+          "title": "3. User Rights",
+          "items": [
+            "Access to one’s data",
+            "Rectification and erasure of data",
+            "Data portability",
+            "Objection to processing"
+          ]
+        }
       },
-      finalProvisions: {
-        title: 'Termination of the Agreement',
-        changes: 'FelizTrade reserves the right to make changes to the regulations at any time. These changes will take effect from the moment they are published on the platform.',
-        validity: 'The regulations are effective from the moment they are published on the FelizTrade platform.',
-        effectiveDate: 'The regulations were introduced on January 1, 2024.'
+      "intellectualProperty": {
+        "title": "Intellectual Property",
+        "software": {
+          "title": "1. Software",
+          "items": [
+            "All intellectual property rights belong to the Company",
+            "License to use the software",
+            "Prohibition of copying, modification, and distribution"
+          ]
+        },
+        "sourceCode": {
+          "title": "2. Source Code",
+          "items": [
+            "Transfer of rights to the code after full payment",
+            "License to use and modify",
+            "Company’s right to reuse in other projects retained"
+          ]
+        },
+        "infringements": {
+          "title": "3. Infringements",
+          "items": [
+            "Civil and criminal liability",
+            "Possibility of license suspension",
+            "Claims for damages"
+          ]
+        }
       },
-             contact: {
-         title: 'Contact',
-         email: 'FelizTradeLTD@proton.me',
-         phone: '+48 502 600 739',
-         website: 'https://feliztradeltd.com'
-       }
+      "liability": {
+        "title": "Liability and Complaints",
+        "companyLiability": {
+          "title": "1. Company Liability",
+          "items": [
+            "Limited to the amount of the service fee",
+            "Exclusion of liability for indirect damages"
+          ]
+        },
+        "complaints": {
+          "title": "2. Complaints",
+          "items": [
+            "Time limit: 14 days from receipt of the service",
+            "Form: written or electronic",
+            "Review within 14 days",
+            "Option to bring the case to court"
+          ]
+        },
+        "disputeResolution": {
+          "title": "3. Dispute Resolution",
+          "items": [
+            "Competent court: courts of the United Kingdom",
+            "Governing law: English law",
+            "Possibility of mediation and arbitration"
+          ]
+        }
+      },
+      "finalProvisions": {
+        "title": "Final Provisions",
+        "changes": {
+          "title": "1. Changes to the Terms",
+          "items": [
+            "Notice of changes 30 days in advance",
+            "Acceptance of changes through continued use",
+            "Option to withdraw from the contract"
+          ]
+        },
+        "validity": {
+          "title": "2. Validity of Provisions",
+          "items": [
+            "Invalidity of individual provisions does not affect the whole",
+            "Invalid provisions will be replaced with lawful ones"
+          ]
+        },
+        "entryIntoForce": {
+          "title": "3. Entry into Force",
+          "items": [
+            "The Terms enter into force on the date of publication",
+            "They apply to all Platform users"
+          ]
+        }
+      },
+      "compliance": {
+        "title": "Compliance",
+        "intro": "These Terms comply with:",
+        "uk": [
+          "Consumer Rights Act 2015",
+          "Electronic Commerce Regulations 2002",
+          "UK GDPR"
+        ]
+      },
+      "contact": {
+        "title": "Contact Regarding the Terms",
+        "labels": {
+          "email": "Email:",
+          "phone": "Phone:",
+          "address": "Address:",
+          "website": "Website:"
+        },
+        "email": "FelizTradeLTD@proton.me",
+        "phone": "+48 502 600 739",
+        "address": "Preston, Lancashire, United Kingdom",
+        "website": "https://feliztradeltd.com"
+      },
+      "updateInfo": {
+        "lastUpdatedLabel": "Last updated:",
+        "lastUpdatedDate": "18.01.2025",
+        "versionLabel": "Version:",
+        "version": "1.0"
+      }
     }
   }
 }
