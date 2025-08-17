@@ -34,6 +34,9 @@ export interface Translations {
 
   // Regulamin translations
   regulamin: {
+    meta: {
+      fallbackTitle: string
+    }
     title: string
     subtitle: string
     companyInfo: {
@@ -154,50 +157,123 @@ export interface Translations {
         items: string[]
       }
     }
-    delivery: {
+    fulfillment: {
       title: string
-      consultationTime: string
-      collaborationTime: string
-      codeTime: string
-      process: string
-      quality: string
+      leadTimes: {
+        title: string
+        items: string[]
+      }
+      process: {
+        title: string
+        steps: string[]
+      }
+      quality: {
+        title: string
+        items: string[]
+      }
     }
-    rights: {
+    rightsDuties: {
       title: string
-      companyRights: string
-      companyObligations: string
-      clientRights: string
-      clientObligations: string
+      companyRights: {
+        title: string
+        items: string[]
+      }
+      companyDuties: {
+        title: string
+        items: string[]
+      }
+      clientRights: {
+        title: string
+        items: string[]
+      }
+      clientDuties: {
+        title: string
+        items: string[]
+      }
     }
-    dataProtection: {
+    privacy: {
       title: string
-      controller: string
-      purposes: string
-      userRights: string
+      controller: {
+        title: string
+        items: string[]
+      }
+      purposes: {
+        title: string
+        items: string[]
+      }
+      userRights: {
+        title: string
+        items: string[]
+      }
     }
     intellectualProperty: {
       title: string
-      software: string
-      sourceCode: string
-      violations: string
+      software: {
+        title: string
+        items: string[]
+      }
+      sourceCode: {
+        title: string
+        items: string[]
+      }
+      infringements: {
+        title: string
+        items: string[]
+      }
     }
     liability: {
       title: string
-      companyLiability: string
-      complaints: string
-      disputeResolution: string
+      companyLiability: {
+        title: string
+        items: string[]
+      }
+      complaints: {
+        title: string
+        items: string[]
+      }
+      disputeResolution: {
+        title: string
+        items: string[]
+      }
     }
     finalProvisions: {
       title: string
-      changes: string
-      validity: string
-      effectiveDate: string
+      changes: {
+        title: string
+        items: string[]
+      }
+      validity: {
+        title: string
+        items: string[]
+      }
+      entryIntoForce: {
+        title: string
+        items: string[]
+      }
+    }
+    compliance: {
+      title: string
+      intro: string
+      uk: string[]
     }
     contact: {
       title: string
+      labels: {
+        email: string
+        phone: string
+        address: string
+        website: string
+      }
       email: string
       phone: string
+      address: string
       website: string
+    }
+    updateInfo: {
+      lastUpdatedLabel: string
+      lastUpdatedDate: string
+      versionLabel: string
+      version: string
     }
   }
   orderModal: {
