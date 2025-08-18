@@ -682,11 +682,13 @@ export const translations: Record<Language, Translations> = {
           "title": "5. Serwerowanie aplikacji",
           "items": [
             "Hosting aplikacji na serwerach zewnętrznych usługodawców",
-            "Serwerowanie świadczone na okres 1 roku od daty zakupu",
-            "Po upływie roku wymagana opłata utrzymaniowa na kolejny rok",
-            "Wysokość opłaty utrzymaniowej: zwykle ok. 10% ceny oprogramowania",
-            "Dokładna kwota ustalana indywidualnie w zależności od złożoności aplikacji",
-            "Brak opłaty utrzymaniowej skutkuje wstrzymaniem serwerowania"
+            "Pierwszy miesiąc serwerowania wliczony jest w cenę zakupu",
+            "Po upływie pierwszego miesiąca po wdrożeniu aplikacji wymagana jest opłata utrzymaniowa na miesiąc kolejny",
+            "Kolejne miesiące wymagają subskrypcji miesięcznej dokonywanej przez system subskrypcyjny Stripe",
+            "Link do subskrypcji miesięcznej wysyłany jest drogą elektroniczną lub w inny indywidualnie ustalony sposób",
+            "Klient zobowiązany jest do subskrybcji miesięcznej w celu utrzymania serwerowania zakupionego oprogramowania w kolejnych miesiącach",
+            "Klient może anulować subskrypcję w dowolnym momencie, co oznacza rezygnację z usług serwerowania aplikacji",
+            "Dokładna kwota ustalana indywidualnie w zależności od złożoności aplikacji i jej miesięcznych kosztów"
           ]
         }
       },
@@ -695,16 +697,16 @@ export const translations: Record<Language, Translations> = {
         "period": {
           "title": "1. Okres serwerowania",
           "items": [
-            "Serwerowanie aplikacji przez Feliz Trade świadczone jest na okres 1 roku",
-            "Okres liczony od daty zakupu oprogramowania",
+            "Serwerowanie aplikacji przez Feliz Trade świadczone jest w cykliczności miesięcznej",
+            "Okres liczony od daty wdrożenia oprogramowania",
             "W trakcie okresu serwerowania zapewnione jest pełne wsparcie techniczne"
           ]
         },
         "maintenanceFee": {
           "title": "2. Opłata utrzymaniowa",
           "items": [
-            "Po upływie roku wymagana jest opłata utrzymaniowa na kolejny rok",
-            "Wysokość opłaty: zwykle ok. 10% ceny oprogramowania",
+            "Po upływie pierwszego darmowego miesiąca wymagana jest opłata utrzymaniowa na kolejny miesiąc",
+            "Wysokość opłaty utrzymaniowej: 10-50 GBP (lub 50-250 PLN) miesięcznie w zależności od aplikacji",
             "Dokładna kwota ustalana indywidualnie dla każdej aplikacji",
             "Wpływ na wysokość opłaty ma złożoność i wymagania techniczne aplikacji"
           ]
@@ -713,7 +715,7 @@ export const translations: Record<Language, Translations> = {
           "title": "3. Konsekwencje braku opłaty",
           "items": [
             "Brak opłaty utrzymaniowej skutkuje wstrzymaniem serwerowania",
-            "Aplikacja zostaje wyłączona z serwerów Feliz Trade",
+            "Aplikacja zostaje wyłączona",
             "Dane aplikacji są archiwizowane przez maksymalnie 30 dni",
             "Po 30 dniach dane mogą zostać usunięte"
           ]
@@ -1239,12 +1241,14 @@ export const translations: Record<Language, Translations> = {
         "appHosting": {
           "title": "5. Application Hosting",
           "items": [
-            "Hosting of applications on third-party providers’ servers",
-            "Hosting provided for 1 year from the purchase date",
-            "After one year, a maintenance fee is required for the next year",
-            "Maintenance fee amount: usually about 10% of the software price",
-            "The exact amount is set individually depending on application complexity",
-            "Lack of maintenance fee results in hosting suspension"
+            "Application hosting on third-party provider servers.",
+            "The first month of hosting is included in the purchase price.",
+            "After the first month following application deployment, a maintenance fee is due for the subsequent month.",
+            "Subsequent months require a monthly subscription processed via Stripe's subscription system.",
+            "A link to the monthly subscription will be sent electronically or via another individually agreed method.",
+            "The Client is required to maintain an active monthly subscription to continue hosting the purchased software in subsequent months.",
+            "The Client may cancel the subscription at any time, which will constitute termination of the application hosting services.",
+            "The exact amount is determined individually based on the application's complexity and its monthly operating costs."
           ]
         }
       },
@@ -1253,35 +1257,35 @@ export const translations: Record<Language, Translations> = {
         "period": {
           "title": "1. Hosting Period",
           "items": [
-            "Application hosting by Feliz Trade is provided for 1 year",
-            "The period is counted from the software purchase date",
-            "Full technical support is provided during the hosting period"
+            "Application hosting by Feliz Trade is provided on a monthly recurring basis.",
+            "The period is counted from the software deployment date.",
+            "Full technical support is provided throughout the hosting period."
           ]
         },
         "maintenanceFee": {
           "title": "2. Maintenance Fee",
           "items": [
-            "After one year, a maintenance fee is required for the next year",
-            "Fee amount: usually about 10% of the software price",
-            "The exact amount is set individually for each application",
-            "Complexity and technical requirements of the application affect the fee"
+            "After the first free month, a maintenance fee is required for the following month.",
+            "Monthly maintenance fee: 10–50 GBP (or 50–250 PLN), depending on the application.",
+            "The exact amount is determined individually for each application.",
+            "The fee depends on the application's complexity and technical requirements."
           ]
         },
         "consequences": {
-          "title": "3. Consequences of Non-payment",
+          "title": "3. Consequences of Non-Payment",
           "items": [
-            "Lack of maintenance fee results in hosting suspension",
-            "The application is disabled on Feliz Trade’s servers",
-            "Application data are archived for maximum 30 days",
-            "After 30 days the data may be deleted"
+            "Non-payment of the maintenance fee results in suspension of hosting services.",
+            "The application will be disabled.",
+            "Application data will be archived for up to 30 days.",
+            "After 30 days, the data may be deleted."
           ]
         },
         "renewal": {
           "title": "4. Hosting Renewal",
           "items": [
-            "Hosting can be renewed upon payment of the maintenance fee",
-            "Renewal is possible within 30 days of suspension",
-            "After 30 days, re-deployment is required (additional fee)"
+            "Hosting can be reinstated upon payment of the maintenance fee.",
+            "Renewal is available within 30 days of suspension.",
+            "After 30 days, the application requires reactivation (additional fee applies)."
           ]
         }
       },
