@@ -13,42 +13,42 @@ FelizTrade posiada zaawansowany system automatycznej wysyłki maili, który zape
 
 ### **2. Maile Potwierdzające do Klientów**
 - **Odbiorca**: Email podany przez klienta podczas zamawiania
-- **Wysyłane**: Po złożeniu zamówienia + po potwierdzeniu płatności
+- **Wysyłane**: TYLKO po potwierdzeniu płatności przez Stripe
 - **Wersje językowe**: Polski i angielski
 
 ### **3. Maile Powiadamiające**
 - **Wygasła sesja płatności**: Informacja o konieczności ponownego zamówienia
 - **Potwierdzenie płatności**: Potwierdzenie udanej transakcji
 
-## 🔄 **Przepływ Maili**
+## 🔄 **Poprawiony Przepływ Maili**
 
 ```
 Klient składa zamówienie
          ↓
-   Mail do właściciela
-         ↓
-   Mail potwierdzający do klienta
+   Mail do właściciela ✅
          ↓
    Klient płaci przez Stripe
          ↓
    Webhook Stripe potwierdza płatność
          ↓
-   Mail potwierdzający płatność do klienta
+   Mail potwierdzający do klienta ✅
 ```
+
+**WAŻNE**: Email potwierdzający do klienta NIE jest wysyłany po złożeniu zamówienia - tylko po potwierdzeniu płatności!
 
 ## 📧 **Szablony Maili**
 
 ### **Konsultacja/Wycena**
-- **Polski**: "Potwierdzenie zamówienia konsultacji - FelizTrade"
-- **Angielski**: "Consultation Order Confirmation - FelizTrade"
+- **Polski**: "Płatność potwierdzona - Zamówienie konsultacji"
+- **Angielski**: "Payment Confirmed - Consultation Order"
 
 ### **Współpraca (MVP)**
-- **Polski**: "Potwierdzenie zamówienia współpracy - FelizTrade"
-- **Angielski**: "Collaboration Order Confirmation - FelizTrade"
+- **Polski**: "Płatność potwierdzona - Zamówienie współpracy"
+- **Angielski**: "Payment Confirmed - Collaboration Order"
 
 ### **Kod z Instrukcjami**
-- **Polski**: "Potwierdzenie zamówienia kodu - FelizTrade"
-- **Angielski**: "Code Order Confirmation - FelizTrade"
+- **Polski**: "Płatność potwierdzona - Zamówienie kodu"
+- **Angielski**: "Payment Confirmed - Code Order"
 
 ## 🌐 **Wielojęzyczność**
 
@@ -88,19 +88,12 @@ const transporter = nodemailer.createTransporter({
 
 ## 📋 **Zawartość Maili do Klientów**
 
-### **Po Złożeniu Zamówienia**
+### **Po Potwierdzeniu Płatności (JEDYNY email do klienta)**
 - Powitanie w odpowiednim języku
-- Potwierdzenie typu zamówienia
-- Szczegóły zamówienia (ID, typ, telefon)
-- Następne kroki procesu
-- Informacje kontaktowe FelizTrade
-- Podziękowanie
-
-### **Po Potwierdzeniu Płatności**
 - Potwierdzenie udanej płatności
-- Szczegóły zamówienia
+- Szczegóły zamówienia (ID, typ, telefon)
 - Harmonogram realizacji
-- Informacje kontaktowe
+- Informacje kontaktowe FelizTrade
 - Podziękowanie
 
 ### **Po Wygasnięciu Sesji Płatności**
@@ -121,21 +114,14 @@ await transporter.sendMail({
   text: emailBody
 })
 
-// Mail do klienta
-if (order.email) {
-  await transporter.sendMail({
-    from: `FelizTrade <${process.env.EMAIL_USER}>`,
-    to: order.email,
-    subject: customerSubject,
-    text: customerEmailText
-  })
-}
+// NIE wysyłamy maila do klienta tutaj!
+// Email potwierdzający zostanie wysłany dopiero po potwierdzeniu płatności
 ```
 
 ### **2. Webhook Stripe (`/api/webhook/stripe`)**
 ```typescript
 case 'checkout.session.completed':
-  // Wyślij mail potwierdzający płatność
+  // Wyślij mail potwierdzający płatność do klienta
   await transporter.sendMail({
     from: `FelizTrade <${process.env.EMAIL_USER}>`,
     to: order.email,
@@ -156,7 +142,7 @@ case 'checkout.session.expired':
 ## 📊 **Monitoring i Logi**
 
 ### **Logi Sukcesu**
-- Potwierdzenie wysłania maila do klienta
+- Potwierdzenie wysłania maila do właściciela
 - Potwierdzenie wysłania maila potwierdzającego płatność
 - Informacje o wygasłych sesjach
 
@@ -219,3 +205,5 @@ case 'checkout.session.expired':
 ---
 
 **FelizTrade Email System** - Profesjonalna komunikacja z klientami! 🚀 
+
+**Uwaga**: System został zoptymalizowany - klienci otrzymują email potwierdzający TYLKO po udanej płatności, nie po złożeniu zamówienia. 
