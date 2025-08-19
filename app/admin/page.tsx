@@ -537,6 +537,20 @@ export default function AdminPanel() {
                         ? software.find(s => s.id === order.productId)?.name || `${order.orderType === 'collaboration' ? 'Współpraca' : 'Kod'} #${order.productId}`
                         : null
                       
+                      // Oblicz kwotę dla opłaconych zamówień
+                      const calculateAmount = (order: any) => {
+                        if (order.orderType === 'consultation') {
+                          return 200 // 200 PLN za konsultację
+                        } else if (order.orderType === 'collaboration' && order.productId) {
+                          const foundSoftware = software.find(s => s.id === order.productId)
+                          return Math.round((foundSoftware?.price || 0) * 0.3) // 30% ceny za współpracę
+                        } else if (order.orderType === 'code' && order.productId) {
+                          const foundSoftware = software.find(s => s.id === order.productId)
+                          return foundSoftware?.price || 0 // 100% ceny za kod
+                        }
+                        return 0
+                      }
+                      
                       return (
                         <div key={order.id} className="flex items-center justify-between p-3 bg-darkbg rounded-lg">
                           <div>
@@ -565,17 +579,30 @@ export default function AdminPanel() {
                           </div>
                           <div className="text-right">
                             <p className="text-sm text-darksubtle">
-                              {new Date(order.createdAt).toLocaleDateString('pl-PL')}
+                              {new Date(order.createdAt).toLocaleString('pl-PL', {
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
                             </p>
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              order.status === 'paid' 
-                                ? 'bg-green-900 text-green-300' 
-                                : order.status === 'pending'
-                                ? 'bg-yellow-900 text-yellow-300'
-                                : 'bg-red-900 text-red-300'
-                            }`}>
-                              {order.status === 'paid' ? 'Opłacone' : order.status === 'pending' ? 'Oczekujące' : 'Wygasłe'}
-                            </span>
+                            <div className="flex flex-col items-end gap-1">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                order.status === 'paid' 
+                                  ? 'bg-green-900 text-green-300' 
+                                  : order.status === 'pending'
+                                  ? 'bg-yellow-900 text-yellow-300'
+                                  : 'bg-red-900 text-red-300'
+                              }`}>
+                                {order.status === 'paid' ? 'Opłacone' : order.status === 'pending' ? 'Oczekujące' : 'Wygasłe'}
+                              </span>
+                              {order.status === 'paid' && (
+                                <span className="text-xs font-bold text-green-400">
+                                  {calculateAmount(order).toLocaleString('pl-PL')} PLN
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       )
@@ -866,7 +893,13 @@ export default function AdminPanel() {
                         </div>
                         <div className="text-right">
                           <p className="text-xs text-darksubtle">
-                            {new Date(user.createdAt).toLocaleDateString('pl-PL')}
+                            {new Date(user.createdAt).toLocaleString('pl-PL', {
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
                           </p>
                         </div>
                       </div>
@@ -913,7 +946,13 @@ export default function AdminPanel() {
                             </div>
                           </td>
                           <td className="py-3 px-4 text-sm text-darksubtle">
-                            {new Date(user.createdAt).toLocaleDateString('pl-PL')}
+                            {new Date(user.createdAt).toLocaleString('pl-PL', {
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
                           </td>
                           <td className="py-3 px-4">
                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -966,7 +1005,13 @@ export default function AdminPanel() {
                           <div>
                             <p className="font-medium text-darktext">{order.email || order.user?.email || 'Brak email'}</p>
                             <p className="text-xs text-darksubtle">
-                              {new Date(order.createdAt).toLocaleDateString('pl-PL')}
+                              {new Date(order.createdAt).toLocaleString('pl-PL', {
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
                             </p>
                           </div>
                         </div>
@@ -1154,7 +1199,13 @@ export default function AdminPanel() {
                               </span>
                             </td>
                             <td className="py-3 px-4 text-sm text-darksubtle">
-                              {new Date(order.createdAt).toLocaleDateString('pl-PL')}
+                              {new Date(order.createdAt).toLocaleString('pl-PL', {
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
                             </td>
                             <td className="py-3 px-4">
                               <div className="flex flex-col gap-1 text-xs">
