@@ -15,6 +15,11 @@ model User {
   termsAccepted     Boolean  @default(false)
   marketingAccepted Boolean  @default(false)
   isAdmin           Boolean  @default(false)
+  role              String   @default("user") // user, admin, seller, management
+  profileImageUrl   String?  // URL zdjęcia profilowego
+  bio               String?  // Opis/bio sprzedawcy
+  firstName         String?  // Imię
+  lastName          String?  // Nazwisko
   orders            Order[]
 }
 

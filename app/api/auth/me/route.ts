@@ -19,7 +19,10 @@ export async function GET(request: NextRequest) {
     console.log('Token decoded for user ID:', decoded.id)
     
     const prisma = new PrismaClient()
-    const user = await prisma.user.findUnique({ where: { id: decoded.id } })
+    const user = await prisma.user.findUnique({ 
+      where: { id: decoded.id },
+      select: { id: true, email: true, isAdmin: true, role: true }
+    })
     await prisma.$disconnect()
     
     if (!user) {
@@ -27,8 +30,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ user: null }, { status: 200 })
     }
     
-    console.log('User found:', { id: user.id, email: user.email, isAdmin: user.isAdmin })
-    return NextResponse.json({ user: { id: user.id, email: user.email, isAdmin: user.isAdmin } }, { status: 200 })
+    console.log('User found:', { id: user.id, email: user.email, isAdmin: user.isAdmin, role: user.role })
+    return NextResponse.json({ user: { id: user.id, email: user.email, isAdmin: user.isAdmin, role: user.role } }, { status: 200 })
   } catch (error) {
     console.error('Auth error:', error)
     return NextResponse.json({ user: null }, { status: 200 })

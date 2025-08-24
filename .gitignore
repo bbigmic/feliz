@@ -6,3 +6,4 @@ node_modules/
 # Uploads
 public/uploads/
 
+backups_sql/

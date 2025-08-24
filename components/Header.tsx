@@ -14,7 +14,7 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [isAuthOpen, setIsAuthOpen] = useState(false)
-  const [user, setUser] = useState<{ email: string } | null>(null)
+  const [user, setUser] = useState<{ email: string; role: string; isAdmin: boolean } | null>(null)
 
   useEffect(() => {
     const onScroll = () => {
@@ -30,7 +30,11 @@ export default function Header() {
         const res = await fetch('/api/auth/me')
         const data = await res.json()
         if (data.user && data.user.email) {
-          setUser({ email: data.user.email })
+          setUser({ 
+            email: data.user.email, 
+            role: data.user.role || 'user', 
+            isAdmin: data.user.isAdmin || false 
+          })
         } else {
           setUser(null)
         }
@@ -96,6 +100,37 @@ export default function Header() {
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-4">
             <LanguageSwitcher />
+            {user && (user.role === 'seller' || user.role === 'management' || user.isAdmin) && (
+              <Link href="/seller-panel" className="text-darktext hover:text-primary-300 transition-colors">
+                Panel Sprzedawcy
+              </Link>
+            )}
+            {user && user.isAdmin && (
+              <Link href="/admin" className="text-darktext hover:text-primary-300 transition-colors">
+                Panel Admin
+              </Link>
+            )}
+            {user ? (
+              <div className="flex items-center gap-3">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary-700 text-white font-bold text-sm">
+                  <User className="w-4 h-4" />
+                </span>
+                <span className="text-darktext font-medium text-sm max-w-[120px] truncate">{user.email}</span>
+                <button
+                  className="btn-secondary text-sm px-3 py-1"
+                  onClick={() => {
+                    document.cookie = 'token=; Max-Age=0; path=/;'
+                    setUser(null)
+                  }}
+                >
+                  {t('header.logout')}
+                </button>
+              </div>
+            ) : (
+              <button className="btn-primary" onClick={() => setIsAuthOpen(true)}>
+                {t('header.login')}
+              </button>
+            )}
           </div>
 
           {/* Mobile Actions */}
@@ -140,6 +175,27 @@ export default function Header() {
               <a href="#cta-section" className="text-lg font-semibold text-darktext rounded-xl px-4 py-3 hover:bg-primary-600/20 hover:text-primary-300 transition-all duration-150 active:bg-primary-700/30" onClick={e => { setIsMenuOpen(false); setTimeout(() => handleNavScroll('cta-section')(e), 200); }}>
                 {t('header.contact')}
               </a>
+              
+              {/* Panel links for authorized users */}
+              {user && (user.role === 'seller' || user.role === 'management' || user.isAdmin) && (
+                <Link 
+                  href="/seller-panel" 
+                  className="text-lg font-semibold text-darktext rounded-xl px-4 py-3 hover:bg-primary-600/20 hover:text-primary-300 transition-all duration-150 active:bg-primary-700/30"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Panel Sprzedawcy
+                </Link>
+              )}
+              {user && user.isAdmin && (
+                <Link 
+                  href="/admin" 
+                  className="text-lg font-semibold text-darktext rounded-xl px-4 py-3 hover:bg-primary-600/20 hover:text-primary-300 transition-all duration-150 active:bg-primary-700/30"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Panel Admin
+                </Link>
+              )}
+              
               <div className="pt-2 border-t border-gray-800">
                   {/* <button className="flex items-center space-x-2 text-darktext hover:text-primary-300 transition-colors mb-2">
                     <ShoppingCart className="w-5 h-5" />
@@ -168,7 +224,7 @@ export default function Header() {
           </motion.div>
         )}
       </div>
-      {/* <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} onAuthSuccess={fetchUser} /> */}
+      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} onAuthSuccess={() => { setIsAuthOpen(false); window.location.reload(); }} />
     </header>
   )
 } 
