@@ -19,7 +19,7 @@ export default function About() {
           <div className="flex flex-col md:flex-row justify-center gap-8">
             <div className="bg-darkpanel rounded-xl shadow-lg p-6 flex flex-col items-center w-full md:w-1/3">
               <img src="/screeny/pablo.png" alt="Michał" className="w-28 h-28 rounded-full object-cover mb-4 border-4 border-primary-500" />
-              <h3 className="text-xl font-semibold mb-2">Pablo</h3>
+              <h3 className="text-xl font-semibold mb-2">Paolo</h3>
               <p className="text-darksubtle text-center">Założyciel i CEO. Odpowiedzialny za strategię, rozwój produktów oraz kontakt z klientami. Pasjonat nowych technologii i automatyzacji.</p>
             </div>
             <div className="bg-darkpanel rounded-xl shadow-lg p-6 flex flex-col items-center w-full md:w-1/3">

@@ -8,6 +8,7 @@ import OrderModal from './OrderModal'
 import SoftwareGalleryModal from './SoftwareGalleryModal'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { formatPrice } from '@/lib/i18n'
+import Link from 'next/link'
 
 interface Software {
   id: number
@@ -76,7 +77,7 @@ export default function SoftwareCard({ software, onOrderClick, onGalleryClick }:
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       whileHover={{ y: -5 }}
-      // Usunięto onClick={openGallery} - galeria nie otwiera się po kliknięciu w całą kartę
+      onClick={() => window.location.href = `/software/${software.id}`}
     >
       {/* Image */}
       <div className="relative mb-4" onClick={openGallery}>
@@ -127,7 +128,9 @@ export default function SoftwareCard({ software, onOrderClick, onGalleryClick }:
       {/* Content */}
       <div className="space-y-3">
         <div className="flex items-start justify-between">
-          <h3 className="text-lg font-semibold text-darktext">{language === 'en' && software.nameEn ? software.nameEn : software.name}</h3>
+          <Link href={`/software/${software.id}`} className="hover:text-primary-400 transition-colors">
+            <h3 className="text-lg font-semibold text-darktext">{language === 'en' && software.nameEn ? software.nameEn : software.name}</h3>
+          </Link>
           <div className="flex items-center space-x-1">
             <Star className="w-4 h-4 text-yellow-400 fill-current" />
             <span className="text-sm text-gray-200">{software.rating}</span>
@@ -166,13 +169,13 @@ export default function SoftwareCard({ software, onOrderClick, onGalleryClick }:
             </span>
           </div>
           <div className="flex space-x-2">
-            <button
-              onClick={handleDemoClick}
+            <Link
+              href={`/software/${software.id}`}
               className="btn-secondary flex items-center space-x-1"
             >
               <Eye className="w-4 h-4" />
               <span>{t('softwareCard.view')}</span>
-            </button>
+            </Link>
             <button
               onClick={handleBuyClick}
               className="btn-primary flex items-center space-x-1"

@@ -4,7 +4,7 @@ const nextConfig = {
     // appDir: true, // usunięte, bo domyślne w Next.js 14
   },
   images: {
-    domains: ['localhost', 'via.placeholder.com'],
+    domains: ['localhost', 'via.placeholder.com', 'res.cloudinary.com'],
   },
   async rewrites() {
     return [
