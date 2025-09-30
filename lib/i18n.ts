@@ -995,7 +995,7 @@ export const translations: Record<Language, Translations> = {
       title: 'Professional Web Software and Mobile Applications',
       titleHighlight: 'Web Software and Mobile Applications',
       subtitle: 'Discover our collection of ready-made web solutions. Order modern software and automation tailored to your company\'s needs.',
-      softwareCount: '30+ Software',
+      softwareCount: '30+ Softwares',
       rating: '4.9/5 Rating',
       salesCount: '500+ Sales',
       scrollDown: 'Scroll down'
