@@ -10,6 +10,12 @@ cloudinary.config({
 
 const prisma = new PrismaClient()
 
+interface CloudinaryUploadResult {
+  public_id: string;
+  secure_url: string;
+  // Dodaj inne właściwości, które mogą być potrzebne
+}
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()
@@ -55,7 +61,7 @@ export async function POST(request: NextRequest) {
 
       const buffer = Buffer.from(await file.arrayBuffer());
 
-      const result = await new Promise((resolve, reject) => {
+      const result: CloudinaryUploadResult = await new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           { resource_type: 'auto' },
           (error, result) => {
