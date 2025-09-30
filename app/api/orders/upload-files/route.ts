@@ -65,10 +65,10 @@ export async function POST(request: NextRequest) {
         const uploadStream = cloudinary.uploader.upload_stream(
           { resource_type: 'auto' },
           (error, result) => {
-            if (error) {
+            if (error || !result) {  // Dodajemy sprawdzenie, czy result nie jest undefined
               reject(new Error('Błąd podczas przesyłania do Cloudinary'));
             } else {
-              resolve(result);
+              resolve(result as CloudinaryUploadResult);  // Rzutujemy result na CloudinaryUploadResult
             }
           }
         );
