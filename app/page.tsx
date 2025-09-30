@@ -317,6 +317,14 @@ export default function Home() {
                 <span>{t('hero.salesCount')}</span>
               </div>
             </motion.div>
+            <motion.div>
+              <button
+                className="btn-primary text-lg mt-4 px-8 py-4 rounded-full shadow-lg hover:scale-105 transition-transform"
+                onClick={() => { setOrderProduct(null); setOrderModalOpen(true) }}
+              >
+                {t('cta.button')}
+              </button>
+            </motion.div>
           </motion.section>
         </div>
         {/* Animowana strzałka przewijająca */}
