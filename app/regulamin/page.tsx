@@ -488,7 +488,6 @@ export default function Regulamin() {
                     {t('regulamin.finalProvisions.changes.title')}
                   </h3>
                   <ul className="list-disc list-inside space-y-2 text-gray-300 ml-4">
-                    <li>{t('regulamin.finalProvisions.changes.items.0')}</li>
                     <li>{t('regulamin.finalProvisions.changes.items.1')}</li>
                     <li>{t('regulamin.finalProvisions.changes.items.2')}</li>
                   </ul>
@@ -499,7 +498,6 @@ export default function Regulamin() {
                   </h3>
                   <ul className="list-disc list-inside space-y-2 text-gray-300 ml-4">
                     <li>{t('regulamin.finalProvisions.validity.items.0')}</li>
-                    <li>{t('regulamin.finalProvisions.validity.items.1')}</li>
                   </ul>
                 </div>
                 <div>
