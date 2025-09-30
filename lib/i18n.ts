@@ -411,6 +411,7 @@ export interface Translations {
     component: string
     cost: string
     notes: string
+    maintenanceFee: string
   }
   
   // CTA section
@@ -479,7 +480,8 @@ export const translations: Record<Language, Translations> = {
       title: 'Cennik komponentów funkcjonalnych',
       component: 'Komponent',
       cost: 'Koszt',
-      notes: 'Uwagi'
+      notes: 'Uwagi',
+      maintenanceFee: '+ koszty utrzymaniowe'
     },
     cta: {
       title: 'Zamów wycenę własnej aplikacji',
@@ -1039,7 +1041,8 @@ export const translations: Record<Language, Translations> = {
       title: 'Functional Components Pricing',
       component: 'Component',
       cost: 'Cost',
-      notes: 'Notes'
+      notes: 'Notes',
+      maintenanceFee: '+ maintenance fees'
     },
     cta: {
       title: 'Order a quote for your own application',

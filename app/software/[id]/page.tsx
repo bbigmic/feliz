@@ -157,12 +157,14 @@ export default function SoftwarePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-darkbg">
-        <Header />
-        <div className="container mx-auto px-4 py-24">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
-            <p className="text-darksubtle">{t('common.loading')}</p>
+      <div>
+        <div className="min-h-screen flex flex-col items-center justify-center bg-darkbg">
+          <Header />
+          <div className="container mx-auto px-4 py-24">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
+              <p className="text-darksubtle">{t('common.loading')}</p>
+            </div>
           </div>
         </div>
         <Footer />
@@ -368,6 +370,7 @@ export default function SoftwarePage() {
                   <div className="text-3xl font-bold text-primary-400 mb-2" translate="no">
                     {formatPrice(software.price, language)}
                   </div>
+                  <div className="text-sm text-darksubtle">{t('pricing.maintenanceFee')}</div>
                 </div>
               </div>
             </div>
