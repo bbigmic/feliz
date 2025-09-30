@@ -50,6 +50,7 @@ model OrderFile {
   originalName String
   mimeType  String
   size      Int
+  url       String
   orderId   Int
   order     Order    @relation(fields: [orderId], references: [id])
   createdAt DateTime @default(now())

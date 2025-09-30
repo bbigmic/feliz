@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
+import { v2 as cloudinary } from 'cloudinary';
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 const prisma = new PrismaClient()
 
@@ -30,7 +34,7 @@ export async function POST(request: NextRequest) {
     for (const file of files) {
       // Sprawdź rozmiar pliku (max 10MB)
       if (file.size > 10 * 1024 * 1024) {
-        return NextResponse.json({ error: `Plik ${file.name} jest za duży. Maksymalny rozmiar to 10MB.` }, { status: 400 })
+        return NextResponse.json({ error: `Plik ${file.name} jest za duży. Maksymalny rozmiar to 10MB.` }, { status: 400 });
       }
 
       // Sprawdź typ pliku (dozwolone: pdf, doc, docx, txt, jpg, jpeg, png, gif)
@@ -43,48 +47,47 @@ export async function POST(request: NextRequest) {
         'image/jpg',
         'image/png',
         'image/gif'
-      ]
+      ];
 
       if (!allowedTypes.includes(file.type)) {
-        return NextResponse.json({ error: `Typ pliku ${file.name} nie jest dozwolony.` }, { status: 400 })
+        return NextResponse.json({ error: `Typ pliku ${file.name} nie jest dozwolony.` }, { status: 400 });
       }
 
-      // Generuj unikalną nazwę pliku
-      const timestamp = Date.now()
-      const randomString = Math.random().toString(36).substring(2, 15)
-      const fileExtension = file.name.split('.').pop()
-      const filename = `${timestamp}_${randomString}.${fileExtension}`
+      const buffer = Buffer.from(await file.arrayBuffer());
 
-      // Utwórz katalog jeśli nie istnieje
-      const uploadDir = join(process.cwd(), 'public', 'uploads', 'orders')
-      if (!existsSync(uploadDir)) {
-        await mkdir(uploadDir, { recursive: true })
-      }
+      const result = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          { resource_type: 'auto' },
+          (error, result) => {
+            if (error) {
+              reject(new Error('Błąd podczas przesyłania do Cloudinary'));
+            } else {
+              resolve(result);
+            }
+          }
+        );
+        uploadStream.end(buffer);
+      });
 
-      // Zapisz plik
-      const filePath = join(uploadDir, filename)
-      const bytes = await file.arrayBuffer()
-      const buffer = Buffer.from(bytes)
-      await writeFile(filePath, buffer)
-
-      // Zapisz informacje o pliku w bazie danych
       const orderFile = await prisma.orderFile.create({
         data: {
-          filename,
+          filename: result.public_id,
           originalName: file.name,
           mimeType: file.type,
           size: file.size,
-          orderId: parseInt(orderId)
+          orderId: parseInt(orderId),
+          url: result.secure_url
         }
-      })
+      });
 
       uploadedFiles.push({
         id: orderFile.id,
         filename: orderFile.filename,
         originalName: orderFile.originalName,
         size: orderFile.size,
-        mimeType: orderFile.mimeType
-      })
+        mimeType: orderFile.mimeType,
+        url: orderFile.url
+      });
     }
 
     return NextResponse.json({ 

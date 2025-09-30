@@ -75,6 +75,22 @@ export default function AdminPanel() {
   const [showLogin, setShowLogin] = useState(false)
   const [user, setUser] = useState<{ email: string; isAdmin: boolean } | null>(null)
 
+  const downloadFile = (url: string, filename: string) => {
+    fetch(url)
+      .then(response => response.blob())
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+      })
+      .catch(() => alert('Nie udało się pobrać pliku.'));
+  };
+
   // Dodaję fetchSoftwares do pobierania oprogramowań z bazy
   const fetchSoftwares = async () => {
     setLoading(true)
@@ -1174,8 +1190,7 @@ export default function AdminPanel() {
                                         </span>
                                       </div>
                                       <a
-                                        href={`/api/orders/download-file?id=${file.id}`}
-                                        download={file.originalName}
+                                        onClick={() => downloadFile(file.url, file.originalName)}
                                         className="flex items-center gap-1 px-2 py-1 bg-primary-600 hover:bg-primary-700 text-white rounded text-xs transition-colors"
                                       >
                                         <Download className="w-3 h-3" />
@@ -1319,14 +1334,15 @@ export default function AdminPanel() {
                                           <div key={file.id} className="flex items-center justify-between p-2 bg-darkbg rounded-lg">
                                             <div className="flex items-center gap-2">
                                               <File className="w-4 h-4 text-primary-400" />
-                                              <span className="text-sm">{file.originalName}</span>
+                                              <a href={file.url} target="_blank" rel="noopener noreferrer" className="text-sm underline">
+                                                {file.originalName}
+                                              </a>
                                               <span className="text-xs text-darksubtle">
                                                 ({(file.size / 1024 / 1024).toFixed(2)} MB)
                                               </span>
                                             </div>
                                             <a
-                                              href={`/api/orders/download-file?id=${file.id}`}
-                                              download={file.originalName}
+                                              onClick={() => downloadFile(file.url, file.originalName)}
                                               className="flex items-center gap-1 px-2 py-1 bg-primary-600 hover:bg-primary-700 text-white rounded text-xs transition-colors"
                                             >
                                               <Download className="w-3 h-3" />
