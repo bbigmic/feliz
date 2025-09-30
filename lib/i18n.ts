@@ -708,7 +708,7 @@ export const translations: Record<Language, Translations> = {
           "title": "2. Opłata utrzymaniowa",
           "items": [
             "Po upływie pierwszego darmowego miesiąca wymagana jest opłata utrzymaniowa na kolejny miesiąc",
-            "Wysokość opłaty utrzymaniowej: 10-50 GBP (lub 50-250 PLN) miesięcznie w zależności od aplikacji",
+            "Wysokość opłaty utrzymaniowej: od 30 GBP miesięcznie w zależności od wymagań aplikacji",
             "Dokładna kwota ustalana indywidualnie dla każdej aplikacji",
             "Wpływ na wysokość opłaty ma złożoność i wymagania techniczne aplikacji"
           ]
@@ -1269,7 +1269,7 @@ export const translations: Record<Language, Translations> = {
           "title": "2. Maintenance Fee",
           "items": [
             "After the first free month, a maintenance fee is required for the following month.",
-            "Monthly maintenance fee: 10–50 GBP (or 50–250 PLN), depending on the application.",
+            "Maintenance fee: from 30 GBP per month, depending on the application requirements.",
             "The exact amount is determined individually for each application.",
             "The fee depends on the application's complexity and technical requirements."
           ]
