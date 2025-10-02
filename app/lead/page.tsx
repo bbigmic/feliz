@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import toast from 'react-hot-toast'
 
-export default function LeadPage() {
+function LeadPageContent() {
   const searchParams = useSearchParams()
   const ref = searchParams.get('ref')
   const [email, setEmail] = useState('')
@@ -201,5 +201,17 @@ export default function LeadPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LeadPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-darkbg">
+        <div className="text-darktext">Ładowanie...</div>
+      </div>
+    }>
+      <LeadPageContent />
+    </Suspense>
   )
 }
