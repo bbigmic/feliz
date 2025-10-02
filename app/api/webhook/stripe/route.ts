@@ -36,7 +36,15 @@ export async function POST(request: NextRequest) {
           // Pobierz szczegóły zamówienia
           const order = await prisma.order.findUnique({
             where: { id: parseInt(orderId) },
-            include: { user: true }
+            select: { 
+              id: true, 
+              email: true, 
+              phone: true,
+              orderType: true, 
+              language: true, 
+              sellerId: true,
+              user: true 
+            }
           })
 
           if (order) {
@@ -48,8 +56,9 @@ export async function POST(request: NextRequest) {
             console.log(getTranslation('pl', 'api.orderPaid').replace('{orderId}', orderId))
             
 
-            // Zwiększ poziom sprzedawcy za opłacone zamówienia collaboration/code
-            if (order.sellerId && (orderType === 'collaboration' || orderType === 'code')) {
+            // Zapisz prowizję dla wszystkich zamówień ze sprzedawcą
+            // Zwiększ poziom tylko za collaboration/code
+            if (order.sellerId) {
               // Pobierz aktualny poziom sprzedawcy
               const seller = await prisma.user.findUnique({
                 where: { id: order.sellerId },
@@ -67,19 +76,22 @@ export async function POST(request: NextRequest) {
                 
                 const commissionRate = getCommissionRate(seller.level)
                 
-                // Zapisz procent prowizji w zamówieniu
+                // Zapisz procent prowizji w zamówieniu (dla wszystkich typów)
                 await prisma.order.update({
                   where: { id: parseInt(orderId) },
                   data: { commissionRate }
                 })
                 
-                // Zwiększ poziom sprzedawcy
-                await prisma.user.update({
-                  where: { id: order.sellerId },
-                  data: { level: { increment: 1 } }
-                })
-                
-                console.log(`Zapisano prowizję ${commissionRate * 100}% i zwiększono poziom sprzedawcy ID: ${order.sellerId} za zamówienie ${orderType}`)
+                // Zwiększ poziom sprzedawcy TYLKO za collaboration/code
+                if (orderType === 'collaboration' || orderType === 'code') {
+                  await prisma.user.update({
+                    where: { id: order.sellerId },
+                    data: { level: { increment: 1 } }
+                  })
+                  console.log(`Zapisano prowizję ${commissionRate * 100}%, zwiększono poziom sprzedawcy ID: ${order.sellerId} za zamówienie ${orderType}`)
+                } else {
+                  console.log(`Zapisano prowizję ${commissionRate * 100}% dla sprzedawcy ID: ${order.sellerId} za zamówienie ${orderType} (bez zwiększenia poziomu)`)
+                }
               }
             }
             
