@@ -21,6 +21,18 @@ import toast from 'react-hot-toast'
 import AuthModal from '@/components/AuthModal'
 import Link from 'next/link'
 
+// Funkcja generująca reflink
+const generateReflink = (sellerId: number) => {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+  return `${baseUrl}/lead?ref=${sellerId}`
+}
+
+// Funkcja kopiująca reflink do schowka
+const copyReflinkToClipboard = (reflink: string) => {
+  navigator.clipboard.writeText(reflink)
+  toast.success('Reflink skopiowany do schowka!')
+}
+
 export default function SellerPanel() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'orders' | 'leads' | 'statistics'>('dashboard')
   const [orders, setOrders] = useState<any[]>([])
@@ -28,7 +40,7 @@ export default function SellerPanel() {
   const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null)
   const [authChecked, setAuthChecked] = useState(false)
   const [showLogin, setShowLogin] = useState(false)
-  const [user, setUser] = useState<{ email: string; role: string; isAdmin: boolean } | null>(null)
+  const [user, setUser] = useState<{ id: number; email: string; role: string; isAdmin: boolean } | null>(null)
   const [statistics, setStatistics] = useState<any>(null)
   const [loadingStatistics, setLoadingStatistics] = useState(false)
   const [orderFilter, setOrderFilter] = useState<'all' | 'pending' | 'paid'>('all')
@@ -41,6 +53,9 @@ export default function SellerPanel() {
   const [leadSearchTerm, setLeadSearchTerm] = useState('')
   const [leadStatusFilter, setLeadStatusFilter] = useState<'all' | 'pending' | 'paid'>('all')
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
+  const [categories, setCategories] = useState<string[]>([])
+  const [softwares, setSoftwares] = useState<any[]>([])
+  const [showSoftwareTemplate, setShowSoftwareTemplate] = useState(false)
 
   // Sprawdzenie autoryzacji
   useEffect(() => {
@@ -70,7 +85,7 @@ export default function SellerPanel() {
   const fetchOrders = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/admin/orders')
+      const res = await fetch(`/api/orders?sellerId=${user?.id}`)
       const data = await res.json()
       setOrders(data.orders || [])
     } catch (error) {
@@ -85,7 +100,7 @@ export default function SellerPanel() {
   const fetchStatistics = async () => {
     setLoadingStatistics(true)
     try {
-      const res = await fetch('/api/admin/statistics')
+      const res = await fetch('/api/seller/statistics')
       const data = await res.json()
       setStatistics(data)
     } catch (error) {
@@ -133,6 +148,24 @@ export default function SellerPanel() {
     }
   }, [activeTab, user])
 
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch('/api/admin/softwares')
+        const data = await res.json()
+        if (data.softwares) {
+          setSoftwares(data.softwares)
+          const allCategories = data.softwares.flatMap((software: any) => JSON.parse(software.categories))
+          setCategories(Array.from(new Set(allCategories))) // Usuwamy duplikaty
+        }
+      } catch (error) {
+        console.error('Błąd pobierania kategorii:', error)
+        toast.error('Błąd pobierania kategorii')
+      }
+    }
+    fetchCategories()
+  }, [])
+
   // Effect dla filtrowania leadów
   useEffect(() => {
     if (activeTab === 'leads') {
@@ -166,21 +199,7 @@ export default function SellerPanel() {
       order.id.toString().includes(searchTerm)
     )
 
-  // Statystyki dla dashboardu
-  const todayOrders = orders.filter(order => {
-    const today = new Date().toDateString()
-    const orderDate = new Date(order.createdAt).toDateString()
-    return today === orderDate
-  })
-
-  const monthOrders = orders.filter(order => {
-    const now = new Date()
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-    const orderDate = new Date(order.createdAt)
-    return orderDate >= startOfMonth
-  })
-
-  const paidOrders = orders.filter(order => order.status === 'paid')
+  // Dashboard metryki są teraz pobierane z API statistics zamiast obliczane lokalnie
 
   return (
     <div className="min-h-screen bg-darkbg text-darktext">
@@ -192,7 +211,14 @@ export default function SellerPanel() {
                 <img src="/logo-wsp-edu.png" alt="Logo" className="w-10 h-10 rounded-lg object-contain p-1" />
                 <div>
                   <h1 className="text-2xl font-bold text-darktext">Panel Sprzedawcy</h1>
-                  <p className="text-sm text-darksubtle">Zalogowany jako: {user?.email} ({user?.role})</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm text-darksubtle">Zalogowany jako: {user?.email} ({user?.role})</p>
+                    {statistics && (
+                      <span className="px-2 py-1 bg-yellow-600 text-white rounded-full text-xs font-bold">
+                        Poziom {statistics.sellerLevel}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </Link>
             </div>
@@ -271,7 +297,7 @@ export default function SellerPanel() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-blue-100 text-sm">Wszystkie zamówienia</p>
-                    <p className="text-3xl font-bold">{orders.length}</p>
+                    <p className="text-3xl font-bold">{statistics?.totalOrders || 0}</p>
                   </div>
                   <Package className="w-8 h-8 text-blue-200" />
                 </div>
@@ -286,7 +312,7 @@ export default function SellerPanel() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-green-100 text-sm">Opłacone zamówienia</p>
-                    <p className="text-3xl font-bold">{paidOrders.length}</p>
+                    <p className="text-3xl font-bold">{statistics?.paidOrders || 0}</p>
                   </div>
                   <DollarSign className="w-8 h-8 text-green-200" />
                 </div>
@@ -301,7 +327,7 @@ export default function SellerPanel() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-purple-100 text-sm">Dzisiejsze zamówienia</p>
-                    <p className="text-3xl font-bold">{todayOrders.length}</p>
+                    <p className="text-3xl font-bold">{statistics?.todayOrders || 0}</p>
                   </div>
                   <Calendar className="w-8 h-8 text-purple-200" />
                 </div>
@@ -316,7 +342,7 @@ export default function SellerPanel() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-orange-100 text-sm">Miesięczne zamówienia</p>
-                    <p className="text-3xl font-bold">{monthOrders.length}</p>
+                    <p className="text-3xl font-bold">{statistics?.thisMonthOrders || 0}</p>
                   </div>
                   <TrendingUp className="w-8 h-8 text-orange-200" />
                 </div>
@@ -599,10 +625,15 @@ export default function SellerPanel() {
           >
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
               <h2 className="text-xl font-semibold text-darktext">Kontakty i Leady</h2>
-              <button className="btn-primary flex items-center space-x-2" onClick={() => setIsAddLeadModalOpen(true)}>
-                <Plus className="w-4 h-4" />
-                <span>Dodaj lead</span>
-              </button>
+              <div className="flex gap-2">
+                <button className="btn-primary flex items-center space-x-2" onClick={() => setIsAddLeadModalOpen(true)}>
+                  <Plus className="w-4 h-4" />
+                  <span>Dodaj lead</span>
+                </button>
+                <button className="btn-secondary flex items-center space-x-2" onClick={() => copyReflinkToClipboard(generateReflink(user?.id || 0))}>
+                  <span>Kopiuj reflink</span>
+                </button>
+              </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full mb-6">
@@ -674,6 +705,18 @@ export default function SellerPanel() {
                           </span>
                         </div>
                         
+                        {lead.selectedCategory && (
+                          <div className="text-sm">
+                            <span className="text-darksubtle">Kategoria: </span>
+                            <span className="px-2 py-1 bg-blue-600 text-white rounded-full text-xs">{lead.selectedCategory}</span>
+                          </div>
+                        )}
+                        {lead.softwareTemplate && (
+                          <div className="text-sm">
+                            <span className="text-darksubtle">Szablon: </span>
+                            <span className="font-medium text-darktext">{lead.softwareTemplate.name}</span>
+                          </div>
+                        )}
                         <div className="text-sm">
                           <span className="text-darksubtle">Data: </span>
                           <span className="font-medium">
@@ -702,7 +745,8 @@ export default function SellerPanel() {
                         <th className="py-3 px-4 font-medium text-darksubtle">ID</th>
                         <th className="py-3 px-4 font-medium text-darksubtle">Email</th>
                         <th className="py-3 px-4 font-medium text-darksubtle">Telefon</th>
-                        <th className="py-3 px-4 font-medium text-darksubtle">Typ</th>
+                        <th className="py-3 px-4 font-medium text-darksubtle">Kategoria</th>
+                        <th className="py-3 px-4 font-medium text-darksubtle">Szablon</th>
                         <th className="py-3 px-4 font-medium text-darksubtle">Status</th>
                         <th className="py-3 px-4 font-medium text-darksubtle">Data</th>
                         <th className="py-3 px-4 font-medium text-darksubtle">Akcje</th>
@@ -720,33 +764,34 @@ export default function SellerPanel() {
                               <span className="font-medium">{lead.email || 'Brak'}</span>
                             </div>
                           </td>
-                          <td className="py-3 px-4 text-sm text-darksubtle">
-                            {lead.phone || '-'}
-                          </td>
-                          <td className="py-3 px-4">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              lead.orderType === 'consultation' 
-                                ? 'bg-blue-600 text-white' 
-                                : lead.orderType === 'collaboration'
-                                ? 'bg-green-600 text-white'
-                                : 'bg-purple-600 text-white'
-                            }`}>
-                              {lead.orderType === 'consultation' ? 'Wycena' : 
-                               lead.orderType === 'collaboration' ? 'Współpraca' : 
-                               lead.orderType === 'code' ? 'Kod' : lead.orderType}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              lead.status === 'paid' 
-                                ? 'bg-green-900 text-green-300' 
-                                : lead.status === 'pending'
-                                ? 'bg-yellow-900 text-yellow-300'
-                                : 'bg-red-900 text-red-300'
-                            }`}>
-                              {lead.status === 'paid' ? 'Opłacone' : lead.status === 'pending' ? 'Oczekujące' : 'Wygasłe'}
-                            </span>
-                          </td>
+                            <td className="py-3 px-4 text-sm text-darksubtle">
+                              {lead.phone || '-'}
+                            </td>
+                            <td className="py-3 px-4 text-sm text-darksubtle">
+                              {lead.selectedCategory ? (
+                                <span className="px-2 py-1 bg-blue-600 text-white rounded-full text-xs">{lead.selectedCategory}</span>
+                              ) : (
+                                <span className="text-darksubtle">-</span>
+                              )}
+                            </td>
+                            <td className="py-3 px-4 text-sm text-darksubtle">
+                              {lead.softwareTemplate ? (
+                                <span className="font-medium text-darktext">{lead.softwareTemplate.name}</span>
+                              ) : (
+                                <span className="text-darksubtle">-</span>
+                              )}
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                lead.status === 'paid' 
+                                  ? 'bg-green-900 text-green-300' 
+                                  : lead.status === 'pending'
+                                  ? 'bg-yellow-900 text-yellow-300'
+                                  : 'bg-red-900 text-red-300'
+                              }`}>
+                                {lead.status === 'paid' ? 'Opłacone' : lead.status === 'pending' ? 'Oczekujące' : 'Wygasłe'}
+                              </span>
+                            </td>
                           <td className="py-3 px-4 text-sm text-darksubtle">
                             {new Date(lead.createdAt).toLocaleString('pl-PL', {
                               year: 'numeric',
@@ -826,7 +871,7 @@ export default function SellerPanel() {
                     <div className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-lg p-6 text-white">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-purple-100 text-sm">Przychód PLN</p>
+                          <p className="text-purple-100 text-sm">Obrót PLN</p>
                           <p className="text-3xl font-bold">{statistics.totalRevenuePLN?.toLocaleString('pl-PL')}</p>
                         </div>
                         <TrendingUp className="w-8 h-8 text-purple-200" />
@@ -835,10 +880,10 @@ export default function SellerPanel() {
                     <div className="bg-gradient-to-br from-orange-600 to-orange-700 rounded-lg p-6 text-white">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-orange-100 text-sm">Średnia wartość</p>
-                          <p className="text-3xl font-bold">{statistics.averageOrderValue?.toLocaleString('pl-PL')}</p>
+                          <p className="text-orange-100 text-sm">Prowizja ({statistics.commissionRate}%)</p>
+                          <p className="text-3xl font-bold">{statistics.totalCommission?.toLocaleString('pl-PL')} PLN</p>
                         </div>
-                        <BarChart3 className="w-8 h-8 text-orange-200" />
+                        <DollarSign className="w-8 h-8 text-orange-200" />
                       </div>
                     </div>
                   </div>
@@ -852,8 +897,12 @@ export default function SellerPanel() {
                           <span className="font-bold">{statistics.thisMonthOrders}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span>Przychód:</span>
+                          <span>Obrót:</span>
                           <span className="font-bold">{statistics.thisMonthRevenue?.toLocaleString('pl-PL')} PLN</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Prowizja ({statistics.commissionRate}%):</span>
+                          <span className="font-bold text-green-400">{statistics.thisMonthCommission?.toLocaleString('pl-PL')} PLN</span>
                         </div>
                       </div>
                     </div>
@@ -865,8 +914,12 @@ export default function SellerPanel() {
                           <span className="font-bold">{statistics.lastMonthOrders}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span>Przychód:</span>
+                          <span>Obrót:</span>
                           <span className="font-bold">{statistics.lastMonthRevenue?.toLocaleString('pl-PL')} PLN</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Prowizja ({statistics.commissionRate}%):</span>
+                          <span className="font-bold text-green-400">{statistics.lastMonthCommission?.toLocaleString('pl-PL')} PLN</span>
                         </div>
                       </div>
                     </div>
@@ -895,9 +948,10 @@ export default function SellerPanel() {
               const newLead = {
                 email: form.email.value,
                 phone: form.phone.value,
-                orderType: form.orderType.value,
                 info: form.info.value,
-                selectedCategory: form.selectedCategory.value
+                selectedCategory: form.selectedCategory.value,
+                selectedSoftware: showSoftwareTemplate ? form.selectedSoftware.value : null,
+                sellerId: user?.id // Dodajemy sellerId
               };
 
               try {
@@ -912,6 +966,7 @@ export default function SellerPanel() {
                 if (response.ok) {
                   toast.success('Lead został dodany pomyślnie');
                   setIsAddLeadModalOpen(false);
+                  setShowSoftwareTemplate(false);
                   fetchLeads();
                 } else {
                   toast.error(data.error || 'Błąd podczas dodawania leada');
@@ -942,24 +997,17 @@ export default function SellerPanel() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-darksubtle mb-1">Typ zamówienia</label>
+                <label className="block text-sm font-medium text-darksubtle mb-1">Kategoria</label>
                 <select 
-                  name="orderType" 
-                  className="w-full px-3 py-2 border border-gray-700 rounded-lg bg-darkbg text-darktext"
-                >
-                  <option value="consultation">Wycena</option>
-                  <option value="collaboration">Współpraca</option>
-                  <option value="code">Kod</option>
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-darksubtle mb-1">Kategoria (opcjonalnie)</label>
-                <input 
                   name="selectedCategory" 
-                  className="w-full px-3 py-2 border border-gray-700 rounded-lg bg-darkbg text-darktext" 
-                  placeholder="E-commerce, SaaS, etc."
-                />
+                  className="w-full px-3 py-2 border border-gray-700 rounded-lg bg-darkbg text-darktext"
+                  required
+                >
+                  <option value="">Wybierz kategorię...</option>
+                  {categories.map(category => (
+                    <option key={category} value={category}>{category}</option>
+                  ))}
+                </select>
               </div>
               
               <div>
@@ -972,10 +1020,47 @@ export default function SellerPanel() {
                 />
               </div>
               
+              {/* Checkbox dla szablonu oprogramowania */}
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="showSoftwareTemplate"
+                  id="showSoftwareTemplate"
+                  checked={showSoftwareTemplate}
+                  className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-700 rounded bg-darkbg"
+                  onChange={(e) => setShowSoftwareTemplate(e.target.checked)}
+                />
+                <label htmlFor="showSoftwareTemplate" className="text-sm text-darktext">
+                  Chcę wybrać szablon oprogramowania
+                </label>
+              </div>
+              
+              {/* Select dla szablonu oprogramowania - pokazuje się tylko gdy checkbox jest zaznaczony */}
+              {showSoftwareTemplate && (
+                <div>
+                  <label className="block text-sm font-medium text-darksubtle mb-1">Wybierz szablon oprogramowania</label>
+                  <select
+                    name="selectedSoftware"
+                    className="w-full px-3 py-2 border border-gray-700 rounded-lg bg-darkbg text-darktext"
+                    required={showSoftwareTemplate}
+                  >
+                    <option value="">Wybierz szablon...</option>
+                    {softwares.map(software => (
+                      <option key={software.id} value={software.id}>
+                        {software.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              
               <div className="flex justify-end space-x-3 pt-4">
                 <button 
                   type="button" 
-                  onClick={() => setIsAddLeadModalOpen(false)} 
+                  onClick={() => {
+                    setIsAddLeadModalOpen(false);
+                    setShowSoftwareTemplate(false);
+                  }} 
                   className="btn-secondary"
                 >
                   Anuluj
@@ -1243,13 +1328,18 @@ function ProfileModal({
       })
       
       const data = await res.json()
+      console.log('Upload response:', data)
+      
       if (data.success) {
-                 setUserProfile((prev: any) => ({ ...prev, profileImageUrl: data.imageUrl }))
+        setUserProfile((prev: any) => ({ ...prev, profileImageUrl: data.imageUrl }))
+        onUpdate({ profileImageUrl: data.imageUrl })
         toast.success('Zdjęcie profilowe zostało zaktualizowane')
       } else {
+        console.error('Upload error details:', data)
         toast.error(data.error || 'Błąd uploadu zdjęcia')
       }
     } catch (error) {
+      console.error('Upload catch error:', error)
       toast.error('Błąd uploadu zdjęcia')
     } finally {
       setUploading(false)
@@ -1390,9 +1480,13 @@ function ProfileModal({
             <div className="w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden bg-gray-700 flex items-center justify-center">
               {userProfile?.profileImageUrl ? (
                 <img 
-                  src={userProfile.profileImageUrl} 
+                  src={`${userProfile.profileImageUrl.replace('/upload/', '/upload/w_400,h_400,c_fill,g_face,q_auto,f_auto/')}?t=${Date.now()}`} 
                   alt="Profil" 
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    console.error('Image load error:', e);
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
                 />
               ) : (
                 <Users size={48} className="text-darksubtle" />

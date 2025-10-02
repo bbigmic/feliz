@@ -30,6 +30,7 @@ async function checkSellerAuth(request: NextRequest) {
   }
 }
 
+
 export async function GET(request: NextRequest) {
   try {
     const user = await checkSellerAuth(request)
@@ -41,8 +42,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status') || 'all'
     const search = searchParams.get('search') || ''
 
-    // Pobieramy zamówienia jako potencjalne leady
-    let whereClause: any = {}
+    let whereClause: any = { sellerId: user.id }
     
     if (status !== 'all') {
       whereClause.status = status
@@ -56,31 +56,20 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    const leads = await prisma.order.findMany({
+    const leads = await prisma.lead.findMany({
       where: whereClause,
       orderBy: { createdAt: 'desc' },
       include: {
-        user: {
-          select: { email: true }
+        softwareTemplate: {
+          select: { id: true, name: true, price: true }
         }
       }
     })
 
-    const response = NextResponse.json({ leads })
-    
-    // Wyłącz cachowanie
-    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
-    response.headers.set('Pragma', 'no-cache')
-    response.headers.set('Expires', '0')
-    response.headers.set('Surrogate-Control', 'no-store')
-    
-    return response
+    return NextResponse.json({ leads })
   } catch (error) {
     console.error('Error fetching leads:', error)
-    return NextResponse.json({ 
-      error: 'Błąd pobierania leadów',
-      details: String(error)
-    }, { status: 500 })
+    return NextResponse.json({ error: 'Błąd pobierania leadów', details: String(error) }, { status: 500 })
   } finally {
     await prisma.$disconnect()
   }
@@ -93,26 +82,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Brak uprawnień' }, { status: 403 })
     }
 
-    const { email, phone, orderType, info, selectedCategory } = await request.json()
+    const { email, phone, info, selectedCategory, selectedSoftware } = await request.json()
+    
+    console.log('Lead creation data:', { email, phone, info, selectedCategory, selectedSoftware, sellerId: user.id })
     
     if (!email && !phone) {
       return NextResponse.json({ error: 'Email lub telefon jest wymagany' }, { status: 400 })
     }
 
-    // Tworzymy nowy lead jako zamówienie
-    const lead = await prisma.order.create({
+    // Tworzymy nowy lead w tabeli Lead
+    const lead = await prisma.lead.create({
       data: {
         email,
         phone: phone || '',
-        orderType: orderType || 'consultation',
         info,
         selectedCategory,
+        softwareTemplateId: selectedSoftware ? parseInt(selectedSoftware) : null,
         status: 'pending',
-        termsAccepted: true, // Zakładamy zgodę dla leadów dodanych przez sprzedawców
-        marketingAccepted: false,
-        collaborationConsentAccepted: false,
-        codeConsentAccepted: false,
-        language: 'pl'
+        sellerId: user.id, // Dodajemy sellerId
+        createdAt: new Date()
       }
     })
 

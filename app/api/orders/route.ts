@@ -3,6 +3,34 @@ import { PrismaClient } from '@prisma/client'
 import Stripe from 'stripe'
 import nodemailer from 'nodemailer'
 import { getTranslation } from '@/lib/i18n'
+import jwt from 'jsonwebtoken'
+
+const JWT_SECRET = process.env.JWT_SECRET || 'tajny_klucz'
+
+// Middleware do sprawdzania autoryzacji sprzedawcy
+async function checkSellerAuth(request: NextRequest) {
+  const token = request.cookies.get('token')?.value
+  
+  if (!token) {
+    return null
+  }
+  
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as { id: number; email: string }
+    const user = await prisma.user.findUnique({ 
+      where: { id: decoded.id },
+      select: { id: true, email: true, role: true, isAdmin: true }
+    })
+    
+    if (!user || (user.role !== 'seller' && user.role !== 'management' && !user.isAdmin)) {
+      return null
+    }
+    
+    return user
+  } catch (error) {
+    return null
+  }
+}
 
 const prisma = new PrismaClient()
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2023-10-16' })
@@ -189,6 +217,40 @@ export async function POST(request: NextRequest) {
   } catch (err) {
     console.error('ORDER error:', err)
     return NextResponse.json({ error: getTranslation('pl', 'api.serverError'), details: String(err) }, { status: 500 })
+  } finally {
+    await prisma.$disconnect()
+  }
+} 
+
+export async function GET(request: NextRequest) {
+  try {
+    const user = await checkSellerAuth(request)
+    if (!user) {
+      return NextResponse.json({ error: 'Brak uprawnień' }, { status: 403 })
+    }
+
+    // Pobierz leady sprzedawcy
+    const leads = await prisma.lead.findMany({
+      where: { sellerId: user.id },
+      select: { email: true }
+    })
+    const leadEmails = leads.map(lead => lead.email).filter((email): email is string => email !== null)
+
+    // Pobierz zamówienia sprzedawcy oraz zamówienia użytkowników z takim samym emailem jak leady
+    const orders = await prisma.order.findMany({
+      where: {
+        OR: [
+          { sellerId: user.id },
+          { email: { in: [...leadEmails, ...(user.email ? [user.email] : [])] } } // Dodajemy email sprzedawcy
+        ]
+      },
+      orderBy: { createdAt: 'desc' }
+    })
+
+    return NextResponse.json({ orders })
+  } catch (error) {
+    console.error('Error fetching orders:', error)
+    return NextResponse.json({ error: 'Błąd pobierania zamówień', details: String(error) }, { status: 500 })
   } finally {
     await prisma.$disconnect()
   }

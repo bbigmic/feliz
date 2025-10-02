@@ -47,6 +47,42 @@ export async function POST(request: NextRequest) {
             })
             console.log(getTranslation('pl', 'api.orderPaid').replace('{orderId}', orderId))
             
+
+            // Zwiększ poziom sprzedawcy za opłacone zamówienia collaboration/code
+            if (order.sellerId && (orderType === 'collaboration' || orderType === 'code')) {
+              // Pobierz aktualny poziom sprzedawcy
+              const seller = await prisma.user.findUnique({
+                where: { id: order.sellerId },
+                select: { level: true }
+              })
+              
+              if (seller) {
+                // Oblicz aktualny procent prowizji na podstawie poziomu PRZED zwiększeniem
+                const getCommissionRate = (level: number) => {
+                  if (level >= 25) return 0.25
+                  if (level >= 20) return 0.20
+                  if (level >= 15) return 0.15
+                  return 0.10
+                }
+                
+                const commissionRate = getCommissionRate(seller.level)
+                
+                // Zapisz procent prowizji w zamówieniu
+                await prisma.order.update({
+                  where: { id: parseInt(orderId) },
+                  data: { commissionRate }
+                })
+                
+                // Zwiększ poziom sprzedawcy
+                await prisma.user.update({
+                  where: { id: order.sellerId },
+                  data: { level: { increment: 1 } }
+                })
+                
+                console.log(`Zapisano prowizję ${commissionRate * 100}% i zwiększono poziom sprzedawcy ID: ${order.sellerId} za zamówienie ${orderType}`)
+              }
+            }
+            
             // Wyślij mail potwierdzający płatność do klienta
             if (order.email) {
               try {

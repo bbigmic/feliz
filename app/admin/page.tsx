@@ -43,7 +43,7 @@ interface Component {
 }
 
 export default function AdminPanel() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'software' | 'users' | 'orders' | 'components' | 'statistics'>('dashboard')
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'software' | 'users' | 'orders' | 'leads' | 'components' | 'statistics'>('dashboard')
   const [software, setSoftware] = useState<Software[]>([])
   const [loading, setLoading] = useState(false)
 
@@ -52,6 +52,8 @@ export default function AdminPanel() {
   const [tab, setTab] = useState<'software' | 'orders'>('software')
   const [orders, setOrders] = useState<any[]>([])
   const [loadingOrders, setLoadingOrders] = useState(false)
+  const [leads, setLeads] = useState<any[]>([])
+  const [loadingLeads, setLoadingLeads] = useState(false)
   const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null)
   const [users, setUsers] = useState<any[]>([])
   const [loadingUsers, setLoadingUsers] = useState(false)
@@ -124,6 +126,21 @@ export default function AdminPanel() {
     }
   }
 
+  // 5. Funkcja pobierająca leady
+  const fetchLeads = async () => {
+    setLoadingLeads(true)
+    try {
+      const res = await fetch('/api/admin/leads', { next: { revalidate: 0 } })
+      const data = await res.json()
+      setLeads(data.leads || [])
+    } catch (error) {
+      console.error('Błąd pobierania leadów:', error)
+      toast.error('Błąd pobierania leadów')
+    } finally {
+      setLoadingLeads(false)
+    }
+  }
+
   // 5. Funkcja pobierająca statystyki
   const fetchStatistics = async () => {
     setLoadingStatistics(true)
@@ -193,6 +210,9 @@ export default function AdminPanel() {
     }
     if (activeTab === 'orders') {
       fetchOrders()
+    }
+    if (activeTab === 'leads') {
+      fetchLeads()
     }
     if (activeTab === 'users') {
       fetchUsers()
@@ -330,6 +350,12 @@ export default function AdminPanel() {
             onClick={() => setActiveTab('orders')}
           >
             Zamówienia
+          </button>
+          <button
+            className={`px-6 py-2 font-medium transition-colors duration-200 border-b-2 ${activeTab === 'leads' ? 'border-primary-500 text-primary-500' : 'border-transparent text-darksubtle hover:text-primary-400'}`}
+            onClick={() => setActiveTab('leads')}
+          >
+            Leads
           </button>
           <button
             className={`px-6 py-2 font-medium transition-colors duration-200 border-b-2 ${activeTab === 'components' ? 'border-primary-500 text-primary-500' : 'border-transparent text-darksubtle hover:text-primary-400'}`}
@@ -890,6 +916,102 @@ export default function AdminPanel() {
               )}
             </motion.section>
           </>
+        )}
+        {activeTab === 'leads' && (
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="card"
+          >
+            <h2 className="text-xl font-bold mb-4">Leads</h2>
+            {loadingLeads ? (
+              <div className="text-center py-12 text-lg text-darksubtle">Ładowanie danych...</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b border-gray-700">
+                      <th className="py-3 px-4 font-medium text-darksubtle">ID</th>
+                      <th className="py-3 px-4 font-medium text-darksubtle">Email</th>
+                      <th className="py-3 px-4 font-medium text-darksubtle">Telefon</th>
+                      <th className="py-3 px-4 font-medium text-darksubtle">Kategoria</th>
+                      <th className="py-3 px-4 font-medium text-darksubtle">Szablon</th>
+                      <th className="py-3 px-4 font-medium text-darksubtle">Sprzedawca</th>
+                      <th className="py-3 px-4 font-medium text-darksubtle">Status</th>
+                      <th className="py-3 px-4 font-medium text-darksubtle">Data</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {leads.map(lead => (
+                      <tr key={lead.id} className="border-t border-gray-700 hover:bg-darkbg/60">
+                        <td className="py-3 px-4 font-mono text-sm">#{lead.id}</td>
+                        <td className="py-3 px-4">
+                          <span className="font-medium">{lead.email || 'Brak'}</span>
+                        </td>
+                        <td className="py-3 px-4 text-sm text-darksubtle">
+                          {lead.phone || '-'}
+                        </td>
+                        <td className="py-3 px-4 text-sm text-darksubtle">
+                          {lead.selectedCategory ? (
+                            <span className="px-2 py-1 bg-blue-600 text-white rounded-full text-xs">{lead.selectedCategory}</span>
+                          ) : (
+                            <span className="text-darksubtle">-</span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-sm text-darksubtle">
+                          {lead.softwareTemplate ? (
+                            <span className="font-medium text-darktext">{lead.softwareTemplate.name}</span>
+                          ) : (
+                            <span className="text-darksubtle">-</span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-sm text-darksubtle">
+                          {lead.seller ? (
+                            <div>
+                              <div className="font-medium text-darktext">{lead.seller.email}</div>
+                              <div className="text-xs text-darksubtle">{lead.seller.firstName} {lead.seller.lastName}</div>
+                            </div>
+                          ) : (
+                            <span className="text-darksubtle">-</span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            lead.status === 'paid' 
+                              ? 'bg-green-900 text-green-300' 
+                              : lead.status === 'pending'
+                              ? 'bg-yellow-900 text-yellow-300'
+                              : 'bg-red-900 text-red-300'
+                          }`}>
+                            {lead.status === 'paid' ? 'Opłacone' : lead.status === 'pending' ? 'Oczekujące' : 'Wygasłe'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-sm text-darksubtle">
+                          {new Date(lead.createdAt).toLocaleString('pl-PL', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {leads.length === 0 && (
+                  <div className="text-center py-12">
+                    <Users className="w-16 h-16 text-darksubtle mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-darktext mb-2">Brak leadów</h3>
+                    <p className="text-darksubtle">
+                      Nie ma jeszcze żadnych leadów w systemie.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </motion.section>
         )}
         {activeTab === 'users' && (
           <motion.section 

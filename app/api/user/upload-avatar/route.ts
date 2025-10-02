@@ -10,6 +10,12 @@ const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME!
 const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY!
 const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET!
 
+console.log('Cloudinary config check:', {
+  cloud_name: CLOUDINARY_CLOUD_NAME ? 'OK' : 'MISSING',
+  api_key: CLOUDINARY_API_KEY ? 'OK' : 'MISSING',
+  api_secret: CLOUDINARY_API_SECRET ? 'OK' : 'MISSING'
+})
+
 // Middleware do sprawdzania autoryzacji
 async function checkAuth(request: NextRequest) {
   const token = request.cookies.get('token')?.value
@@ -59,26 +65,20 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    // Przygotuj parametry do podpisu Cloudinary
-    const timestamp = Math.round(new Date().getTime() / 1000)
+    // Użyj unsigned preset dla uproszczenia
     const folder = 'feliztrade/avatars'
     const publicId = `user_${user.id}_${Date.now()}`
     
-    // Przygotuj parametry do podpisu
-    const paramsToSign = `folder=${folder}&public_id=${publicId}&timestamp=${timestamp}${CLOUDINARY_API_SECRET}`
-    const signature = crypto.createHash('sha1').update(paramsToSign).digest('hex')
-    
-    // Przygotuj formData do Cloudinary
+    // Przygotuj formData do Cloudinary (unsigned upload)
     const cloudForm = new FormData()
     cloudForm.append('file', new Blob([buffer], { type: file.type }))
-    cloudForm.append('api_key', CLOUDINARY_API_KEY)
-    cloudForm.append('timestamp', timestamp.toString())
-    cloudForm.append('signature', signature)
+    cloudForm.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!)
     cloudForm.append('folder', folder)
     cloudForm.append('public_id', publicId)
-    cloudForm.append('transformation', 'w_400,h_400,c_fill,g_face,q_auto,f_auto')
 
-    // Upload do Cloudinary
+    console.log('Using upload preset:', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET)
+
+    // Upload do Cloudinary (unsigned)
     const cloudResponse = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
       method: 'POST',
       body: cloudForm
@@ -87,8 +87,15 @@ export async function POST(request: NextRequest) {
     const result = await cloudResponse.json()
 
     if (!cloudResponse.ok) {
-      return NextResponse.json({ error: 'Błąd uploadu do Cloudinary', details: result }, { status: 500 })
+      console.error('Cloudinary upload error:', result)
+      return NextResponse.json({ 
+        error: 'Błąd uploadu do Cloudinary', 
+        details: result,
+        status: cloudResponse.status 
+      }, { status: 500 })
     }
+
+    console.log('Cloudinary upload success:', result.secure_url)
 
     // Zaktualizuj profil użytkownika
     await prisma.user.update({
