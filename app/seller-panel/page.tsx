@@ -56,6 +56,25 @@ export default function SellerPanel() {
   const [categories, setCategories] = useState<string[]>([])
   const [softwares, setSoftwares] = useState<any[]>([])
   const [showSoftwareTemplate, setShowSoftwareTemplate] = useState(false)
+  const [showLevelAnimation, setShowLevelAnimation] = useState(true)
+
+  // Funkcja pomocnicza do obliczania prowizji dla zamówienia
+  const calculateOrderCommission = (order: any) => {
+    if (order.status !== 'paid' || !order.commissionRate || !order.sellerId) {
+      return 0
+    }
+
+    let price = 0
+    if (order.orderType === 'consultation') {
+      price = 200 // 200 PLN za konsultację
+    } else if (order.orderType === 'collaboration' && order.software) {
+      price = Math.round((order.software.price || 0) * 0.3) // 30% ceny za współpracę
+    } else if (order.orderType === 'code' && order.software) {
+      price = order.software.price || 0 // 100% ceny za kod
+    }
+    
+    return Math.round(price * order.commissionRate)
+  }
 
   // Sprawdzenie autoryzacji
   useEffect(() => {
@@ -103,6 +122,15 @@ export default function SellerPanel() {
       const res = await fetch('/api/seller/statistics')
       const data = await res.json()
       setStatistics(data)
+      
+      // Animacja tylko dla dokładnie poziomów 15, 20 i 25
+      if (data.sellerLevel && [15, 20, 25].includes(data.sellerLevel)) {
+        setShowLevelAnimation(true)
+        // Po 5 sekundach ukryj animację
+        setTimeout(() => {
+          setShowLevelAnimation(false)
+        }, 5000)
+      }
     } catch (error) {
       console.error('Błąd pobierania statystyk:', error)
       toast.error('Błąd pobierania statystyk')
@@ -210,15 +238,168 @@ export default function SellerPanel() {
               <Link href="/" className="flex items-center gap-3">
                 <img src="/logo-wsp-edu.png" alt="Logo" className="w-10 h-10 rounded-lg object-contain p-1" />
                 <div>
-                  <h1 className="text-2xl font-bold text-darktext">Panel Sprzedawcy</h1>
                   <div className="flex items-center gap-2">
-                    <p className="text-sm text-darksubtle">Zalogowany jako: {user?.email} ({user?.role})</p>
+                    <h1 className="text-xl sm:text-2xl font-bold text-darktext">Panel Sprzedawcy</h1>
                     {statistics && (
-                      <span className="px-2 py-1 bg-yellow-600 text-white rounded-full text-xs font-bold">
-                        Poziom {statistics.sellerLevel}
+                      <div className="relative">
+                        {/* Funkcja pomocnicza do określenia koloru i emoji */}
+                        {(() => {
+                          const level = statistics.sellerLevel
+                          let gradient = ''
+                          let ringColor1 = ''
+                          let ringColor2 = ''
+                          let emoji = '🏆'
+                          let commissionRate = 10
+                          
+                          if (level >= 25) {
+                            gradient = 'from-purple-500 via-pink-500 to-red-500'
+                            ringColor1 = 'bg-purple-400'
+                            ringColor2 = 'bg-pink-400'
+                            emoji = '👑'
+                            commissionRate = 25
+                          } else if (level >= 20) {
+                            gradient = 'from-blue-500 via-cyan-500 to-teal-500'
+                            ringColor1 = 'bg-blue-400'
+                            ringColor2 = 'bg-cyan-400'
+                            emoji = '💎'
+                            commissionRate = 20
+                          } else if (level >= 15) {
+                            gradient = 'from-yellow-400 via-orange-500 to-red-500'
+                            ringColor1 = 'bg-yellow-400'
+                            ringColor2 = 'bg-orange-400'
+                            emoji = '🏆'
+                            commissionRate = 15
+                          }
+                          
+                          return level >= 15 ? (
+                            showLevelAnimation && [15, 20, 25].includes(level) ? (
+                              <motion.div
+                                className="relative"
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ 
+                                  opacity: 1, 
+                                  scale: [1, 1.05, 1],
+                                }}
+                                exit={{ opacity: 0 }}
+                                transition={{
+                                  opacity: { duration: 0.3 },
+                                  scale: {
+                                    duration: 2,
+                                    repeat: 2,
+                                    ease: "easeInOut"
+                                  }
+                                }}
+                              >
+                                {/* Pulsujące pierścienie */}
+                                <motion.div
+                                  className={`absolute inset-0 rounded-full ${ringColor1}`}
+                                  initial={{ scale: 1, opacity: 0 }}
+                                  animate={{
+                                    scale: [1, 1.5, 1],
+                                    opacity: [0.8, 0, 0.8],
+                                  }}
+                                  exit={{ opacity: 0 }}
+                                  transition={{
+                                    duration: 2,
+                                    repeat: 2,
+                                    ease: "easeOut"
+                                  }}
+                                />
+                                <motion.div
+                                  className={`absolute inset-0 rounded-full ${ringColor2}`}
+                                  initial={{ scale: 1, opacity: 0 }}
+                                  animate={{
+                                    scale: [1, 1.8, 1],
+                                    opacity: [0.6, 0, 0.6],
+                                  }}
+                                  exit={{ opacity: 0 }}
+                                  transition={{
+                                    duration: 2,
+                                    repeat: 2,
+                                    ease: "easeOut",
+                                    delay: 0.3
+                                  }}
+                                />
+                                
+                                {/* Latające emoji wokół badge'a */}
+                                {['✨', '💰', '🎉', '⭐'].map((emojiItem, index) => (
+                                  <motion.span
+                                    key={index}
+                                    className="absolute text-lg pointer-events-none"
+                                    style={{
+                                      top: '50%',
+                                      left: '50%',
+                                    }}
+                                    initial={{ opacity: 0, scale: 0 }}
+                                    animate={{
+                                      x: [
+                                        0,
+                                        Math.cos((index * Math.PI) / 2) * 40,
+                                        0
+                                      ],
+                                      y: [
+                                        0,
+                                        Math.sin((index * Math.PI) / 2) * 40,
+                                        0
+                                      ],
+                                      opacity: [0, 1, 0],
+                                      scale: [0.5, 1, 0.5],
+                                      rotate: [0, 360, 720]
+                                    }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{
+                                      duration: 3,
+                                      repeat: 1,
+                                      delay: index * 0.2,
+                                      ease: "easeInOut"
+                                    }}
+                                  >
+                                    {emojiItem}
+                                  </motion.span>
+                                ))}
+                                
+                                {/* Badge z gradientem */}
+                                <span className={`relative px-3 py-1 bg-gradient-to-r ${gradient} text-white rounded-full text-xs font-bold whitespace-nowrap shadow-lg`}>
+                                  {emoji} Poziom {level}
                       </span>
+                                
+                                {/* Tooltip z informacją o prowizji */}
+                                <motion.div
+                                  initial={{ opacity: 0, x: -10 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  exit={{ opacity: 0, x: -10 }}
+                                  transition={{ duration: 0.3 }}
+                                  className="absolute right-full top-1/2 transform -translate-y-1/2 mr-2 sm:right-auto sm:top-full sm:left-1/2 sm:-translate-x-1/2 sm:translate-y-0 sm:mt-2 px-3 py-2 bg-green-600 text-white rounded-lg text-xs font-bold whitespace-nowrap shadow-xl z-10"
+                                >
+                                  💰 {commissionRate}% prowizji!
+                                  {/* Strzałka po prawej na mobile, u góry na desktop */}
+                                  <div className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-green-600 rotate-45 sm:-top-1 sm:left-1/2 sm:-translate-x-1/2 sm:translate-y-0 sm:right-auto"></div>
+                                </motion.div>
+                              </motion.div>
+                            ) : (
+                              <motion.span 
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ duration: 0.5 }}
+                                className={`px-3 py-1 bg-gradient-to-r ${gradient} text-white rounded-full text-xs font-bold whitespace-nowrap shadow-lg inline-block`}
+                              >
+                                {emoji} Poziom {level}
+                              </motion.span>
+                            )
+                          ) : (
+                            <span className="px-2 py-1 bg-yellow-600 text-white rounded-full text-xs font-bold whitespace-nowrap">
+                              Poziom {level}
+                            </span>
+                          )
+                        })()}
+                      </div>
                     )}
                   </div>
+                  <p className="text-xs sm:text-sm text-darksubtle">
+                    <span className="hidden sm:inline">Zalogowany jako: </span>
+                    {user?.email} 
+                    <span className="hidden sm:inline"> ({user?.role})</span>
+                  </p>
                 </div>
               </Link>
             </div>
@@ -361,7 +542,9 @@ export default function SellerPanel() {
                 <div className="text-center py-8 text-darksubtle">Ładowanie...</div>
               ) : orders.length > 0 ? (
                 <div className="space-y-3">
-                  {orders.slice(0, 8).map((order) => (
+                  {orders.slice(0, 8).map((order) => {
+                    const commission = calculateOrderCommission(order)
+                    return (
                     <div key={order.id} className="flex items-center justify-between p-3 bg-darkbg rounded-lg">
                       <div>
                         <p className="font-medium text-darktext">#{order.id} - {order.email || 'Brak email'}</p>
@@ -386,18 +569,26 @@ export default function SellerPanel() {
                             minute: '2-digit'
                           })}
                         </p>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          order.status === 'paid' 
-                            ? 'bg-green-900 text-green-300' 
-                            : order.status === 'pending'
-                            ? 'bg-yellow-900 text-yellow-300'
-                            : 'bg-red-900 text-red-300'
-                        }`}>
-                          {order.status === 'paid' ? 'Opłacone' : order.status === 'pending' ? 'Oczekujące' : 'Wygasłe'}
-                        </span>
+                        <div className="flex flex-col sm:flex-row items-end sm:items-center gap-1 sm:gap-2 justify-end">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            order.status === 'paid' 
+                              ? 'bg-green-900 text-green-300' 
+                              : order.status === 'pending'
+                              ? 'bg-yellow-900 text-yellow-300'
+                              : 'bg-red-900 text-red-300'
+                          }`}>
+                            {order.status === 'paid' ? 'Opłacone' : order.status === 'pending' ? 'Oczekujące' : 'Wygasłe'}
+                          </span>
+                          {order.status === 'paid' && commission > 0 && (
+                            <span className="text-green-400 text-xs font-bold">
+                              +{commission} PLN
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                      </div>
+                    )
+                  })}
                 </div>
               ) : (
                 <div className="text-center py-8 text-darksubtle">Brak zamówień</div>
@@ -916,7 +1107,7 @@ export default function SellerPanel() {
                           <span className="font-bold">{statistics.thisMonthRevenue?.toLocaleString('pl-PL')} PLN</span>
                         </div>
                         <div className="flex justify-between">
-                          <span>Prowizja ({statistics.commissionRate}%):</span>
+                          <span>Prowizja:</span>
                           <span className="font-bold text-green-400">{statistics.thisMonthCommission?.toLocaleString('pl-PL')} PLN</span>
                         </div>
                       </div>
@@ -933,7 +1124,7 @@ export default function SellerPanel() {
                           <span className="font-bold">{statistics.lastMonthRevenue?.toLocaleString('pl-PL')} PLN</span>
                         </div>
                         <div className="flex justify-between">
-                          <span>Prowizja ({statistics.commissionRate}%):</span>
+                          <span>Prowizja:</span>
                           <span className="font-bold text-green-400">{statistics.lastMonthCommission?.toLocaleString('pl-PL')} PLN</span>
                         </div>
                       </div>

@@ -272,7 +272,7 @@ export async function GET(request: NextRequest) {
       if (order.productId) {
         software = await prisma.software.findUnique({
           where: { id: order.productId },
-          select: { id: true, name: true, nameEn: true }
+          select: { id: true, name: true, nameEn: true, price: true }
         })
       }
       return {
