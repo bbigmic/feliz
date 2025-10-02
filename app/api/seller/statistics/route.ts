@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
     // Pobierz opłacone zamówienia sprzedawcy z historycznymi prowizjami
     const paidOrdersData = await prisma.order.findMany({
       where: { ...orderFilter, status: 'paid' },
-      select: { id: true, productId: true, createdAt: true, orderType: true, language: true, commissionRate: true }
+      select: { id: true, productId: true, createdAt: true, orderType: true, language: true, commissionRate: true, sellerId: true }
     }) as any[]
 
     // Oblicz przychód i prowizje na podstawie historycznych danych
