@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
     if (isConsultation) {
       productName = getTranslation(language as 'pl' | 'en', 'stripe.consultationTitle')
       productDescription = getTranslation(language as 'pl' | 'en', 'stripe.consultationDescription')
-      unitAmount = convertPrice(400, language) // 200 PLN w groszach
+      unitAmount = convertPrice(20000, language) // 200 PLN w groszach
     } else if (orderType === 'collaboration' && software) {
       productName = getTranslation(language as 'pl' | 'en', 'stripe.collaborationTitle')
       const softwareName = language === 'en' && software?.nameEn ? software.nameEn : software?.name || 'Oprogramowanie'
