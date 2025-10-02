@@ -248,7 +248,7 @@ export async function GET(request: NextRequest) {
       where: { sellerId: user.id },
       select: { email: true }
     })
-    const leadEmails = leads.map(lead => lead.email).filter((email): email is string => email !== null)
+    const leadEmails = leads.map((lead: { email: string | null }) => lead.email).filter((email: string | null): email is string => email !== null)
 
     // Pobierz zamówienia sprzedawcy oraz zamówienia użytkowników z takim samym emailem jak leady
     const orders = await prisma.order.findMany({
@@ -258,10 +258,30 @@ export async function GET(request: NextRequest) {
           { email: { in: [...leadEmails, ...(user.email ? [user.email] : [])] } } // Dodajemy email sprzedawcy
         ]
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: {
+          select: { id: true, email: true, firstName: true, lastName: true }
+        }
+      }
     })
 
-    return NextResponse.json({ orders })
+    // Pobierz informacje o oprogramowaniu dla zamówień
+    const ordersWithSoftware = await Promise.all(orders.map(async (order) => {
+      let software = null
+      if (order.productId) {
+        software = await prisma.software.findUnique({
+          where: { id: order.productId },
+          select: { id: true, name: true, nameEn: true }
+        })
+      }
+      return {
+        ...order,
+        software
+      }
+    }))
+
+    return NextResponse.json({ orders: ordersWithSoftware })
   } catch (error) {
     console.error('Error fetching orders:', error)
     return NextResponse.json({ error: 'Błąd pobierania zamówień', details: String(error) }, { status: 500 })

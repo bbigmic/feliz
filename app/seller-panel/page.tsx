@@ -487,6 +487,13 @@ export default function SellerPanel() {
                           </span>
                         </div>
                         
+                        {order.software && (
+                          <div className="text-sm">
+                            <span className="text-darksubtle">Oprogramowanie: </span>
+                            <span className="font-medium text-primary-400">{order.software.name}</span>
+                          </div>
+                        )}
+                        
                         <div className="text-sm">
                           <span className="text-darksubtle">Data: </span>
                           <span className="font-medium">
@@ -529,6 +536,7 @@ export default function SellerPanel() {
                         <th className="py-3 px-4 font-medium text-darksubtle">ID</th>
                         <th className="py-3 px-4 font-medium text-darksubtle">Email</th>
                         <th className="py-3 px-4 font-medium text-darksubtle">Telefon</th>
+                        <th className="py-3 px-4 font-medium text-darksubtle">Oprogramowanie</th>
                         <th className="py-3 px-4 font-medium text-darksubtle">Typ</th>
                         <th className="py-3 px-4 font-medium text-darksubtle">Status</th>
                         <th className="py-3 px-4 font-medium text-darksubtle">Data</th>
@@ -550,6 +558,13 @@ export default function SellerPanel() {
                             </td>
                             <td className="py-3 px-4 text-sm text-darksubtle">
                               {order.phone || '-'}
+                            </td>
+                            <td className="py-3 px-4 text-sm">
+                              {order.software ? (
+                                <span className="font-medium text-primary-400">{order.software.name}</span>
+                              ) : (
+                                <span className="text-darksubtle">-</span>
+                              )}
                             </td>
                             <td className="py-3 px-4">
                               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -595,7 +610,7 @@ export default function SellerPanel() {
                           </tr>
                           {expandedOrderId === order.id && (
                             <tr>
-                              <td colSpan={7} className="bg-darkbg/80 p-4 border-t border-b border-primary-700 text-sm">
+                              <td colSpan={8} className="bg-darkbg/80 p-4 border-t border-b border-primary-700 text-sm">
                                 <div className="space-y-4">
                                   <div>
                                     <b>Dodatkowe informacje od zamawiającego:</b><br />
