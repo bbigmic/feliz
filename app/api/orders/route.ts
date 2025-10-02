@@ -65,6 +65,19 @@ export async function POST(request: NextRequest) {
       }
     }
     
+    // Sprawdź czy zamówienie pochodzi od leada (po emailu) i przypisz sellerId
+    let sellerId = null
+    if (email) {
+      const lead = await prisma.lead.findFirst({
+        where: { email: email },
+        select: { sellerId: true }
+      })
+      if (lead) {
+        sellerId = lead.sellerId
+        console.log(`Znaleziono lead dla emaila ${email}, przypisywanie sellerId: ${sellerId}`)
+      }
+    }
+    
     // 1. Utwórz zamówienie w bazie
     const order = await prisma.order.create({
       data: {
@@ -81,6 +94,7 @@ export async function POST(request: NextRequest) {
         codeConsentAccepted: !!codeConsentAccepted,
         selectedCategory: selectedCategory || null,
         language: language || 'pl',
+        sellerId: sellerId, // Przypisz sellerId jeśli znaleziono lead
       },
     })
     
