@@ -42,6 +42,12 @@ const copyReflinkToClipboard = (reflink: string, type: 'lead' | 'seller' = 'lead
   toast.success(message)
 }
 
+// Funkcja kopiująca link płatności do schowka
+const copyPaymentLinkToClipboard = (link: string) => {
+  navigator.clipboard.writeText(link)
+  toast.success('Link płatności skopiowany do schowka!')
+}
+
 export default function SellerPanel() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'orders' | 'leads' | 'statistics' | 'network'>('dashboard')
   const [orders, setOrders] = useState<any[]>([])
@@ -73,6 +79,15 @@ export default function SellerPanel() {
   const [userOrders, setUserOrders] = useState<any[]>([])
   const [loadingUserOrders, setLoadingUserOrders] = useState(false)
   const [expandedLeadId, setExpandedLeadId] = useState<number | null>(null)
+  const [isPaymentLinkModalOpen, setIsPaymentLinkModalOpen] = useState(false)
+  const [paymentLinkData, setPaymentLinkData] = useState({
+    amount: '',
+    description: '',
+    customerEmail: '',
+    customerPhone: ''
+  })
+  const [generatedPaymentLink, setGeneratedPaymentLink] = useState<string | null>(null)
+  const [generatingPaymentLink, setGeneratingPaymentLink] = useState(false)
 
   // Funkcja pomocnicza do obliczania prowizji dla zamówienia
   const calculateOrderCommission = (order: any) => {
@@ -87,6 +102,8 @@ export default function SellerPanel() {
       price = Math.round((order.software.price || 0) * 0.3) // 30% ceny za współpracę
     } else if (order.orderType === 'code' && order.software) {
       price = order.software.price || 0 // 100% ceny za kod
+    } else if (order.orderType === 'custom_payment') {
+      price = order.customAmount || 0 // Kwota z niestandardowej płatności
     }
     
     return Math.round(price * order.commissionRate)
@@ -231,6 +248,57 @@ export default function SellerPanel() {
       setExpandedUserId(userId)
       fetchUserOrders(userId)
     }
+  }
+
+  // Funkcja do generowania linku płatności
+  const handleGeneratePaymentLink = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setGeneratingPaymentLink(true)
+    
+    try {
+      const amount = parseFloat(paymentLinkData.amount)
+      if (isNaN(amount) || amount <= 0) {
+        toast.error('Wprowadź poprawną kwotę')
+        return
+      }
+
+      const res = await fetch('/api/seller/payment-links', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount,
+          description: paymentLinkData.description || 'Płatność',
+          customerEmail: paymentLinkData.customerEmail || null,
+          customerPhone: paymentLinkData.customerPhone || null
+        })
+      })
+
+      const data = await res.json()
+
+      if (data.paymentUrl) {
+        setGeneratedPaymentLink(data.paymentUrl)
+        toast.success(`Link wygenerowany! Prowizja: ${data.commissionAmount} PLN (${data.commissionRate}%)`)
+      } else {
+        toast.error(data.error || 'Błąd generowania linku')
+      }
+    } catch (error) {
+      console.error('Błąd generowania linku płatności:', error)
+      toast.error('Błąd generowania linku płatności')
+    } finally {
+      setGeneratingPaymentLink(false)
+    }
+  }
+
+  // Funkcja do resetowania formularza generowania linku
+  const resetPaymentLinkForm = () => {
+    setPaymentLinkData({
+      amount: '',
+      description: '',
+      customerEmail: '',
+      customerPhone: ''
+    })
+    setGeneratedPaymentLink(null)
+    setIsPaymentLinkModalOpen(false)
   }
 
   useEffect(() => {
@@ -645,7 +713,8 @@ export default function SellerPanel() {
                           <p className="text-sm text-darksubtle">
                             {order.orderType === 'consultation' ? 'Wycena' : 
                              order.orderType === 'collaboration' ? 'Współpraca' : 
-                             order.orderType === 'code' ? 'Kod' : order.orderType}
+                             order.orderType === 'code' ? 'Kod' : 
+                             order.orderType === 'custom_payment' ? 'Kolejna rata' : order.orderType}
                           </p>
                           {order.phone && (
                             <span className="text-xs text-darksubtle">📞 {order.phone}</span>
@@ -687,6 +756,212 @@ export default function SellerPanel() {
                 <div className="text-center py-8 text-darksubtle">Brak zamówień</div>
               )}
             </motion.div>
+
+            {/* Szybki start i system prowizji */}
+            {!loading && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="card bg-gradient-to-br from-primary-600/10 to-purple-600/10 border-primary-500/30"
+              >
+                <div className="text-center mb-6">
+                  <div className="w-16 h-16 bg-gradient-to-br from-primary-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Package className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-darktext mb-2">Szybki start</h3>
+                  <p className="text-darksubtle">Rozpocznij swoją przygodę ze sprzedażą! Oto, co możesz zrobić:</p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  {/* Krok 1 */}
+                  <div className="bg-darkbg/50 backdrop-blur-sm rounded-lg p-5 border border-gray-700 hover:border-primary-500/50 transition-all">
+                    <div className="flex items-start gap-3 mb-3">
+                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-white text-sm font-bold">1</span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-darktext mb-1">Dodaj swojego pierwszego leada</h4>
+                        <p className="text-sm text-darksubtle">Przejdź do zakładki "Kontakty" i dodaj potencjalnego klienta lub skopiuj swój reflink.</p>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => setActiveTab('leads')}
+                      className="btn-secondary w-full text-sm py-2"
+                    >
+                      Przejdź do kontaktów
+                    </button>
+                  </div>
+                  
+                  {/* Krok 2 */}
+                  <div className="bg-darkbg/50 backdrop-blur-sm rounded-lg p-5 border border-gray-700 hover:border-primary-500/50 transition-all">
+                    <div className="flex items-start gap-3 mb-3">
+                      <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-white text-sm font-bold">2</span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-darktext mb-1">Udostępnij swój reflink</h4>
+                        <p className="text-sm text-darksubtle">Skopiuj link do leadów lub rejestracji sprzedawców i zacznij zarabiać prowizje z ich obrotu.</p>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => setActiveTab('network')}
+                      className="btn-secondary w-full text-sm py-2"
+                    >
+                      Przejdź do network
+                    </button>
+                  </div>
+                  
+                  {/* Krok 3 */}
+                  <div className="bg-darkbg/50 backdrop-blur-sm rounded-lg p-5 border border-gray-700 hover:border-primary-500/50 transition-all">
+                    <div className="flex items-start gap-3 mb-3">
+                      <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-white text-sm font-bold">3</span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-darktext mb-1">Zapraszaj nowych sprzedawców</h4>
+                        <p className="text-sm text-darksubtle">
+                          Buduj swój zespół i zarabiaj {statistics?.teamCommissionRate || 5}% z obrotu wszystkich zaproszonych sprzedawców.
+                          {statistics?.teamCommissionRate && statistics.teamCommissionRate < 10 && (
+                            <span className="block mt-1 text-xs text-blue-600">
+                              {statistics.teamCommissionRate === 5 ? (
+                                <>Osiągnij 3 sprzedawców na poziomie 15+ aby zwiększyć do 7.5%</>
+                              ) : (
+                                <>Osiągnij 5 sprzedawców na poziomie 25+ aby zwiększyć do 10%</>
+                              )}
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        setActiveTab('network')
+                        setTimeout(() => {
+                          copyReflinkToClipboard(generateSellerReflink(user?.id || 0), 'seller')
+                        }, 100)
+                      }}
+                      className="btn-secondary w-full text-sm py-2"
+                    >
+                      Kopiuj reflink
+                    </button>
+                  </div>
+                  
+                  {/* Krok 4 */}
+                  <div className="bg-darkbg/50 backdrop-blur-sm rounded-lg p-5 border border-gray-700 hover:border-primary-500/50 transition-all">
+                    <div className="flex items-start gap-3 mb-3">
+                      <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-white text-sm font-bold">4</span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-darktext mb-1">Śledź swoje prowizje</h4>
+                        <p className="text-sm text-darksubtle">Zarabiaj nawet 25% prowizji od zamówień Twoich leadów i do 10% od zespołu.</p>
+                      </div>
+                    </div>
+                    <div className="bg-gradient-to-r from-yellow-600/20 to-orange-600/20 border border-yellow-500/30 rounded-lg p-3">
+                      <p className="text-xs text-yellow-200 font-medium text-center">
+                        💰 Twoja prowizja: {statistics?.commission || 0} PLN
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-gradient-to-r from-green-600/20 to-emerald-600/20 border border-green-500/30 rounded-lg p-4 mb-6">
+                  <p className="text-sm text-center text-green-300 font-medium">
+                    💸 Potrzebujesz pomocy? Skontaktuj się z naszym zespołem w sprawie najlepszych strategii sprzedażowych! 💸
+                  </p>
+                </div>
+
+                {/* System prowizji - informacje */}
+                <div className="space-y-4">
+                  <div className="text-center mb-4">
+                    <h4 className="text-lg font-bold text-darktext mb-1">System prowizji</h4>
+                    <p className="text-sm text-darksubtle">Zarabiaj więcej rozwijając swoją sprzedaż i budując zespół</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Prowizje własne */}
+                    <div className="bg-gradient-to-br from-blue-600/10 to-purple-600/10 border border-blue-500/30 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+                          <TrendingUp className="w-5 h-5 text-white" />
+                        </div>
+                        <h5 className="font-semibold text-darktext">Prowizje własne</h5>
+                      </div>
+                      <p className="text-xs text-darksubtle mb-3">Od Twoich bezpośrednich sprzedaży (leadów)</p>
+                      
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between bg-darkbg/50 rounded px-3 py-2">
+                          <span className="text-sm text-darksubtle">Poziom 1-14:</span>
+                          <span className="text-sm font-bold text-blue-400">10%</span>
+                        </div>
+                        <div className="flex items-center justify-between bg-darkbg/50 rounded px-3 py-2">
+                          <span className="text-sm text-darksubtle">Poziom 15-19:</span>
+                          <span className="text-sm font-bold text-yellow-400">15%</span>
+                        </div>
+                        <div className="flex items-center justify-between bg-darkbg/50 rounded px-3 py-2">
+                          <span className="text-sm text-darksubtle">Poziom 20-24:</span>
+                          <span className="text-sm font-bold text-orange-400">20%</span>
+                        </div>
+                        <div className="flex items-center justify-between bg-darkbg/50 rounded px-3 py-2">
+                          <span className="text-sm text-darksubtle">Poziom 25+:</span>
+                          <span className="text-sm font-bold text-purple-400">25%</span>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-3 pt-3 border-t border-blue-500/20">
+                        <p className="text-xs text-blue-300">
+                          <strong>Twój poziom:</strong> {statistics?.sellerLevel} 
+                          <span className="ml-2">→</span>
+                          <strong className="ml-2">Prowizja:</strong> {statistics?.commissionRate || 10}%
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Prowizje z zespołu */}
+                    <div className="bg-gradient-to-br from-indigo-600/10 to-pink-600/10 border border-indigo-500/30 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-pink-500 rounded-lg flex items-center justify-center">
+                          <Users className="w-5 h-5 text-white" />
+                        </div>
+                        <h5 className="font-semibold text-darktext">Prowizje z zespołu</h5>
+                      </div>
+                      <p className="text-xs text-darksubtle mb-3">Z obrotu zaproszonych przez Ciebie sprzedawców</p>
+                      
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between bg-darkbg/50 rounded px-3 py-2">
+                          <span className="text-sm text-darksubtle">Start:</span>
+                          <span className="text-sm font-bold text-indigo-400">5%</span>
+                        </div>
+                        <div className="flex items-center justify-between bg-darkbg/50 rounded px-3 py-2">
+                          <span className="text-sm text-darksubtle">3+ sprzedawców lvl 15+:</span>
+                          <span className="text-sm font-bold text-purple-400">7.5%</span>
+                        </div>
+                        <div className="flex items-center justify-between bg-darkbg/50 rounded px-3 py-2">
+                          <span className="text-sm text-darksubtle">5+ sprzedawców lvl 25+:</span>
+                          <span className="text-sm font-bold text-pink-400">10%</span>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-3 pt-3 border-t border-indigo-500/20">
+                        <p className="text-xs text-indigo-300">
+                          <strong>Twoja prowizja:</strong> {statistics?.teamCommissionRate || 5}%
+                        </p>
+                        <p className="text-xs text-indigo-300 mt-1">
+                          <strong>W zespole:</strong> {statistics?.sellersLevel15Plus || 0} sprzedawców lvl 15+, {statistics?.sellersLevel25Plus || 0} sprzedawców lvl 25+
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-r from-yellow-600/10 to-orange-600/10 border border-yellow-500/30 rounded-lg p-3">
+                    <p className="text-xs text-center text-yellow-300 font-medium">
+                      💡 <strong>Wskazówka:</strong> Im więcej sprzedajesz i im silniejszy zespół budujesz, tym więcej zarabiasz! Rozwijaj się w obu kierunkach.
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
           </motion.section>
         )}
 
@@ -698,19 +973,29 @@ export default function SellerPanel() {
             transition={{ delay: 0.2 }}
             className="card"
           >
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-              <h2 className="text-xl font-semibold text-darktext">Zamówienia</h2>
+            <div className="flex flex-col gap-4 mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <h2 className="text-xl font-semibold text-darktext">Zamówienia</h2>
+                
+                <button
+                  onClick={() => setIsPaymentLinkModalOpen(true)}
+                  className="btn-primary flex items-center gap-2 justify-center"
+                >
+                  <Plus className="w-4 h-4" />
+                  Generuj link płatności
+                </button>
+              </div>
               
               <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
                 {/* Wyszukiwarka */}
-                <div className="relative">
+                <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-darksubtle" />
                   <input
                     type="text"
                     placeholder="Szukaj email, telefon, ID..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 pr-4 py-2 border border-gray-700 rounded-lg bg-darkpanel text-darktext w-full sm:w-64"
+                    className="pl-10 pr-4 py-2 border border-gray-700 rounded-lg bg-darkpanel text-darktext w-full"
                   />
                 </div>
                 
@@ -729,6 +1014,16 @@ export default function SellerPanel() {
 
             {loading ? (
               <div className="text-center py-12 text-lg text-darksubtle">Ładowanie danych...</div>
+            ) : filteredOrders.length === 0 ? (
+              <div className="text-center py-12">
+                <Package className="w-16 h-16 text-darksubtle mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-darktext mb-2">Brak zamówień</h3>
+                <p className="text-darksubtle">
+                  {(searchTerm && searchTerm.trim() !== '') || orderFilter !== 'all'
+                    ? 'Nie znaleziono zamówień pasujących do wybranych kryteriów.'
+                    : 'Nie ma jeszcze żadnych zamówień w systemie.'}
+                </p>
+              </div>
             ) : (
               <>
                 {/* Mobile: karty */}
@@ -767,7 +1062,8 @@ export default function SellerPanel() {
                           }`}>
                             {order.orderType === 'consultation' ? 'Wycena' : 
                              order.orderType === 'collaboration' ? 'Współpraca' : 
-                             order.orderType === 'code' ? 'Kod' : order.orderType}
+                             order.orderType === 'code' ? 'Kod' : 
+                             order.orderType === 'custom_payment' ? 'Kolejna rata' : order.orderType}
                           </span>
                         </div>
                         
@@ -1254,7 +1550,7 @@ export default function SellerPanel() {
                     <div className="card bg-gradient-to-br from-indigo-600/20 to-purple-600/20 border border-indigo-500/30">
                       <h3 className="text-lg font-semibold text-darktext mb-4 flex items-center gap-2">
                         <Users className="w-5 h-5 text-indigo-400" />
-                        Prowizje z zespołu (10% obrotu zaproszonych sprzedawców)
+                        Prowizje z zespołu ({statistics.teamCommissionRate || 5}% obrotu zaproszonych sprzedawców)
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="bg-darkpanel rounded-lg p-4">
@@ -1362,7 +1658,7 @@ export default function SellerPanel() {
                 Twoje Reflinki
               </h3>
               <p className="text-indigo-100 mb-6 text-sm">
-                Udostępniaj swoje linki polecające, aby rozwijać swoją sieć i zarabiać prowizje
+                Udostępniaj swoje linki polecające, aby rozwijać swoją sieć i zarabiać prowizje 
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Reflink dla rejestracji sprzedawców */}
@@ -1388,8 +1684,28 @@ export default function SellerPanel() {
                   <div className="mt-3 pt-3 border-t border-white/20">
                     <p className="text-xs text-yellow-200 font-medium flex items-start gap-1">
                       <span className="text-base">💰</span>
-                      <span>Zarabiaj <span className="font-bold text-yellow-100">10%</span> z obrotu wszystkich zarejestrowanych przez Ciebie sprzedawców</span>
+                      <span>Zarabiasz <span className="font-bold text-yellow-100">{statistics?.teamCommissionRate || 5}%</span> z obrotu wszystkich zarejestrowanych przez Ciebie sprzedawców</span>
                     </p>
+                    {statistics?.teamCommissionRate && statistics.teamCommissionRate < 10 && (
+                      <div className="mt-2 text-xs text-green-200">
+                        {statistics.teamCommissionRate === 5 ? (
+                          <>
+                            🎯 <strong>Następny poziom (7.5%):</strong> Potrzebujesz {3 - (statistics.sellersLevel15Plus || 0)} sprzedawców więcej na poziomie 15+
+                            {statistics.sellersLevel15Plus > 0 && ` (masz już ${statistics.sellersLevel15Plus})`}
+                          </>
+                        ) : (
+                          <>
+                            🎯 <strong>Następny poziom (10%):</strong> Potrzebujesz {5 - (statistics.sellersLevel25Plus || 0)} sprzedawców więcej na poziomie 25+
+                            {statistics.sellersLevel25Plus > 0 && ` (masz już ${statistics.sellersLevel25Plus})`}
+                          </>
+                        )}
+                      </div>
+                    )}
+                    {statistics?.teamCommissionRate === 10 && (
+                      <div className="mt-2 text-xs text-green-200">
+                        🏆 <strong>Gratulacje!</strong> Osiągnąłeś maksymalny poziom prowizji!
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -1932,6 +2248,125 @@ export default function SellerPanel() {
                 <button type="submit" className="btn-primary">Zapisz zmiany</button>
               </div>
             </form>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Modal generowania linku płatności */}
+      {isPaymentLinkModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-darkpanel rounded-lg p-6 w-full max-w-md mx-4 border border-gray-800"
+          >
+            <h3 className="text-lg font-semibold mb-4 text-darktext">Generuj link płatności</h3>
+            
+            {!generatedPaymentLink ? (
+              <form className="space-y-4" onSubmit={handleGeneratePaymentLink}>
+                <div>
+                  <label className="block text-sm font-medium text-darksubtle mb-1">
+                    Kwota (PLN) <span className="text-red-500">*</span>
+                  </label>
+                  <input 
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={paymentLinkData.amount}
+                    onChange={(e) => setPaymentLinkData({...paymentLinkData, amount: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-700 rounded-lg bg-darkbg text-darktext"
+                    placeholder="np. 500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-darksubtle mb-1">
+                    Opis płatności
+                  </label>
+                  <textarea 
+                    value={paymentLinkData.description}
+                    onChange={(e) => setPaymentLinkData({...paymentLinkData, description: e.target.value})}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-700 rounded-lg bg-darkbg text-darktext"
+                    placeholder="Opcjonalny opis..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-darksubtle mb-1">
+                    Email klienta (opcjonalnie)
+                  </label>
+                  <input 
+                    type="email"
+                    value={paymentLinkData.customerEmail}
+                    onChange={(e) => setPaymentLinkData({...paymentLinkData, customerEmail: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-700 rounded-lg bg-darkbg text-darktext"
+                    placeholder="klient@example.com"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-darksubtle mb-1">
+                    Telefon klienta (opcjonalnie)
+                  </label>
+                  <input 
+                    type="tel"
+                    value={paymentLinkData.customerPhone}
+                    onChange={(e) => setPaymentLinkData({...paymentLinkData, customerPhone: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-700 rounded-lg bg-darkbg text-darktext"
+                    placeholder="+48 123 456 789"
+                  />
+                </div>
+
+                <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
+                  <p className="text-xs text-blue-300">
+                    <strong>Twoja prowizja:</strong> {user && statistics?.commissionRate ? `${statistics.commissionRate}%` : '10%'} z kwoty płatności
+                  </p>
+                </div>
+
+                <div className="flex justify-end space-x-3 pt-4">
+                  <button 
+                    type="button" 
+                    onClick={resetPaymentLinkForm}
+                    className="btn-secondary"
+                  >
+                    Anuluj
+                  </button>
+                  <button 
+                    type="submit" 
+                    className="btn-primary"
+                    disabled={generatingPaymentLink}
+                  >
+                    {generatingPaymentLink ? 'Generowanie...' : 'Generuj link'}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="space-y-4">
+                <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+                  <p className="text-sm text-green-300 mb-2">✓ Link płatności wygenerowany!</p>
+                  <div className="bg-darkbg rounded p-3 break-all text-xs text-darktext">
+                    {generatedPaymentLink}
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => copyPaymentLinkToClipboard(generatedPaymentLink)}
+                    className="btn-primary flex-1"
+                  >
+                    Kopiuj link
+                  </button>
+                  <button
+                    onClick={resetPaymentLinkForm}
+                    className="btn-secondary flex-1"
+                  >
+                    Zamknij
+                  </button>
+                </div>
+              </div>
+            )}
           </motion.div>
         </div>
       )}

@@ -67,7 +67,7 @@ export async function GET() {
     // @ts-ignore - language field exists in database but TypeScript doesn't recognize it yet
     const paidOrdersData = await prisma.order.findMany({
       where: { status: 'paid' },
-      select: { id: true, productId: true, createdAt: true, orderType: true, language: true }
+      select: { id: true, productId: true, createdAt: true, orderType: true, language: true, customAmount: true }
     }) as any[]
 
     // Rozdziel przychody według walut
@@ -84,6 +84,8 @@ export async function GET() {
         price = Math.round((softwarePriceMap.get(order.productId) || 0) * 0.3) // 30% ceny za współpracę
       } else if (order.orderType === 'code' && order.productId) {
         price = softwarePriceMap.get(order.productId) || 0 // 100% ceny za kod
+      } else if (order.orderType === 'custom_payment') {
+        price = (order as any).customAmount || 0
       }
 
       if (order.language === 'en') {
@@ -125,6 +127,8 @@ export async function GET() {
         price = Math.round((softwarePriceMap.get(order.productId) || 0) * 0.3) // 30% ceny za współpracę
       } else if (order.orderType === 'code' && order.productId) {
         price = softwarePriceMap.get(order.productId) || 0 // 100% ceny za kod
+      } else if (order.orderType === 'custom_payment') {
+        price = (order as any).customAmount || 0
       }
       // 30 dni
       const stat30 = dailyStats30.find(d => d.date === dateStr)
@@ -156,6 +160,8 @@ export async function GET() {
           thisMonthRevenue += Math.round((softwarePriceMap.get(order.productId) || 0) * 0.3) // 30% ceny za współpracę
         } else if (order.orderType === 'code' && order.productId) {
           thisMonthRevenue += softwarePriceMap.get(order.productId) || 0 // 100% ceny za kod
+        } else if (order.orderType === 'custom_payment') {
+          thisMonthRevenue += (order as any).customAmount || 0
         }
       } else if (order.createdAt >= startOfLastMonth && order.createdAt <= endOfLastMonth) {
         lastMonthOrders++
@@ -165,6 +171,8 @@ export async function GET() {
           lastMonthRevenue += Math.round((softwarePriceMap.get(order.productId) || 0) * 0.3) // 30% ceny za współpracę
         } else if (order.orderType === 'code' && order.productId) {
           lastMonthRevenue += softwarePriceMap.get(order.productId) || 0 // 100% ceny za kod
+        } else if (order.orderType === 'custom_payment') {
+          lastMonthRevenue += (order as any).customAmount || 0
         }
       }
     })

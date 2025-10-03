@@ -113,8 +113,17 @@ export async function POST(request: NextRequest) {
     response.headers.set('Surrogate-Control', 'no-store')
     
     return response
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating lead:', error)
+    
+    // Obsługa błędu unikalności emaila
+    if (error.code === 'P2002' && error.meta?.target?.includes('email')) {
+      return NextResponse.json({ 
+        error: 'Lead z tym adresem email już istnieje',
+        details: 'Nie można dodać dwóch leadów z tym samym adresem email'
+      }, { status: 400 })
+    }
+    
     return NextResponse.json({ 
       error: 'Błąd tworzenia leada',
       details: String(error)

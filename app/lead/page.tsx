@@ -88,7 +88,12 @@ function LeadPageContent() {
         setSelectedSoftware('')
         setShowSoftwareTemplate(false)
       } else {
-        toast.error(data.error || 'Błąd podczas wysyłania zapytania')
+        // Wyświetl szczegółowy komunikat błędu z API
+        if (data.error) {
+          toast.error(data.error)
+        } else {
+          toast.error('Błąd podczas wysyłania zapytania')
+        }
       }
     } catch (error) {
       toast.error('Błąd podczas dodawania leada')

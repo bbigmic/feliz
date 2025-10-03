@@ -36,7 +36,7 @@ model Order {
   email               String?
   phone               String
   info                String?
-  orderType           String   @default("collaboration") // collaboration, code, consultation
+  orderType           String   @default("collaboration") // collaboration, code, consultation, custom_payment
   status              String   @default("pending")
   createdAt           DateTime @default(now())
   stripeSessionId     String?
@@ -51,7 +51,8 @@ model Order {
   sellerId            Int?    // Id sprzedawcy
   seller              User?    @relation("SellerOrders", fields: [sellerId], references: [id])
   commissionRate      Float?   // Procent prowizji w momencie opłacenia (np. 0.10 dla 10%)
-  referrerCommission  Float?   // Prowizja dla referrera sprzedawcy (10% z obrotu)
+  referrerCommission  Float?   // Prowizja dla referrera sprzedawcy (5-10% z obrotu, zależy od poziomu sieci)
+  customAmount        Float?   // Kwota dla niestandardowych płatności (custom_payment)
 }
 
 model OrderFile {
@@ -107,7 +108,7 @@ model Component {
 model Lead {
   id                  Int      @id @default(autoincrement())
   sellerId            Int      // Id sprzedawcy
-  email               String?
+  email               String?  @unique
   phone               String?
   info                String?
   status              String   @default("pending")

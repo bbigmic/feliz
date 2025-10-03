@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
     // Pobierz opłacone zamówienia sprzedawcy z historycznymi prowizjami
     const paidOrdersData = await prisma.order.findMany({
       where: { ...orderFilter, status: 'paid' },
-      select: { id: true, productId: true, createdAt: true, orderType: true, language: true, commissionRate: true, sellerId: true }
+      select: { id: true, productId: true, createdAt: true, orderType: true, language: true, commissionRate: true, sellerId: true, customAmount: true }
     }) as any[]
 
     // Oblicz przychód i prowizje na podstawie historycznych danych
@@ -102,6 +102,8 @@ export async function GET(request: NextRequest) {
         price = Math.round((softwarePriceMap.get(order.productId) || 0) * 0.3) // 30% ceny za współpracę
       } else if (order.orderType === 'code' && order.productId) {
         price = softwarePriceMap.get(order.productId) || 0 // 100% ceny za kod
+      } else if (order.orderType === 'custom_payment') {
+        price = order.customAmount || 0 // Kwota z niestandardowej płatności
       }
       
       totalRevenue += price
@@ -133,6 +135,8 @@ export async function GET(request: NextRequest) {
         price = Math.round((softwarePriceMap.get(order.productId) || 0) * 0.3)
       } else if (order.orderType === 'code' && order.productId) {
         price = softwarePriceMap.get(order.productId) || 0
+      } else if (order.orderType === 'custom_payment') {
+        price = (order as any).customAmount || 0
       }
 
       const commission = order.commissionRate && order.sellerId ? Math.round(price * order.commissionRate) : 0
@@ -163,7 +167,26 @@ export async function GET(request: NextRequest) {
     
     const currentCommissionRate = getCommissionRate(user.level)
 
-    // Oblicz prowizje z zespołu (10% obrotu zaproszonych sprzedawców)
+    // Oblicz aktualny procent prowizji z zespołu (dynamiczny na podstawie osiągnięć sieci)
+    const referredSellers = await prisma.user.findMany({
+      where: {
+        referrerId: user.id,
+        role: 'seller'
+      },
+      select: { level: true }
+    })
+    
+    const sellersLevel15Plus = referredSellers.filter(s => s.level >= 15).length
+    const sellersLevel25Plus = referredSellers.filter(s => s.level >= 25).length
+    
+    let teamCommissionRate = 0.05 // Domyślnie 5%
+    if (sellersLevel25Plus >= 5) {
+      teamCommissionRate = 0.10 // 10% jeśli 5+ sprzedawców ma poziom 25+
+    } else if (sellersLevel15Plus >= 3) {
+      teamCommissionRate = 0.075 // 7.5% jeśli 3+ sprzedawców ma poziom 15+
+    }
+
+    // Oblicz prowizje z zespołu (zaproszonych sprzedawców)
     // Znajdź wszystkie zamówienia, gdzie sellerId to użytkownicy zaproszeni przez obecnego sprzedawcę
     const teamOrders = await prisma.order.findMany({
       where: {
@@ -210,11 +233,14 @@ export async function GET(request: NextRequest) {
       lastMonthCommission,
       sellerLevel: user.level, // Dodajemy poziom sprzedawcy
       commissionRate: Math.round(currentCommissionRate * 100), // Aktualny procent prowizji dla nowych zamówień
-      // Prowizje z zespołu (10% obrotu zaproszonych sprzedawców)
+      // Prowizje z zespołu (zaproszonych sprzedawców)
       totalTeamCommission,
       thisMonthTeamCommission,
       lastMonthTeamCommission,
-      teamOrdersCount: teamOrders.length
+      teamOrdersCount: teamOrders.length,
+      teamCommissionRate: Math.round(teamCommissionRate * 100), // Aktualny procent prowizji z zespołu
+      sellersLevel15Plus, // Liczba sprzedawców w sieci z poziomem 15+
+      sellersLevel25Plus  // Liczba sprzedawców w sieci z poziomem 25+
     }
 
     const response = NextResponse.json(statistics)

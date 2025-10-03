@@ -74,7 +74,8 @@ export async function GET(request: NextRequest) {
           },
           select: {
             orderType: true,
-            productId: true
+            productId: true,
+            customAmount: true
           }
         })
 
@@ -88,6 +89,8 @@ export async function GET(request: NextRequest) {
             price = Math.round((softwarePriceMap.get(order.productId) || 0) * 0.3) // 30% ceny za współpracę
           } else if (order.orderType === 'code' && order.productId) {
             price = softwarePriceMap.get(order.productId) || 0 // 100% ceny za kod
+          } else if (order.orderType === 'custom_payment') {
+            price = (order as any).customAmount || 0
           }
           revenue += price
         })

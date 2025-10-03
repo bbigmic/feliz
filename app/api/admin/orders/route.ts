@@ -26,7 +26,15 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
       include: { 
         user: true,
-        files: true
+        files: true,
+        seller: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true
+          }
+        }
       }
     })
     

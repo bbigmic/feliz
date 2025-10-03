@@ -43,7 +43,8 @@ export async function POST(request: NextRequest) {
               orderType: true, 
               language: true, 
               sellerId: true,
-              user: true 
+              user: true,
+              customAmount: true // Dla custom_payment
             }
           })
 
@@ -76,9 +77,31 @@ export async function POST(request: NextRequest) {
                 
                 const commissionRate = getCommissionRate(seller.level)
                 
-                // Oblicz prowizję dla referrera (10% obrotu)
+                // Oblicz prowizję dla referrera (dynamiczna na podstawie sieci)
                 let referrerCommission = 0
+                let referrerCommissionRate = 0.05 // Domyślnie 5%
+                
                 if (seller.referrerId) {
+                  // Sprawdź poziomy sprzedawców w sieci referrera
+                  const referredSellers = await prisma.user.findMany({
+                    where: {
+                      referrerId: seller.referrerId,
+                      role: 'seller'
+                    },
+                    select: { level: true }
+                  })
+                  
+                  // Zlicz sprzedawców na poziomach 15+ i 25+
+                  const sellersLevel15Plus = referredSellers.filter(s => s.level >= 15).length
+                  const sellersLevel25Plus = referredSellers.filter(s => s.level >= 25).length
+                  
+                  // Określ procent prowizji na podstawie osiągnięć sieci
+                  if (sellersLevel25Plus >= 5) {
+                    referrerCommissionRate = 0.10 // 10% jeśli 5+ sprzedawców ma poziom 25+
+                  } else if (sellersLevel15Plus >= 3) {
+                    referrerCommissionRate = 0.075 // 7.5% jeśli 3+ sprzedawców ma poziom 15+
+                  }
+                  
                   // Oblicz cenę zamówienia
                   let orderPrice = 0
                   if (orderType === 'consultation') {
@@ -98,11 +121,14 @@ export async function POST(request: NextRequest) {
                         }
                       }
                     }
+                  } else if (orderType === 'custom_payment') {
+                    // Dla niestandardowych płatności, pobierz kwotę z zamówienia
+                    orderPrice = (order as any).customAmount || 0
                   }
                   
-                  // 10% obrotu dla referrera
-                  referrerCommission = Math.round(orderPrice * 0.10)
-                  console.log(`Referrer ID ${seller.referrerId} otrzyma ${referrerCommission} PLN (10% z ${orderPrice} PLN) za zamówienie sprzedawcy ID: ${order.sellerId}`)
+                  // Oblicz prowizję referrera
+                  referrerCommission = Math.round(orderPrice * referrerCommissionRate)
+                  console.log(`Referrer ID ${seller.referrerId} otrzyma ${referrerCommission} PLN (${referrerCommissionRate * 100}% z ${orderPrice} PLN) za zamówienie sprzedawcy ID: ${order.sellerId}. Sieć: ${sellersLevel15Plus} sprzedawców 15+, ${sellersLevel25Plus} sprzedawców 25+`)
                 }
                 
                 // Zapisz procent prowizji i prowizję referrera w zamówieniu
@@ -116,6 +142,13 @@ export async function POST(request: NextRequest) {
                 
                 // Zwiększ poziom sprzedawcy TYLKO za collaboration/code
                 if (orderType === 'collaboration' || orderType === 'code') {
+                  await prisma.user.update({
+                    where: { id: order.sellerId },
+                    data: { level: { increment: 1 } }
+                  })
+                  console.log(`Zapisano prowizję ${commissionRate * 100}%, zwiększono poziom sprzedawcy ID: ${order.sellerId} za zamówienie ${orderType}`)
+                } else if (orderType === 'custom_payment') {
+                  // Dla niestandardowych płatności również zwiększamy poziom
                   await prisma.user.update({
                     where: { id: order.sellerId },
                     data: { level: { increment: 1 } }

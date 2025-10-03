@@ -714,7 +714,8 @@ export default function AdminPanel() {
                               <p className="text-sm text-darksubtle">
                                 {order.orderType === 'consultation' ? 'Wycena' : 
                                  order.orderType === 'collaboration' ? 'Współpraca' : 
-                                 order.orderType === 'code' ? 'Kod' : order.orderType}
+                                 order.orderType === 'code' ? 'Kod' : 
+                                 order.orderType === 'custom_payment' ? 'Kolejna rata' : order.orderType}
                               </p>
                               {order.orderType === 'consultation' && order.selectedCategory && (
                                 <span className="text-xs bg-primary-600 text-white px-2 py-1 rounded-full">
@@ -1525,7 +1526,8 @@ export default function AdminPanel() {
                           }`}>
                             {order.orderType === 'consultation' ? 'Wycena' : 
                              order.orderType === 'collaboration' ? 'Współpraca' : 
-                             order.orderType === 'code' ? 'Kod' : order.orderType}
+                             order.orderType === 'code' ? 'Kod' : 
+                             order.orderType === 'custom_payment' ? 'Kolejna rata' : order.orderType}
                           </span>
                           {order.phone && (
                             <span className="text-xs text-darksubtle">📞 {order.phone}</span>
@@ -1584,6 +1586,20 @@ export default function AdminPanel() {
                       {expandedOrderId === order.id && (
                         <div className="mt-3 p-3 bg-darkpanel rounded-lg border border-gray-700">
                           <div className="space-y-4 text-sm">
+                            {order.seller && (
+                              <div>
+                                <span className="font-medium text-darksubtle">Sprzedawca:</span>
+                                <p className="mt-1">
+                                  {order.seller.email}
+                                  {order.seller.firstName && order.seller.lastName && (
+                                    <span className="text-darksubtle ml-2">
+                                      ({order.seller.firstName} {order.seller.lastName})
+                                    </span>
+                                  )}
+                                </p>
+                              </div>
+                            )}
+                            
                             {order.info && (
                               <div>
                                 <span className="font-medium text-darksubtle">Dodatkowe informacje:</span>
@@ -1662,7 +1678,8 @@ export default function AdminPanel() {
                               }`}>
                                 {order.orderType === 'consultation' ? 'Wycena' : 
                                  order.orderType === 'collaboration' ? 'Współpraca' : 
-                                 order.orderType === 'code' ? 'Kod' : order.orderType}
+                                 order.orderType === 'code' ? 'Kod' : 
+                                 order.orderType === 'custom_payment' ? 'Kolejna rata' : order.orderType}
                               </span>
                             </td>
                             <td className="py-3 px-4 text-sm">
@@ -1735,6 +1752,18 @@ export default function AdminPanel() {
                             <tr>
                               <td colSpan={9} className="bg-darkbg/80 p-4 border-t border-b border-primary-700 text-sm">
                                 <div className="space-y-4">
+                                  {order.seller && (
+                                    <div>
+                                      <b>Sprzedawca:</b><br />
+                                      {order.seller.email}
+                                      {order.seller.firstName && order.seller.lastName && (
+                                        <span className="text-darksubtle ml-2">
+                                          ({order.seller.firstName} {order.seller.lastName})
+                                        </span>
+                                      )}
+                                    </div>
+                                  )}
+                                  
                                   <div>
                                     <b>Dodatkowe informacje od zamawiającego:</b><br />
                                     {order.info ? order.info : <span className="text-darksubtle">Brak dodatkowych informacji</span>}
@@ -2491,7 +2520,9 @@ export default function AdminPanel() {
                                                         'bg-purple-600 text-white'
                                                       }`}>
                                                         {order.orderType === 'consultation' ? 'Wycena' :
-                                                         order.orderType === 'collaboration' ? 'Współpraca' : 'Kod'}
+                                                         order.orderType === 'collaboration' ? 'Współpraca' : 
+                                                         order.orderType === 'code' ? 'Kod' : 
+                                                         order.orderType === 'custom_payment' ? 'Kolejna rata' : order.orderType}
                                                       </span>
                                                     </div>
                                                     {order.software && (
