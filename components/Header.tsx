@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { motion } from 'framer-motion'
 import { Menu, X, ShoppingCart, User } from 'lucide-react'
 import AuthModal from './AuthModal'
@@ -9,7 +9,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import LanguageSwitcher from './LanguageSwitcher'
 import { useLanguage } from '@/contexts/LanguageContext'
 
-export default function Header() {
+function HeaderContent() {
   const { t } = useLanguage()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
@@ -244,5 +244,24 @@ export default function Header() {
         referrerId={referrerId}
       />
     </header>
+  )
+}
+
+export default function Header() {
+  return (
+    <Suspense fallback={
+      <header className="shadow-sm border-b border-transparent fixed top-0 left-0 w-full z-50 backdrop-blur-md bg-darkbg/70">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center space-x-2">
+              <img src="/logo-wsp-edu.png" alt="Logo" className="w-10 h-10 object-contain" />
+              <span className="text-xl font-bold text-darktext">FelizTrade</span>
+            </div>
+          </div>
+        </div>
+      </header>
+    }>
+      <HeaderContent />
+    </Suspense>
   )
 } 
