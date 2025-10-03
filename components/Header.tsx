@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { motion } from 'framer-motion'
-import { Menu, X, ShoppingCart, User } from 'lucide-react'
+import { Menu, X, ShoppingCart, User, ChevronDown, Settings, Package } from 'lucide-react'
 import AuthModal from './AuthModal'
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
@@ -14,7 +14,8 @@ function HeaderContent() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [isAuthOpen, setIsAuthOpen] = useState(false)
-  const [user, setUser] = useState<{ email: string; role: string; isAdmin: boolean } | null>(null)
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+  const [user, setUser] = useState<{ email: string; role: string; isAdmin: boolean; profileImageUrl?: string | null } | null>(null)
   const searchParams = useSearchParams()
   const [referrerId, setReferrerId] = useState<number | undefined>(undefined)
 
@@ -26,6 +27,18 @@ function HeaderContent() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  // Zamknij dropdown przy kliknięciu poza nim
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      if (isUserMenuOpen && !target.closest('.user-menu-container')) {
+        setIsUserMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isUserMenuOpen])
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -35,7 +48,8 @@ function HeaderContent() {
           setUser({ 
             email: data.user.email, 
             role: data.user.role || 'user', 
-            isAdmin: data.user.isAdmin || false 
+            isAdmin: data.user.isAdmin || false,
+            profileImageUrl: data.user.profileImageUrl || null
           })
         } else {
           setUser(null)
@@ -113,31 +127,76 @@ function HeaderContent() {
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-4">
             <LanguageSwitcher />
-            {user && (user.role === 'seller' || user.role === 'management' || user.isAdmin) && (
-              <Link href="/seller-panel" className="text-darktext hover:text-primary-300 transition-colors">
-                Panel Sprzedawcy
-              </Link>
-            )}
-            {user && user.isAdmin && (
-              <Link href="/admin" className="text-darktext hover:text-primary-300 transition-colors">
-                Panel Admin
-              </Link>
-            )}
+            <div className="flex flex-col">
+              {user && (user.role === 'seller' || user.role === 'management' || user.isAdmin) && (
+                <Link href="/seller-panel" className="text-darktext hover:text-primary-300 transition-colors">
+                  Panel Sprzedawcy
+                </Link>
+              )}
+              {user && user.isAdmin && (
+                <Link href="/admin" className="text-darktext hover:text-primary-300 transition-colors">
+                  Panel Admin
+                </Link>
+              )}
+            </div>
             {user ? (
-              <div className="flex items-center gap-3">
-                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary-700 text-white font-bold text-sm">
-                  <User className="w-4 h-4" />
-                </span>
-                <span className="text-darktext font-medium text-sm max-w-[120px] truncate">{user.email}</span>
-                <button
-                  className="btn-secondary text-sm px-3 py-1"
-                  onClick={() => {
-                    document.cookie = 'token=; Max-Age=0; path=/;'
-                    setUser(null)
-                  }}
+              <div className="relative user-menu-container">
+                <button 
+                  className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                 >
-                  {t('header.logout')}
+                  {user.profileImageUrl ? (
+                    <img 
+                      src={user.profileImageUrl} 
+                      alt="Avatar" 
+                      className="w-8 h-8 rounded-full object-cover border-2 border-primary-600"
+                    />
+                  ) : (
+                    <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary-700 text-white font-bold text-sm">
+                      <User className="w-4 h-4" />
+                    </span>
+                  )}
+                  <span className="text-darktext font-medium text-sm max-w-[120px] truncate">{user.email}</span>
+                  <ChevronDown className={`w-4 h-4 text-darktext transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
+                
+                {/* Dropdown Menu */}
+                {isUserMenuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="absolute right-0 mt-2 w-48 bg-darkpanel border border-gray-700 rounded-lg shadow-xl py-2 z-50"
+                  >
+                    <Link 
+                      href="/profile" 
+                      className="flex items-center gap-2 px-4 py-2 text-darktext hover:bg-primary-600/20 transition-colors"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      <Settings className="w-4 h-4" />
+                      <span>Profil</span>
+                    </Link>
+                    <Link 
+                      href="/my-orders" 
+                      className="flex items-center gap-2 px-4 py-2 text-darktext hover:bg-primary-600/20 transition-colors"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      <Package className="w-4 h-4" />
+                      <span>Zamówienia</span>
+                    </Link>
+                    <div className="border-t border-gray-700 my-2"></div>
+                    <button
+                      className="flex items-center gap-2 px-4 py-2 text-red-400 hover:bg-red-600/20 transition-colors w-full text-left"
+                      onClick={() => {
+                        document.cookie = 'token=; Max-Age=0; path=/;'
+                        setUser(null)
+                        setIsUserMenuOpen(false)
+                      }}
+                    >
+                      <X className="w-4 h-4" />
+                      <span>{t('header.logout')}</span>
+                    </button>
+                  </motion.div>
+                )}
               </div>
             ) : (
               <button className="btn-primary" onClick={() => setIsAuthOpen(true)}>
@@ -209,6 +268,29 @@ function HeaderContent() {
                 </Link>
               )}
               
+              {/* User menu for all logged in users */}
+              {user && (
+                <>
+                  <div className="border-t border-gray-800 my-2"></div>
+                  <Link 
+                    href="/profile" 
+                    className="flex items-center gap-2 text-lg font-semibold text-darktext rounded-xl px-4 py-3 hover:bg-primary-600/20 hover:text-primary-300 transition-all duration-150 active:bg-primary-700/30"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Settings className="w-5 h-5" />
+                    <span>Profil</span>
+                  </Link>
+                  <Link 
+                    href="/my-orders" 
+                    className="flex items-center gap-2 text-lg font-semibold text-darktext rounded-xl px-4 py-3 hover:bg-primary-600/20 hover:text-primary-300 transition-all duration-150 active:bg-primary-700/30"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Package className="w-5 h-5" />
+                    <span>Zamówienia</span>
+                  </Link>
+                </>
+              )}
+              
               <div className="pt-2 border-t border-gray-800">
                   {/* <button className="flex items-center space-x-2 text-darktext hover:text-primary-300 transition-colors mb-2">
                     <ShoppingCart className="w-5 h-5" />
@@ -216,7 +298,17 @@ function HeaderContent() {
                   </button> */}
                   {user ? (
                     <div className="flex items-center gap-3 mt-2">
-                      <span className="flex items-center justify-center w-10 h-10 rounded-full bg-primary-700/80 text-white font-bold text-lg"><User className="w-6 h-6" /></span>
+                      {user.profileImageUrl ? (
+                        <img 
+                          src={user.profileImageUrl} 
+                          alt="Avatar" 
+                          className="w-10 h-10 rounded-full object-cover border-2 border-primary-600"
+                        />
+                      ) : (
+                        <span className="flex items-center justify-center w-10 h-10 rounded-full bg-primary-700/80 text-white font-bold text-lg">
+                          <User className="w-6 h-6" />
+                        </span>
+                      )}
                       <span className="text-darktext font-medium text-base truncate max-w-[120px]">{user.email}</span>
                       <button
                         className="ml-auto btn-primary px-4 py-2 rounded-lg text-sm font-semibold"

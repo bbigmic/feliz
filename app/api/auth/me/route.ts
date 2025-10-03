@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     const prisma = new PrismaClient()
     const user = await prisma.user.findUnique({ 
       where: { id: decoded.id },
-      select: { id: true, email: true, isAdmin: true, role: true }
+      select: { id: true, email: true, isAdmin: true, role: true, profileImageUrl: true, firstName: true, lastName: true, bio: true }
     })
     await prisma.$disconnect()
     
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     }
     
     console.log('User found:', { id: user.id, email: user.email, isAdmin: user.isAdmin, role: user.role })
-    return NextResponse.json({ user: { id: user.id, email: user.email, isAdmin: user.isAdmin, role: user.role } }, { status: 200 })
+    return NextResponse.json({ user }, { status: 200 })
   } catch (error) {
     console.error('Auth error:', error)
     return NextResponse.json({ user: null }, { status: 200 })

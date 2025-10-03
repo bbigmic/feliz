@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import { createPortal } from "react-dom"
 import { motion } from "framer-motion"
 import toast from "react-hot-toast"
 import { useLanguage } from "@/contexts/LanguageContext"
@@ -33,10 +34,16 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
   const [uploadedFiles, setUploadedFiles] = useState<any[]>([])
   const [uploadingFiles, setUploadingFiles] = useState(false)
   const [orderType, setOrderType] = useState<'collaboration' | 'code' | 'consultation'>('collaboration')
+  const [mounted, setMounted] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   
   const isConsultation = !productId
   const showOrderTypeSelection = !isConsultation && productId
+
+  useEffect(() => {
+    setMounted(true)
+    return () => setMounted(false)
+  }, [])
 
   // Pobierz dane oprogramowania jeśli to collaboration lub code
   useEffect(() => {
@@ -106,7 +113,7 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
     }
   }, [userEmail, isOpen])
 
-  if (!isOpen) return null
+  if (!isOpen || !mounted) return null
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -219,8 +226,8 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
     }
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 p-4">
+  const modalContent = (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-60 p-4" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
       <div className="bg-darkpanel rounded-xl shadow-lg p-8 w-full max-w-md relative max-h-[90vh] overflow-y-auto">
         <button
           className="absolute top-3 right-3 text-gray-400 hover:text-white"
@@ -516,4 +523,6 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
       </div>
     </div>
   )
+
+  return createPortal(modalContent, document.body)
 } 

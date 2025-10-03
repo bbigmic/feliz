@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { createPortal } from "react-dom"
 import toast from "react-hot-toast"
 
 interface SoftwareFormModalProps {
@@ -51,6 +52,12 @@ export default function SoftwareFormModal({ isOpen, onClose, onAdded, softwareTo
   const [images, setImages] = useState<string[]>(softwareToEdit?.images ? softwareToEdit.images.map((img: any) => img.url) : [])
   const [thumbnailIdx, setThumbnailIdx] = useState<number>(softwareToEdit?.images ? softwareToEdit.images.findIndex((img: any) => img.isThumbnail) : 0)
   const [uploading, setUploading] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+    return () => setMounted(false)
+  }, [])
 
   useEffect(() => {
     if (softwareToEdit) {
@@ -68,7 +75,7 @@ export default function SoftwareFormModal({ isOpen, onClose, onAdded, softwareTo
     }
   }, [softwareToEdit])
 
-  if (!isOpen) return null
+  if (!isOpen || !mounted) return null
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -153,8 +160,8 @@ export default function SoftwareFormModal({ isOpen, onClose, onAdded, softwareTo
     }
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 p-4">
+  const modalContent = (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-60 p-4" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
       <div className="bg-darkpanel rounded-xl shadow-lg p-8 w-full max-w-lg relative max-h-[90vh] overflow-y-auto">
         <button
           className="absolute top-3 right-3 text-gray-400 hover:text-white"
@@ -200,4 +207,6 @@ export default function SoftwareFormModal({ isOpen, onClose, onAdded, softwareTo
       </div>
     </div>
   )
+
+  return createPortal(modalContent, document.body)
 } 

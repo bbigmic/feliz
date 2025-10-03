@@ -131,15 +131,16 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Użytkownik nie istnieje' }, { status: 404 })
     }
 
-    const { firstName, lastName, bio } = await request.json()
-    console.log('Profile API PATCH - Updating user:', user.email, { firstName, lastName, bio })
+    const { firstName, lastName, bio, profileImageUrl } = await request.json()
+    console.log('Profile API PATCH - Updating user:', user.email, { firstName, lastName, bio, profileImageUrl })
 
     const updatedUser = await prisma.user.update({
       where: { id: user.id },
       data: {
         ...(firstName !== undefined && { firstName }),
         ...(lastName !== undefined && { lastName }),
-        ...(bio !== undefined && { bio })
+        ...(bio !== undefined && { bio }),
+        ...(profileImageUrl !== undefined && { profileImageUrl })
       },
       select: { 
         id: true, 

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { createPortal } from "react-dom"
 import toast from "react-hot-toast"
 
 interface AuthModalProps {
@@ -17,6 +18,12 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, referrerId }
   const [loading, setLoading] = useState(false)
   const [termsAccepted, setTermsAccepted] = useState(false)
   const [marketingAccepted, setMarketingAccepted] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+    return () => setMounted(false)
+  }, [])
 
   useEffect(() => {
     if (isOpen) {
@@ -29,7 +36,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, referrerId }
     };
   }, [isOpen]);
 
-  if (!isOpen) return null
+  if (!isOpen || !mounted) return null
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -64,8 +71,8 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, referrerId }
     }
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 p-4">
+  const modalContent = (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-60 p-4" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
       <div className="bg-darkpanel rounded-xl shadow-lg p-8 w-full max-w-sm relative max-h-[90vh] overflow-y-auto">
         <button
           className="absolute top-3 right-3 text-gray-400 hover:text-white"
@@ -144,4 +151,6 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, referrerId }
       </div>
     </div>
   )
+
+  return createPortal(modalContent, document.body)
 } 
