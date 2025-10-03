@@ -348,7 +348,7 @@ export default function Home() {
               <polyline points="19 12 12 19 5 12"></polyline>
             </svg>
           </motion.div>
-          <span className="mb-12 mt-4 text-primary-500 text-sm font-medium animate-pulse">{t('hero.scrollDown')}</span>
+
         </div>
       </div>
       <div className="relative z-20" id="main-content">
