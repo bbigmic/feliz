@@ -2,7 +2,10 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
+import Link from 'next/link'
+import { ArrowLeft, Send, CheckCircle, Users, Smartphone, Sparkles, LayoutDashboard } from 'lucide-react'
 
 function LeadPageContent() {
   const searchParams = useSearchParams()
@@ -16,6 +19,8 @@ function LeadPageContent() {
   const [showSoftwareTemplate, setShowSoftwareTemplate] = useState(false)
   const [selectedSoftware, setSelectedSoftware] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('')
+  const [referrerInfo, setReferrerInfo] = useState<{ email: string; firstName?: string; lastName?: string } | null>(null)
+  const [loadingReferrer, setLoadingReferrer] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -33,7 +38,27 @@ function LeadPageContent() {
       }
     }
     fetchData()
-  }, [])
+    
+    // Pobierz informacje o sprzedawcy, jeśli ref istnieje
+    if (ref) {
+      fetchReferrerInfo(parseInt(ref))
+    }
+  }, [ref])
+
+  const fetchReferrerInfo = async (refId: number) => {
+    setLoadingReferrer(true)
+    try {
+      const res = await fetch(`/api/user/referrer-info?id=${refId}`)
+      const data = await res.json()
+      if (data.success && data.referrer) {
+        setReferrerInfo(data.referrer)
+      }
+    } catch (error) {
+      console.error('Błąd pobierania informacji o sprzedawcy:', error)
+    } finally {
+      setLoadingReferrer(false)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -55,12 +80,15 @@ function LeadPageContent() {
       const data = await response.json()
 
       if (response.ok) {
-        toast.success('Zapytanie został wysłane pomyślnie')
+        toast.success('Zapytanie zostało wysłane pomyślnie! Skontaktujemy się z Tobą wkrótce.')
         setEmail('')
         setPhone('')
         setInfo('')
+        setSelectedCategory('')
+        setSelectedSoftware('')
+        setShowSoftwareTemplate(false)
       } else {
-        toast.error(data.error || 'Błąd podczas dodawania leada')
+        toast.error(data.error || 'Błąd podczas wysyłania zapytania')
       }
     } catch (error) {
       toast.error('Błąd podczas dodawania leada')
@@ -70,49 +98,105 @@ function LeadPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-darkbg text-darktext py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Formularz */}
-        <div className="max-w-md mx-auto bg-darkpanel p-6 rounded-lg shadow-md mb-8">
-          <h2 className="text-2xl font-bold mb-4">Stwórz aplikację z FelizTrade</h2>
-          <p className="text-darksubtle mb-4">Zostaw swoje dane kontaktowe, a nasz zespół skontaktuje się z Tobą w sprawie najlepszych rozwiązań dla Twojego biznesu.</p>
-          <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="min-h-screen bg-gradient-to-br from-darkbg via-darkpanel to-darkbg py-8 px-4">
+      <div className="max-w-6xl mx-auto">
+        {/* Powrót do strony głównej */}
+        <Link 
+          href="/" 
+          className="inline-flex items-center gap-2 text-darksubtle hover:text-darktext mb-6 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Powrót do strony głównej
+        </Link>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+          {/* Lewa kolumna - Formularz */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+            className="bg-darkpanel rounded-2xl shadow-2xl p-8 border border-gray-800"
+          >
+            {/* Logo i nagłówek */}
+            <div className="mb-8">
+              <div className="flex items-center gap-3 mb-4">
+                <img src="/logo-wsp-edu.png" alt="Logo" className="w-12 h-12 object-contain" />
+                <h1 className="text-2xl font-bold text-darktext">FelizTrade</h1>
+              </div>
+              <h2 className="text-2xl font-bold text-darktext mb-2">
+                Stwórz aplikację z nami
+              </h2>
+              <p className="text-darksubtle text-sm">
+                Zostaw swoje dane kontaktowe, a nasz zespół skontaktuje się z Tobą w sprawie najlepszych rozwiązań dla Twojego biznesu.
+              </p>
+            </div>
+
+            {/* Informacja o poleceniu */}
+            {ref && referrerInfo && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-lg p-4 mb-6"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="flex-shrink-0">
+                    <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                      <Users className="w-5 h-5 text-white" />
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-blue-300 font-medium">Polecił Cię:</p>
+                    <p className="text-white font-semibold">
+                      {referrerInfo.firstName && referrerInfo.lastName 
+                        ? `${referrerInfo.firstName} ${referrerInfo.lastName}`
+                        : referrerInfo.email}
+                    </p>
+                  </div>
+                  <CheckCircle className="w-6 h-6 text-green-400" />
+                </div>
+              </motion.div>
+            )}
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-darksubtle mb-1">Email</label>
+              <label className="block text-sm font-medium text-darktext mb-2">
+                Adres email *
+              </label>
               <input
                 type="email"
+                placeholder="twoj@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-700 rounded-lg bg-darkbg text-darktext"
+                className="w-full px-4 py-3 rounded-lg bg-darkbg border border-gray-700 text-darktext focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
                 required
+                disabled={loading}
               />
             </div>
+            
             <div>
-              <label className="block text-sm font-medium text-darksubtle mb-1">Telefon</label>
+              <label className="block text-sm font-medium text-darktext mb-2">
+                Numer telefonu *
+              </label>
               <input
                 type="tel"
+                placeholder="+48 123 456 789"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-700 rounded-lg bg-darkbg text-darktext"
+                className="w-full px-4 py-3 rounded-lg bg-darkbg border border-gray-700 text-darktext focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
                 required
+                disabled={loading}
               />
             </div>
+            
             <div>
-              <label className="block text-sm font-medium text-darksubtle mb-1">Dodatkowe informacje</label>
-              <textarea
-                value={info}
-                onChange={(e) => setInfo(e.target.value)}
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-700 rounded-lg bg-darkbg text-darktext"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-darksubtle mb-1">Kategoria</label>
+              <label className="block text-sm font-medium text-darktext mb-2">
+                Kategoria aplikacji *
+              </label>
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-700 rounded-lg bg-darkbg text-darktext"
+                className="w-full px-4 py-3 rounded-lg bg-darkbg border border-gray-700 text-darktext focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
                 required
+                disabled={loading}
               >
                 <option value="">Wybierz kategorię...</option>
                 {categories.map(category => (
@@ -122,28 +206,36 @@ function LeadPageContent() {
             </div>
             
             {/* Checkbox dla szablonu oprogramowania */}
-            <div className="flex items-center">
+            <div className="flex items-start gap-3 pt-2">
               <input
                 type="checkbox"
                 id="softwareTemplate"
                 checked={showSoftwareTemplate}
                 onChange={(e) => setShowSoftwareTemplate(e.target.checked)}
-                className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-700 rounded bg-darkbg"
+                disabled={loading}
+                className="mt-1 h-4 w-4 rounded border-gray-700 bg-darkbg text-primary-600 focus:ring-primary-500 focus:ring-offset-darkbg"
               />
-              <label htmlFor="softwareTemplate" className="text-sm text-darktext">
-                Chcę wybrać szablon oprogramowania
+              <label htmlFor="softwareTemplate" className="text-sm text-darksubtle cursor-pointer">
+                Chcę wybrać gotowy szablon oprogramowania
               </label>
             </div>
             
-            {/* Select dla szablonu oprogramowania - pokazuje się tylko gdy checkbox jest zaznaczony */}
+            {/* Select dla szablonu oprogramowania */}
             {showSoftwareTemplate && (
-              <div>
-                <label className="block text-sm font-medium text-darksubtle mb-1">Wybierz szablon oprogramowania</label>
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                transition={{ duration: 0.3 }}
+              >
+                <label className="block text-sm font-medium text-darktext mb-2">
+                  Wybierz szablon oprogramowania
+                </label>
                 <select
                   value={selectedSoftware}
                   onChange={(e) => setSelectedSoftware(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-700 rounded-lg bg-darkbg text-darktext"
+                  className="w-full px-4 py-3 rounded-lg bg-darkbg border border-gray-700 text-darktext focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
                   required={showSoftwareTemplate}
+                  disabled={loading}
                 >
                   <option value="">Wybierz szablon...</option>
                   {softwares.map(software => (
@@ -152,53 +244,114 @@ function LeadPageContent() {
                     </option>
                   ))}
                 </select>
-              </div>
+              </motion.div>
             )}
-            
-            <div className="flex justify-end">
-              <button
-                type="submit"
-                className="btn-primary"
-                disabled={loading}
-              >
-                {loading ? 'Wysyłanie...' : 'Wyślij zapytanie'}
-              </button>
-            </div>
-          </form>
-        </div>
 
-        {/* Kafelki z korzyściami - responsywnie */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-          <div className="bg-darkpanel p-6 rounded-lg border border-gray-700">
-            <div className="flex items-center mb-3">
-              <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center mr-4">
-                <span className="text-white text-sm font-bold">1</span>
-              </div>
-              <h3 className="font-semibold text-darktext">Custom Admin Panel</h3>
+            <div>
+              <label className="block text-sm font-medium text-darktext mb-2">
+                Dodatkowe informacje
+              </label>
+              <textarea
+                placeholder="Opisz swój projekt, wymagania, funkcjonalności..."
+                value={info}
+                onChange={(e) => setInfo(e.target.value)}
+                rows={4}
+                className="w-full px-4 py-3 rounded-lg bg-darkbg border border-gray-700 text-darktext focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all resize-none"
+                disabled={loading}
+              />
             </div>
-            <p className="text-darksubtle text-sm">Otrzymasz spersonalizowany panel administracyjny dostosowany do specyfiki Twojego biznesu z pełną kontrolą nad danymi.</p>
+            
+            {/* Przycisk wysłania */}
+            <button
+              type="submit"
+              className="w-full btn-primary py-3 rounded-lg font-semibold text-base mt-6 flex items-center justify-center gap-2"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  Wysyłanie...
+                </>
+              ) : (
+                <>
+                  <Send className="w-5 h-5" />
+                  Wyślij zapytanie
+                </>
+              )}
+            </button>
+          </form>
+        </motion.div>
+
+        {/* Prawa kolumna - Korzyści */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="space-y-6"
+        >
+          {/* Nagłówek sekcji korzyści */}
+          <div className="bg-gradient-to-r from-primary-600 to-purple-600 rounded-2xl p-8 text-white">
+            <h3 className="text-2xl font-bold mb-3">Dlaczego FelizTrade?</h3>
+            <p className="text-white/90 text-sm">
+              Twój projekt zasługuje na najlepsze rozwiązania. Specjalizujemy się w tworzeniu zaawansowanych aplikacji dopasowanych do potrzeb Twojego biznesu.
+            </p>
           </div>
-          
-          <div className="bg-darkpanel p-6 rounded-lg border border-gray-700">
-            <div className="flex items-center mb-3">
-              <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center mr-4">
-                <span className="text-white text-sm font-bold">2</span>
+
+          {/* Kafelki z korzyściami */}
+          <div className="space-y-4">
+            <motion.div 
+              whileHover={{ scale: 1.02 }}
+              className="bg-darkpanel p-6 rounded-xl border border-gray-800 hover:border-blue-600/50 transition-all"
+            >
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
+                  <LayoutDashboard className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-darktext mb-2">Custom Admin Panel</h3>
+                  <p className="text-darksubtle text-sm">
+                    Spersonalizowany panel administracyjny dostosowany do specyfiki Twojego biznesu z pełną kontrolą nad danymi.
+                  </p>
+                </div>
               </div>
-              <h3 className="font-semibold text-darktext">Integracje AI</h3>
-            </div>
-            <p className="text-darksubtle text-sm">Wdrażamy zaawansowane rozwiązania sztucznej inteligencji, które automatyzują procesy i zwiększają efektywność Twojego biznesu.</p>
-          </div>
-          
-          <div className="bg-darkpanel p-6 rounded-lg border border-gray-700">
-            <div className="flex items-center mb-3">
-              <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center mr-4">
-                <span className="text-white text-sm font-bold">3</span>
+            </motion.div>
+            
+            <motion.div 
+              whileHover={{ scale: 1.02 }}
+              className="bg-darkpanel p-6 rounded-xl border border-gray-800 hover:border-green-600/50 transition-all"
+            >
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-green-600 to-green-700 rounded-lg flex items-center justify-center">
+                  <Sparkles className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-darktext mb-2">Integracje AI</h3>
+                  <p className="text-darksubtle text-sm">
+                    Zaawansowane rozwiązania sztucznej inteligencji, które automatyzują procesy i zwiększają efektywność biznesu.
+                  </p>
+                </div>
               </div>
-              <h3 className="font-semibold text-darktext">Mobilne Aplikacje</h3>
-            </div>
-            <p className="text-darksubtle text-sm">Tworzymy natywne aplikacje mobilne na iOS i Android, które zapewniają użytkownikom doskonałe doświadczenie na każdym urządzeniu.</p>
+            </motion.div>
+            
+            <motion.div 
+              whileHover={{ scale: 1.02 }}
+              className="bg-darkpanel p-6 rounded-xl border border-gray-800 hover:border-purple-600/50 transition-all"
+            >
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-purple-600 to-purple-700 rounded-lg flex items-center justify-center">
+                  <Smartphone className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-darktext mb-2">Mobilne Aplikacje</h3>
+                  <p className="text-darksubtle text-sm">
+                    Natywne aplikacje mobilne na iOS i Android zapewniające doskonałe doświadczenie na każdym urządzeniu.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
+      </div>
       </div>
     </div>
   )
@@ -207,8 +360,11 @@ function LeadPageContent() {
 export default function LeadPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-darkbg">
-        <div className="text-darktext">Ładowanie...</div>
+      <div className="min-h-screen bg-gradient-to-br from-darkbg via-darkpanel to-darkbg flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
+          <p className="text-darksubtle">Ładowanie...</p>
+        </div>
       </div>
     }>
       <LeadPageContent />

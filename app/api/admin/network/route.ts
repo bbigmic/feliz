@@ -33,8 +33,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Brak uprawnień' }, { status: 403 })
     }
 
-    // Pobierz wszystkich użytkowników z informacjami o referrerze i referralach
+    // Pobierz tylko sprzedawców (seller, management, admin)
     const allUsers = await prisma.user.findMany({
+      where: {
+        role: {
+          in: ['seller', 'management', 'admin']
+        }
+      },
       select: {
         id: true,
         email: true,
@@ -53,10 +58,17 @@ export async function GET(request: NextRequest) {
           }
         },
         referrals: {
+          where: {
+            role: {
+              in: ['seller', 'management', 'admin']
+            }
+          },
           select: {
             id: true,
             email: true,
-            role: true
+            role: true,
+            firstName: true,
+            lastName: true
           }
         }
       },
@@ -70,6 +82,11 @@ export async function GET(request: NextRequest) {
       select: { id: true, price: true }
     })
     const softwarePriceMap = new Map(allSoftware.map(s => [s.id, s.price]))
+
+    // Daty dla obliczenia prowizji z poprzedniego miesiąca
+    const now = new Date()
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59)
 
     // Oblicz statystyki dla każdego użytkownika
     const usersWithStats = await Promise.all(
@@ -92,6 +109,7 @@ export async function GET(request: NextRequest) {
         // Oblicz obrót i prowizję
         let revenue = 0
         let commission = 0
+        let lastMonthCommission = 0
 
         orders.forEach(order => {
           let price = 0
@@ -105,7 +123,13 @@ export async function GET(request: NextRequest) {
           revenue += price
           
           if (order.commissionRate) {
-            commission += Math.round(price * order.commissionRate)
+            const orderCommission = Math.round(price * order.commissionRate)
+            commission += orderCommission
+            
+            // Prowizja z poprzedniego miesiąca
+            if (order.createdAt >= startOfLastMonth && order.createdAt <= endOfLastMonth) {
+              lastMonthCommission += orderCommission
+            }
           }
         })
 
@@ -119,7 +143,8 @@ export async function GET(request: NextRequest) {
             }
           },
           select: {
-            referrerCommission: true
+            referrerCommission: true,
+            createdAt: true
           }
         })
 
@@ -127,6 +152,15 @@ export async function GET(request: NextRequest) {
           (sum, order) => sum + (order.referrerCommission || 0), 
           0
         )
+
+        const lastMonthTeamCommission = teamCommissions
+          .filter(order => order.createdAt >= startOfLastMonth && order.createdAt <= endOfLastMonth)
+          .reduce((sum, order) => sum + (order.referrerCommission || 0), 0)
+
+        // Pobierz leady
+        const leadsCount = await prisma.lead.count({
+          where: { sellerId: user.id }
+        })
 
         return {
           id: user.id,
@@ -138,15 +172,20 @@ export async function GET(request: NextRequest) {
           createdAt: user.createdAt,
           referrerId: user.referrerId,
           referrer: user.referrer,
+          referrals: user.referrals,
           referralsCount: user.referrals.length,
           sellerReferralsCount: user.referrals.filter(r => 
             r.role === 'seller' || r.role === 'management' || r.role === 'admin'
           ).length,
           ordersCount: orders.length,
+          leadsCount: leadsCount,
           revenue: revenue,
           commission: commission,
           teamCommission: totalTeamCommission,
-          totalEarnings: commission + totalTeamCommission
+          totalEarnings: commission + totalTeamCommission,
+          lastMonthCommission: lastMonthCommission,
+          lastMonthTeamCommission: lastMonthTeamCommission,
+          lastMonthTotalEarnings: lastMonthCommission + lastMonthTeamCommission
         }
       })
     )

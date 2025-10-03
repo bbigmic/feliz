@@ -55,6 +55,9 @@ export default function AdminPanel() {
   const [leads, setLeads] = useState<any[]>([])
   const [loadingLeads, setLoadingLeads] = useState(false)
   const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null)
+  const [expandedLeadId, setExpandedLeadId] = useState<number | null>(null)
+  const [leadSearchTerm, setLeadSearchTerm] = useState('')
+  const [leadStatusFilter, setLeadStatusFilter] = useState<'all' | 'pending' | 'first_payment' | 'second_payment' | 'paid' | 'rejected'>('all')
   const [users, setUsers] = useState<any[]>([])
   const [loadingUsers, setLoadingUsers] = useState(false)
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false)
@@ -77,6 +80,11 @@ export default function AdminPanel() {
   const [networkData, setNetworkData] = useState<any>(null)
   const [loadingNetwork, setLoadingNetwork] = useState(false)
   const [expandedUsers, setExpandedUsers] = useState<Set<number>>(new Set())
+  const [expandedSellerDetails, setExpandedSellerDetails] = useState<number | null>(null)
+  const [sellerLeads, setSellerLeads] = useState<any[]>([])
+  const [sellerOrders, setSellerOrders] = useState<any[]>([])
+  const [loadingSellerDetails, setLoadingSellerDetails] = useState(false)
+  const [networkSearchTerm, setNetworkSearchTerm] = useState('')
 
   const [authChecked, setAuthChecked] = useState(false)
   const [showLogin, setShowLogin] = useState(false)
@@ -135,7 +143,11 @@ export default function AdminPanel() {
   const fetchLeads = async () => {
     setLoadingLeads(true)
     try {
-      const res = await fetch('/api/admin/leads', { next: { revalidate: 0 } })
+      const params = new URLSearchParams()
+      if (leadStatusFilter !== 'all') params.append('status', leadStatusFilter)
+      if (leadSearchTerm) params.append('search', leadSearchTerm)
+      
+      const res = await fetch(`/api/admin/leads?${params.toString()}`, { next: { revalidate: 0 } })
       const data = await res.json()
       setLeads(data.leads || [])
     } catch (error) {
@@ -187,6 +199,39 @@ export default function AdminPanel() {
       newExpanded.add(userId)
     }
     setExpandedUsers(newExpanded)
+  }
+
+  // Funkcja do pobierania szczegółów sprzedawcy
+  const fetchSellerDetails = async (sellerId: number) => {
+    setLoadingSellerDetails(true)
+    try {
+      // Pobierz leady
+      const leadsRes = await fetch(`/api/admin/leads`)
+      const leadsData = await leadsRes.json()
+      setSellerLeads(leadsData.leads?.filter((l: any) => l.sellerId === sellerId) || [])
+
+      // Pobierz zamówienia
+      const ordersRes = await fetch(`/api/orders?sellerId=${sellerId}`)
+      const ordersData = await ordersRes.json()
+      setSellerOrders(ordersData.orders || [])
+    } catch (error) {
+      console.error('Błąd pobierania szczegółów sprzedawcy:', error)
+      toast.error('Błąd pobierania szczegółów')
+    } finally {
+      setLoadingSellerDetails(false)
+    }
+  }
+
+  // Funkcja do rozwijania/zwijania szczegółów sprzedawcy
+  const toggleSellerDetails = (sellerId: number) => {
+    if (expandedSellerDetails === sellerId) {
+      setExpandedSellerDetails(null)
+      setSellerLeads([])
+      setSellerOrders([])
+    } else {
+      setExpandedSellerDetails(sellerId)
+      fetchSellerDetails(sellerId)
+    }
   }
 
   // 6. Funkcja pobierająca użytkowników
@@ -260,6 +305,13 @@ export default function AdminPanel() {
       fetchNetwork()
     }
   }, [activeTab])
+
+  // useEffect dla filtrowania leadów
+  useEffect(() => {
+    if (activeTab === 'leads') {
+      fetchLeads()
+    }
+  }, [leadSearchTerm, leadStatusFilter])
 
   if (!authChecked) {
     return <div className="min-h-screen flex items-center justify-center text-darksubtle">Sprawdzanie uprawnień...</div>
@@ -362,7 +414,8 @@ export default function AdminPanel() {
 
       <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
         {/* Tabs */}
-        <div className="flex space-x-2 mb-6 border-b border-gray-800 overflow-x-auto whitespace-nowrap scrollbar-thin scrollbar-thumb-darkbg scrollbar-track-transparent">
+        <div className="relative mb-6">
+          <div className="flex space-x-2 border-b border-gray-800 overflow-x-auto whitespace-nowrap scrollbar-thin scrollbar-thumb-darkbg scrollbar-track-transparent">
           <button
             className={`px-6 py-2 font-medium transition-colors duration-200 border-b-2 ${activeTab === 'dashboard' ? 'border-primary-500 text-primary-500' : 'border-transparent text-darksubtle hover:text-primary-400'}`}
             onClick={() => setActiveTab('dashboard')}
@@ -411,6 +464,14 @@ export default function AdminPanel() {
           >
             Network
           </button>
+          </div>
+          
+          {/* Gradient wskazujący możliwość scrollowania */}
+          <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-darkbg via-darkbg/80 to-transparent pointer-events-none flex items-center justify-end pr-2">
+            <svg className="w-5 h-5 text-primary-400 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
         </div>
 
         {/* Tab Content */}
@@ -966,92 +1027,282 @@ export default function AdminPanel() {
             transition={{ delay: 0.2 }}
             className="card"
           >
-            <h2 className="text-xl font-bold mb-4">Leads</h2>
+            <h2 className="text-xl font-bold mb-6">Leads</h2>
+            
+            {/* Wyszukiwarka i filtry */}
+            <div className="flex flex-col sm:flex-row gap-4 mb-6">
+              {/* Wyszukiwarka */}
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  placeholder="Szukaj po email, telefonie, info lub sprzedawcy..."
+                  value={leadSearchTerm}
+                  onChange={(e) => setLeadSearchTerm(e.target.value)}
+                  className="px-4 py-2 pl-10 border border-gray-700 rounded-lg bg-darkpanel text-darktext w-full focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+                <svg
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-darksubtle"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              
+              {/* Filtr statusu */}
+              <select
+                value={leadStatusFilter}
+                onChange={(e) => setLeadStatusFilter(e.target.value as typeof leadStatusFilter)}
+                className="px-3 py-2 border border-gray-700 rounded-lg bg-darkpanel text-darktext w-full sm:w-auto"
+              >
+                <option value="all">Wszystkie statusy</option>
+                <option value="pending">Oczekujący</option>
+                <option value="first_payment">Po pierwszej zaliczce</option>
+                <option value="second_payment">Po drugiej zaliczce</option>
+                <option value="paid">Opłacony</option>
+                <option value="rejected">Odrzucony</option>
+              </select>
+            </div>
+            
             {loadingLeads ? (
               <div className="text-center py-12 text-lg text-darksubtle">Ładowanie danych...</div>
             ) : (
-              <div className="overflow-x-auto">
+              <>
+                {/* Mobile: karty */}
+                <div className="flex flex-col gap-4 sm:hidden mb-6">
+                  {leads.map(lead => (
+                    <div key={lead.id} className="bg-darkbg rounded-xl shadow-lg p-4 border border-gray-800">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                            #{lead.id}
+                          </div>
+                          <div>
+                            <p className="font-medium text-darktext">{lead.email || 'Brak email'}</p>
+                            <p className="text-xs text-darksubtle">
+                              {new Date(lead.createdAt).toLocaleDateString('pl-PL')}
+                            </p>
+                          </div>
+                        </div>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          lead.status === 'pending' ? 'bg-gray-900 text-gray-300' :
+                          lead.status === 'first_payment' ? 'bg-yellow-900 text-yellow-300' :
+                          lead.status === 'second_payment' ? 'bg-blue-900 text-blue-300' :
+                          lead.status === 'paid' ? 'bg-green-900 text-green-300' :
+                          'bg-red-900 text-red-300'
+                        }`}>
+                          {lead.status === 'pending' ? 'Oczekujący' :
+                           lead.status === 'first_payment' ? 'Po 1. zaliczce' :
+                           lead.status === 'second_payment' ? 'Po 2. zaliczce' :
+                           lead.status === 'paid' ? 'Opłacony' : 'Odrzucony'}
+                        </span>
+                      </div>
+                      
+                      <div className="space-y-2 mb-3">
+                        {lead.seller && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-darksubtle">Sprzedawca:</span>
+                            <div className="text-right">
+                              <p className="text-xs font-medium text-darktext">{lead.seller.email}</p>
+                              {(lead.seller.firstName || lead.seller.lastName) && (
+                                <p className="text-xs text-darksubtle">{lead.seller.firstName} {lead.seller.lastName}</p>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Rozwinięte szczegóły mobile */}
+                      {expandedLeadId === lead.id && (
+                        <div className="space-y-3 mb-3 p-3 bg-darkpanel rounded-lg border border-gray-700">
+                          <div>
+                            <p className="text-xs text-darksubtle mb-1">Telefon</p>
+                            <p className="text-sm font-medium text-darktext">{lead.phone || '-'}</p>
+                          </div>
+                          {lead.selectedCategory && (
+                            <div>
+                              <p className="text-xs text-darksubtle mb-1">Kategoria</p>
+                              <span className="px-2 py-1 bg-blue-600 text-white rounded-full text-xs">{lead.selectedCategory}</span>
+                            </div>
+                          )}
+                          {lead.softwareTemplate && (
+                            <>
+                              <div>
+                                <p className="text-xs text-darksubtle mb-1">Szablon oprogramowania</p>
+                                <p className="text-sm font-medium text-darktext">{lead.softwareTemplate.name}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-darksubtle mb-1">Cena szablonu</p>
+                                <p className="text-sm font-medium text-green-400">{lead.softwareTemplate.price} PLN</p>
+                              </div>
+                            </>
+                          )}
+                          {lead.info && (
+                            <div>
+                              <p className="text-xs text-darksubtle mb-1">Informacje / Notatki</p>
+                              <p className="text-sm text-darktext bg-darkbg rounded p-2 border border-gray-700">
+                                {lead.info}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      
+                      <button
+                        onClick={() => setExpandedLeadId(expandedLeadId === lead.id ? null : lead.id)}
+                        className="btn-secondary w-full py-2 text-xs"
+                      >
+                        {expandedLeadId === lead.id ? 'Ukryj szczegóły' : 'Pokaż szczegóły'}
+                      </button>
+                    </div>
+                  ))}
+                  
+                  {leads.length === 0 && (
+                    <div className="text-center py-12">
+                      <Users className="w-16 h-16 text-darksubtle mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-darktext mb-2">
+                        {(leadSearchTerm && leadSearchTerm.trim() !== '') || leadStatusFilter !== 'all' ? 'Brak wyników' : 'Brak leadów'}
+                      </h3>
+                      <p className="text-darksubtle">
+                        {(leadSearchTerm && leadSearchTerm.trim() !== '') || leadStatusFilter !== 'all' 
+                          ? 'Nie znaleziono leadów pasujących do wybranych kryteriów.'
+                          : 'Nie ma jeszcze żadnych leadów w systemie.'}
+                      </p>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Desktop: tabela */}
+                <div className="hidden sm:block overflow-x-auto">
                 <table className="w-full text-left">
                   <thead>
                     <tr className="border-b border-gray-700">
                       <th className="py-3 px-4 font-medium text-darksubtle">ID</th>
                       <th className="py-3 px-4 font-medium text-darksubtle">Email</th>
-                      <th className="py-3 px-4 font-medium text-darksubtle">Telefon</th>
-                      <th className="py-3 px-4 font-medium text-darksubtle">Kategoria</th>
-                      <th className="py-3 px-4 font-medium text-darksubtle">Szablon</th>
                       <th className="py-3 px-4 font-medium text-darksubtle">Sprzedawca</th>
                       <th className="py-3 px-4 font-medium text-darksubtle">Status</th>
                       <th className="py-3 px-4 font-medium text-darksubtle">Data</th>
+                      <th className="py-3 px-4 font-medium text-darksubtle">Akcje</th>
                     </tr>
                   </thead>
                   <tbody>
                     {leads.map(lead => (
-                      <tr key={lead.id} className="border-t border-gray-700 hover:bg-darkbg/60">
-                        <td className="py-3 px-4 font-mono text-sm">#{lead.id}</td>
-                        <td className="py-3 px-4">
-                          <span className="font-medium">{lead.email || 'Brak'}</span>
-                        </td>
-                        <td className="py-3 px-4 text-sm text-darksubtle">
-                          {lead.phone || '-'}
-                        </td>
-                        <td className="py-3 px-4 text-sm text-darksubtle">
-                          {lead.selectedCategory ? (
-                            <span className="px-2 py-1 bg-blue-600 text-white rounded-full text-xs">{lead.selectedCategory}</span>
-                          ) : (
-                            <span className="text-darksubtle">-</span>
-                          )}
-                        </td>
-                        <td className="py-3 px-4 text-sm text-darksubtle">
-                          {lead.softwareTemplate ? (
-                            <span className="font-medium text-darktext">{lead.softwareTemplate.name}</span>
-                          ) : (
-                            <span className="text-darksubtle">-</span>
-                          )}
-                        </td>
-                        <td className="py-3 px-4 text-sm text-darksubtle">
-                          {lead.seller ? (
-                            <div>
-                              <div className="font-medium text-darktext">{lead.seller.email}</div>
-                              <div className="text-xs text-darksubtle">{lead.seller.firstName} {lead.seller.lastName}</div>
-                            </div>
-                          ) : (
-                            <span className="text-darksubtle">-</span>
-                          )}
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            lead.status === 'paid' 
-                              ? 'bg-green-900 text-green-300' 
-                              : lead.status === 'pending'
-                              ? 'bg-yellow-900 text-yellow-300'
-                              : 'bg-red-900 text-red-300'
-                          }`}>
-                            {lead.status === 'paid' ? 'Opłacone' : lead.status === 'pending' ? 'Oczekujące' : 'Wygasłe'}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-sm text-darksubtle">
-                          {new Date(lead.createdAt).toLocaleString('pl-PL', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </td>
-                      </tr>
+                      <>
+                        <tr key={lead.id} className="border-t border-gray-700 hover:bg-darkbg/60">
+                          <td className="py-3 px-4 font-mono text-sm">#{lead.id}</td>
+                          <td className="py-3 px-4">
+                            <span className="font-medium">{lead.email || 'Brak'}</span>
+                          </td>
+                          <td className="py-3 px-4 text-sm text-darksubtle">
+                            {lead.seller ? (
+                              <div>
+                                <div className="font-medium text-darktext">{lead.seller.email}</div>
+                                {(lead.seller.firstName || lead.seller.lastName) && (
+                                  <div className="text-xs text-darksubtle">{lead.seller.firstName} {lead.seller.lastName}</div>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-darksubtle">-</span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              lead.status === 'pending' ? 'bg-gray-900 text-gray-300' :
+                              lead.status === 'first_payment' ? 'bg-yellow-900 text-yellow-300' :
+                              lead.status === 'second_payment' ? 'bg-blue-900 text-blue-300' :
+                              lead.status === 'paid' ? 'bg-green-900 text-green-300' :
+                              'bg-red-900 text-red-300'
+                            }`}>
+                              {lead.status === 'pending' ? 'Oczekujący' :
+                               lead.status === 'first_payment' ? 'Po pierwszej zaliczce' :
+                               lead.status === 'second_payment' ? 'Po drugiej zaliczce' :
+                               lead.status === 'paid' ? 'Opłacony' : 'Odrzucony'}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-sm text-darksubtle">
+                            {new Date(lead.createdAt).toLocaleString('pl-PL', {
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </td>
+                          <td className="py-3 px-4">
+                            <button
+                              onClick={() => setExpandedLeadId(expandedLeadId === lead.id ? null : lead.id)}
+                              className="btn-secondary text-xs px-3 py-1"
+                            >
+                              {expandedLeadId === lead.id ? 'Ukryj' : 'Szczegóły'}
+                            </button>
+                          </td>
+                        </tr>
+                        
+                        {/* Rozwinięte szczegóły */}
+                        {expandedLeadId === lead.id && (
+                          <tr>
+                            <td colSpan={6} className="bg-darkbg/80 p-4 border-t border-b border-primary-700">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                  <p className="text-xs text-darksubtle mb-1">Telefon</p>
+                                  <p className="font-medium text-darktext">{lead.phone || '-'}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-darksubtle mb-1">Kategoria</p>
+                                  {lead.selectedCategory ? (
+                                    <span className="px-2 py-1 bg-blue-600 text-white rounded-full text-xs">{lead.selectedCategory}</span>
+                                  ) : (
+                                    <p className="text-darksubtle">-</p>
+                                  )}
+                                </div>
+                                <div>
+                                  <p className="text-xs text-darksubtle mb-1">Szablon oprogramowania</p>
+                                  {lead.softwareTemplate ? (
+                                    <p className="font-medium text-darktext">{lead.softwareTemplate.name}</p>
+                                  ) : (
+                                    <p className="text-darksubtle">-</p>
+                                  )}
+                                </div>
+                                <div>
+                                  <p className="text-xs text-darksubtle mb-1">Cena szablonu</p>
+                                  {lead.softwareTemplate ? (
+                                    <p className="font-medium text-green-400">{lead.softwareTemplate.price} PLN</p>
+                                  ) : (
+                                    <p className="text-darksubtle">-</p>
+                                  )}
+                                </div>
+                                {lead.info && (
+                                  <div className="md:col-span-2">
+                                    <p className="text-xs text-darksubtle mb-1">Informacje / Notatki</p>
+                                    <p className="text-sm text-darktext bg-darkpanel rounded p-3 border border-gray-700">
+                                      {lead.info}
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </>
                     ))}
                   </tbody>
                 </table>
                 {leads.length === 0 && (
                   <div className="text-center py-12">
                     <Users className="w-16 h-16 text-darksubtle mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-darktext mb-2">Brak leadów</h3>
+                    <h3 className="text-lg font-medium text-darktext mb-2">
+                      {(leadSearchTerm && leadSearchTerm.trim() !== '') || leadStatusFilter !== 'all' ? 'Brak wyników' : 'Brak leadów'}
+                    </h3>
                     <p className="text-darksubtle">
-                      Nie ma jeszcze żadnych leadów w systemie.
+                      {(leadSearchTerm && leadSearchTerm.trim() !== '') || leadStatusFilter !== 'all' 
+                        ? 'Nie znaleziono leadów pasujących do wybranych kryteriów.'
+                        : 'Nie ma jeszcze żadnych leadów w systemie.'}
                     </p>
                   </div>
                 )}
-              </div>
+                </div>
+              </>
             )}
           </motion.section>
         )}
@@ -1841,16 +2092,7 @@ export default function AdminPanel() {
                 {/* Statystyki globalne */}
                 <div className="card">
                   <h2 className="text-xl font-semibold text-darktext mb-6">Przegląd sieci sprzedaży</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-                    <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg p-6 text-white">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-blue-100 text-sm">Użytkownicy</p>
-                          <p className="text-3xl font-bold">{networkData.statistics.totalUsers}</p>
-                        </div>
-                        <Users className="w-8 h-8 text-blue-200" />
-                      </div>
-                    </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-lg p-6 text-white">
                       <div className="flex items-center justify-between">
                         <div>
@@ -1890,101 +2132,412 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
-                {/* Lista wszystkich użytkowników z możliwością filtrowania */}
+                {/* Lista wszystkich sprzedawców */}
                 <div className="card">
-                  <h3 className="text-lg font-semibold text-darktext mb-4">Wszyscy użytkownicy networku</h3>
-                  <div className="overflow-x-auto">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <h3 className="text-lg font-semibold text-darktext">Wszyscy sprzedawcy</h3>
+                    
+                    {/* Wyszukiwarka */}
+                    <div className="relative w-full sm:w-auto">
+                      <input
+                        type="text"
+                        placeholder="Szukaj po email, imieniu lub nazwisku..."
+                        value={networkSearchTerm}
+                        onChange={(e) => setNetworkSearchTerm(e.target.value)}
+                        className="px-4 py-2 pl-10 border border-gray-700 rounded-lg bg-darkpanel text-darktext w-full sm:w-80 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      />
+                      <svg
+                        className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-darksubtle"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    </div>
+                  </div>
+                  
+                  {/* Mobile: karty */}
+                  <div className="flex flex-col gap-4 sm:hidden mb-6">
+                    {networkData.users.filter((user: any) => {
+                      const searchLower = networkSearchTerm.toLowerCase()
+                      return (
+                        user.email.toLowerCase().includes(searchLower) ||
+                        (user.firstName && user.firstName.toLowerCase().includes(searchLower)) ||
+                        (user.lastName && user.lastName.toLowerCase().includes(searchLower))
+                      )
+                    }).map((user: any) => (
+                      <div key={user.id} className="bg-darkbg rounded-xl shadow-lg p-4 border border-gray-800">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                              {user.email.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <p className="font-medium text-darktext">{user.email}</p>
+                              <p className="text-xs text-darksubtle">
+                                {user.firstName || user.lastName 
+                                  ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
+                                  : 'Brak danych'}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2 mb-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-darksubtle">Rola:</span>
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              user.role === 'admin' ? 'bg-red-600 text-white' :
+                              user.role === 'management' ? 'bg-orange-600 text-white' :
+                              'bg-purple-600 text-white'
+                            }`}>
+                              {user.role === 'admin' ? 'Admin' :
+                               user.role === 'management' ? 'Zarząd' : 'Sprzedawca'}
+                            </span>
+                          </div>
+                          
+                          {user.level > 0 && (
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs text-darksubtle">Level:</span>
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                user.level === 3 ? 'bg-yellow-600 text-white' :
+                                user.level === 2 ? 'bg-green-600 text-white' :
+                                'bg-blue-600 text-white'
+                              }`}>
+                                Level {user.level}
+                              </span>
+                            </div>
+                          )}
+                          
+                          {user.referrer && (
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs text-darksubtle">Referrer:</span>
+                              <span className="text-xs text-darktext truncate max-w-[150px]">{user.referrer.email}</span>
+                            </div>
+                          )}
+                          
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-darksubtle">Obrót:</span>
+                            <span className="text-sm font-bold text-green-400">
+                              {user.revenue?.toLocaleString('pl-PL')} PLN
+                            </span>
+                          </div>
+                          
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-darksubtle">Prowizje (poprz. mies.):</span>
+                            <span className="text-sm font-bold text-orange-400">
+                              {user.lastMonthTotalEarnings?.toLocaleString('pl-PL')} PLN
+                            </span>
+                          </div>
+                        </div>
+                        
+                        {/* Rozwinięte szczegóły mobile */}
+                        {expandedSellerDetails === user.id && (
+                          <div className="space-y-4 mb-3 p-3 bg-darkpanel rounded-lg border border-gray-700">
+                            {/* Statystyki podstawowe */}
+                            <div className="grid grid-cols-3 gap-2">
+                              <div className="text-center">
+                                <p className="text-lg font-bold text-primary-400">{user.sellerReferralsCount}</p>
+                                <p className="text-xs text-darksubtle">Network</p>
+                              </div>
+                              <div className="text-center">
+                                <p className="text-lg font-bold text-blue-400">{user.leadsCount}</p>
+                                <p className="text-xs text-darksubtle">Leady</p>
+                              </div>
+                              <div className="text-center">
+                                <p className="text-lg font-bold text-purple-400">{user.ordersCount}</p>
+                                <p className="text-xs text-darksubtle">Zamówienia</p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        
+                        <button
+                          onClick={() => toggleSellerDetails(user.id)}
+                          className="btn-secondary w-full py-2 text-xs"
+                        >
+                          {expandedSellerDetails === user.id ? 'Ukryj szczegóły' : 'Pokaż szczegóły'}
+                        </button>
+                      </div>
+                    ))}
+                    
+                    {/* Komunikat o braku wyników mobile */}
+                    {networkData.users.filter((user: any) => {
+                      const searchLower = networkSearchTerm.toLowerCase()
+                      return (
+                        user.email.toLowerCase().includes(searchLower) ||
+                        (user.firstName && user.firstName.toLowerCase().includes(searchLower)) ||
+                        (user.lastName && user.lastName.toLowerCase().includes(searchLower))
+                      )
+                    }).length === 0 && (
+                      <div className="text-center py-12">
+                        <Users className="w-16 h-16 text-darksubtle mx-auto mb-4" />
+                        <h3 className="text-lg font-medium text-darktext mb-2">Brak wyników</h3>
+                        <p className="text-darksubtle">Nie znaleziono użytkowników pasujących do wyszukiwania.</p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Desktop: tabela */}
+                  <div className="hidden sm:block overflow-x-auto">
                     <table className="w-full text-left text-sm">
                       <thead>
                         <tr className="border-b border-gray-700">
-                          <th className="py-3 px-4 font-medium text-darksubtle">ID</th>
                           <th className="py-3 px-4 font-medium text-darksubtle">Email</th>
                           <th className="py-3 px-4 font-medium text-darksubtle">Imię i Nazwisko</th>
                           <th className="py-3 px-4 font-medium text-darksubtle">Rola</th>
                           <th className="py-3 px-4 font-medium text-darksubtle">Level</th>
                           <th className="py-3 px-4 font-medium text-darksubtle">Referrer</th>
-                          <th className="py-3 px-4 font-medium text-darksubtle">Polecenia</th>
                           <th className="py-3 px-4 font-medium text-darksubtle">Obrót</th>
-                          <th className="py-3 px-4 font-medium text-darksubtle">Prowizje</th>
+                          <th className="py-3 px-4 font-medium text-darksubtle">Prowizje (poprz. mies.)</th>
+                          <th className="py-3 px-4 font-medium text-darksubtle">Akcje</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {networkData.users.map((user: any) => (
-                          <tr key={user.id} className="border-t border-gray-700 hover:bg-darkbg/60">
-                            <td className="py-3 px-4 font-mono text-xs text-darksubtle">#{user.id}</td>
-                            <td className="py-3 px-4">
-                              <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
-                                  {user.email.charAt(0).toUpperCase()}
+                        {networkData.users.filter((user: any) => {
+                          const searchLower = networkSearchTerm.toLowerCase()
+                          return (
+                            user.email.toLowerCase().includes(searchLower) ||
+                            (user.firstName && user.firstName.toLowerCase().includes(searchLower)) ||
+                            (user.lastName && user.lastName.toLowerCase().includes(searchLower))
+                          )
+                        }).map((user: any) => (
+                          <>
+                            <tr key={user.id} className="border-t border-gray-700 hover:bg-darkbg/60">
+                              <td className="py-3 px-4">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                                    {user.email.charAt(0).toUpperCase()}
+                                  </div>
+                                  <span className="font-medium">{user.email}</span>
                                 </div>
-                                <span className="font-medium">{user.email}</span>
-                              </div>
-                            </td>
-                            <td className="py-3 px-4">
-                              {user.firstName || user.lastName 
-                                ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
-                                : '-'}
-                            </td>
-                            <td className="py-3 px-4">
-                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                user.role === 'admin' ? 'bg-red-600 text-white' :
-                                user.role === 'management' ? 'bg-orange-600 text-white' :
-                                user.role === 'seller' ? 'bg-purple-600 text-white' :
-                                'bg-gray-600 text-white'
-                              }`}>
-                                {user.role === 'admin' ? 'Admin' :
-                                 user.role === 'management' ? 'Zarząd' :
-                                 user.role === 'seller' ? 'Sprzedawca' : 'User'}
-                              </span>
-                            </td>
-                            <td className="py-3 px-4">
-                              {user.level > 0 && (
+                              </td>
+                              <td className="py-3 px-4">
+                                {user.firstName || user.lastName 
+                                  ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
+                                  : '-'}
+                              </td>
+                              <td className="py-3 px-4">
                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                  user.level === 3 ? 'bg-yellow-600 text-white' :
-                                  user.level === 2 ? 'bg-green-600 text-white' :
-                                  'bg-blue-600 text-white'
+                                  user.role === 'admin' ? 'bg-red-600 text-white' :
+                                  user.role === 'management' ? 'bg-orange-600 text-white' :
+                                  'bg-purple-600 text-white'
                                 }`}>
-                                  Level {user.level}
+                                  {user.role === 'admin' ? 'Admin' :
+                                   user.role === 'management' ? 'Zarząd' : 'Sprzedawca'}
                                 </span>
-                              )}
-                            </td>
-                            <td className="py-3 px-4 text-darksubtle">
-                              {user.referrer 
-                                ? `${user.referrer.email}`
-                                : '-'}
-                            </td>
-                            <td className="py-3 px-4">
-                              <div className="flex flex-col">
-                                <span className="font-bold text-primary-400">{user.sellerReferralsCount}</span>
-                                <span className="text-xs text-darksubtle">sprzedawców</span>
-                              </div>
-                            </td>
-                            <td className="py-3 px-4">
-                              <span className="font-bold text-green-400">
-                                {user.revenue?.toLocaleString('pl-PL')} PLN
-                              </span>
-                            </td>
-                            <td className="py-3 px-4">
-                              <div className="flex flex-col">
-                                <span className="font-bold text-green-400">
-                                  {user.commission?.toLocaleString('pl-PL')} PLN
-                                </span>
-                                {user.teamCommission > 0 && (
-                                  <>
-                                    <span className="text-xs text-indigo-400">
-                                      + {user.teamCommission?.toLocaleString('pl-PL')} PLN z zespołu
-                                    </span>
-                                    <span className="text-xs text-darksubtle border-t border-gray-700 pt-1 mt-1">
-                                      = {user.totalEarnings?.toLocaleString('pl-PL')} PLN
-                                    </span>
-                                  </>
+                              </td>
+                              <td className="py-3 px-4">
+                                {user.level > 0 && (
+                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                    user.level === 3 ? 'bg-yellow-600 text-white' :
+                                    user.level === 2 ? 'bg-green-600 text-white' :
+                                    'bg-blue-600 text-white'
+                                  }`}>
+                                    Level {user.level}
+                                  </span>
                                 )}
-                              </div>
-                            </td>
-                          </tr>
+                              </td>
+                              <td className="py-3 px-4 text-darksubtle text-xs">
+                                {user.referrer 
+                                  ? `${user.referrer.email}`
+                                  : '-'}
+                              </td>
+                              <td className="py-3 px-4">
+                                <span className="font-bold text-green-400">
+                                  {user.revenue?.toLocaleString('pl-PL')} PLN
+                                </span>
+                              </td>
+                              <td className="py-3 px-4">
+                                <div className="flex flex-col">
+                                  <span className="font-bold text-orange-400">
+                                    {user.lastMonthTotalEarnings?.toLocaleString('pl-PL')} PLN
+                                  </span>
+                                  {user.lastMonthTeamCommission > 0 && (
+                                    <span className="text-xs text-darksubtle">
+                                      ({user.lastMonthCommission?.toLocaleString('pl-PL')} + {user.lastMonthTeamCommission?.toLocaleString('pl-PL')})
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="py-3 px-4">
+                                <button
+                                  onClick={() => toggleSellerDetails(user.id)}
+                                  className="btn-secondary text-xs px-3 py-1"
+                                >
+                                  {expandedSellerDetails === user.id ? 'Ukryj' : 'Szczegóły'}
+                                </button>
+                              </td>
+                            </tr>
+
+                            {/* Rozwinięte szczegóły sprzedawcy */}
+                            {expandedSellerDetails === user.id && (
+                              <tr>
+                                <td colSpan={8} className="bg-darkbg/80 p-6 border-t border-b border-primary-700">
+                                  {loadingSellerDetails ? (
+                                    <div className="text-center py-4 text-darksubtle">Ładowanie szczegółów...</div>
+                                  ) : (
+                                    <div className="space-y-6">
+                                      {/* Statystyki podstawowe */}
+                                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                        <div className="bg-darkpanel rounded-lg p-4 border border-gray-700">
+                                          <p className="text-xs text-darksubtle mb-1">Network (zaproszenia)</p>
+                                          <p className="text-2xl font-bold text-primary-400">{user.sellerReferralsCount}</p>
+                                        </div>
+                                        <div className="bg-darkpanel rounded-lg p-4 border border-gray-700">
+                                          <p className="text-xs text-darksubtle mb-1">Leady</p>
+                                          <p className="text-2xl font-bold text-blue-400">{user.leadsCount}</p>
+                                        </div>
+                                        <div className="bg-darkpanel rounded-lg p-4 border border-gray-700">
+                                          <p className="text-xs text-darksubtle mb-1">Zamówienia</p>
+                                          <p className="text-2xl font-bold text-purple-400">{user.ordersCount}</p>
+                                        </div>
+                                      </div>
+
+                                      {/* Network sprzedawcy */}
+                                      {user.referrals && user.referrals.length > 0 && (
+                                        <div>
+                                          <h4 className="font-semibold text-darktext mb-3 flex items-center gap-2">
+                                            <Users className="w-4 h-4 text-primary-400" />
+                                            Lista zaproszeń ({user.referrals.length})
+                                          </h4>
+                                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                            {user.referrals.map((referral: any) => (
+                                              <div key={referral.id} className="bg-darkpanel rounded-lg p-3 border border-gray-700">
+                                                <div className="flex items-center gap-2">
+                                                  <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                                                    {referral.email.charAt(0).toUpperCase()}
+                                                  </div>
+                                                  <div className="flex-1 min-w-0">
+                                                    <p className="text-sm font-medium text-darktext truncate">{referral.email}</p>
+                                                    {(referral.firstName || referral.lastName) && (
+                                                      <p className="text-xs text-darksubtle">{referral.firstName} {referral.lastName}</p>
+                                                    )}
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      {/* Leady */}
+                                      <div>
+                                        <h4 className="font-semibold text-darktext mb-3 flex items-center gap-2">
+                                          <File className="w-4 h-4 text-blue-400" />
+                                          Leady ({sellerLeads.length})
+                                        </h4>
+                                        {sellerLeads.length > 0 ? (
+                                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            {sellerLeads.map((lead: any) => (
+                                              <div key={lead.id} className="bg-darkpanel rounded-lg p-3 border border-gray-700">
+                                                <div className="flex justify-between items-start mb-2">
+                                                  <span className="font-mono text-xs text-primary-400">#{lead.id}</span>
+                                                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                                                    lead.status === 'pending' ? 'bg-gray-900 text-gray-300' :
+                                                    lead.status === 'first_payment' ? 'bg-yellow-900 text-yellow-300' :
+                                                    lead.status === 'second_payment' ? 'bg-blue-900 text-blue-300' :
+                                                    lead.status === 'paid' ? 'bg-green-900 text-green-300' :
+                                                    'bg-red-900 text-red-300'
+                                                  }`}>
+                                                    {lead.status === 'pending' ? 'Oczekujący' :
+                                                     lead.status === 'first_payment' ? 'Po pierwszej zaliczce' :
+                                                     lead.status === 'second_payment' ? 'Po drugiej zaliczce' :
+                                                     lead.status === 'paid' ? 'Opłacony' : 'Odrzucony'}
+                                                  </span>
+                                                </div>
+                                                <p className="text-sm text-darktext">{lead.email}</p>
+                                                {lead.phone && <p className="text-xs text-darksubtle">{lead.phone}</p>}
+                                              </div>
+                                            ))}
+                                          </div>
+                                        ) : (
+                                          <p className="text-sm text-darksubtle">Brak leadów</p>
+                                        )}
+                                      </div>
+
+                                      {/* Zamówienia */}
+                                      <div>
+                                        <h4 className="font-semibold text-darktext mb-3 flex items-center gap-2">
+                                          <Package className="w-4 h-4 text-purple-400" />
+                                          Zamówienia ({sellerOrders.length})
+                                        </h4>
+                                        {sellerOrders.length > 0 ? (
+                                          <div className="space-y-2">
+                                            {sellerOrders.map((order: any) => (
+                                              <div key={order.id} className="bg-darkpanel rounded-lg p-3 border border-gray-700">
+                                                <div className="flex flex-wrap items-center justify-between gap-3">
+                                                  <div className="flex-1 min-w-[200px]">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                      <span className="font-mono text-sm text-primary-400">#{order.id}</span>
+                                                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                                                        order.status === 'paid' ? 'bg-green-900 text-green-300' :
+                                                        order.status === 'pending' ? 'bg-yellow-900 text-yellow-300' :
+                                                        'bg-red-900 text-red-300'
+                                                      }`}>
+                                                        {order.status === 'paid' ? 'Opłacone' : 
+                                                         order.status === 'pending' ? 'Oczekujące' : 'Wygasłe'}
+                                                      </span>
+                                                    </div>
+                                                    <p className="text-sm text-darksubtle">{order.email}</p>
+                                                  </div>
+                                                  <div className="flex items-center gap-4">
+                                                    <div>
+                                                      <p className="text-xs text-darksubtle">Typ</p>
+                                                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                                        order.orderType === 'consultation' ? 'bg-blue-600 text-white' :
+                                                        order.orderType === 'collaboration' ? 'bg-green-600 text-white' :
+                                                        'bg-purple-600 text-white'
+                                                      }`}>
+                                                        {order.orderType === 'consultation' ? 'Wycena' :
+                                                         order.orderType === 'collaboration' ? 'Współpraca' : 'Kod'}
+                                                      </span>
+                                                    </div>
+                                                    {order.software && (
+                                                      <div>
+                                                        <p className="text-xs text-darksubtle">Oprogramowanie</p>
+                                                        <p className="text-sm font-medium text-primary-400">{order.software.name}</p>
+                                                      </div>
+                                                    )}
+                                                    <div>
+                                                      <p className="text-xs text-darksubtle">Data</p>
+                                                      <p className="text-sm">{new Date(order.createdAt).toLocaleDateString('pl-PL')}</p>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        ) : (
+                                          <p className="text-sm text-darksubtle">Brak zamówień</p>
+                                        )}
+                                      </div>
+                                    </div>
+                                  )}
+                                </td>
+                              </tr>
+                            )}
+                          </>
                         ))}
                       </tbody>
                     </table>
+                    
+                    {/* Komunikat o braku wyników */}
+                    {networkData.users.filter((user: any) => {
+                      const searchLower = networkSearchTerm.toLowerCase()
+                      return (
+                        user.email.toLowerCase().includes(searchLower) ||
+                        (user.firstName && user.firstName.toLowerCase().includes(searchLower)) ||
+                        (user.lastName && user.lastName.toLowerCase().includes(searchLower))
+                      )
+                    }).length === 0 && (
+                      <div className="text-center py-12">
+                        <Users className="w-16 h-16 text-darksubtle mx-auto mb-4" />
+                        <h3 className="text-lg font-medium text-darktext mb-2">Brak wyników</h3>
+                        <p className="text-darksubtle">Nie znaleziono użytkowników pasujących do wyszukiwania.</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </>

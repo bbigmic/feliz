@@ -39,8 +39,28 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Brak uprawnień' }, { status: 403 })
     }
 
+    const { searchParams } = new URL(request.url)
+    const search = searchParams.get('search') || ''
+    const status = searchParams.get('status') || 'all'
+
+    let whereClause: any = {}
+    
+    if (status !== 'all') {
+      whereClause.status = status
+    }
+    
+    if (search) {
+      whereClause.OR = [
+        { email: { contains: search, mode: 'insensitive' } },
+        { phone: { contains: search } },
+        { info: { contains: search, mode: 'insensitive' } },
+        { seller: { email: { contains: search, mode: 'insensitive' } } }
+      ]
+    }
+
     // Pobieramy wszystkie leady z informacjami o sprzedawcy i szablonie
     const leads = await prisma.lead.findMany({
+      where: whereClause,
       orderBy: { createdAt: 'desc' },
       include: {
         seller: {

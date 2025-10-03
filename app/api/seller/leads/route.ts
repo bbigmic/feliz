@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    const leads = await prisma.lead.findMany({
+    const leads = await (prisma as any).lead.findMany({
       where: whereClause,
       orderBy: { createdAt: 'desc' },
       include: {
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Tworzymy nowy lead w tabeli Lead
-    const lead = await prisma.lead.create({
+    const lead = await (prisma as any).lead.create({
       data: {
         email,
         phone: phone || '',
@@ -140,7 +140,7 @@ export async function PATCH(request: NextRequest) {
 
     const { status, info } = await request.json()
     
-    const lead = await prisma.order.update({
+    const lead = await (prisma as any).lead.update({
       where: { id: parseInt(leadId) },
       data: {
         ...(status && { status }),

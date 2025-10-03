@@ -66,9 +66,9 @@ export async function POST(request: NextRequest) {
     }
     
     // Sprawdź czy zamówienie pochodzi od leada (po emailu) i przypisz sellerId
-    let sellerId = null
+    let sellerId: number | null = null
     if (email) {
-      const lead = await prisma.lead.findFirst({
+      const lead = await (prisma as any).lead.findFirst({
         where: { email: email },
         select: { sellerId: true }
       })
@@ -79,23 +79,25 @@ export async function POST(request: NextRequest) {
     }
     
     // 1. Utwórz zamówienie w bazie
+    const orderData: any = {
+      userId: userId || null,
+      productId: productId || null,
+      email: email || null,
+      phone,
+      info: info || null,
+      orderType: orderType || 'collaboration',
+      status: 'pending',
+      termsAccepted: !!termsAccepted,
+      marketingAccepted: !!marketingAccepted,
+      collaborationConsentAccepted: !!collaborationConsentAccepted,
+      codeConsentAccepted: !!codeConsentAccepted,
+      selectedCategory: selectedCategory || null,
+      language: language || 'pl',
+      sellerId: sellerId, // Przypisz sellerId jeśli znaleziono lead
+    }
+    
     const order = await prisma.order.create({
-      data: {
-        userId: userId || null,
-        productId: productId || null,
-        email: email || null,
-        phone,
-        info: info || null,
-        orderType: orderType || 'collaboration',
-        status: 'pending',
-        termsAccepted: !!termsAccepted,
-        marketingAccepted: !!marketingAccepted,
-        collaborationConsentAccepted: !!collaborationConsentAccepted,
-        codeConsentAccepted: !!codeConsentAccepted,
-        selectedCategory: selectedCategory || null,
-        language: language || 'pl',
-        sellerId: sellerId, // Przypisz sellerId jeśli znaleziono lead
-      },
+      data: orderData,
     })
     
     // Wysyłka maila do właściciela
@@ -243,9 +245,21 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Brak uprawnień' }, { status: 403 })
     }
 
+    // Sprawdź czy jest parametr sellerId w URL (dla adminów)
+    const { searchParams } = new URL(request.url)
+    const sellerIdParam = searchParams.get('sellerId')
+    
+    // Określ sellerId do filtrowania
+    let targetSellerId = user.id
+    
+    // Jeśli admin chce zobaczyć zamówienia konkretnego sprzedawcy
+    if (sellerIdParam && (user.isAdmin || user.role === 'admin' || user.role === 'management')) {
+      targetSellerId = parseInt(sellerIdParam)
+    }
+
     // Pobierz leady sprzedawcy
-    const leads = await prisma.lead.findMany({
-      where: { sellerId: user.id },
+    const leads = await (prisma as any).lead.findMany({
+      where: { sellerId: targetSellerId },
       select: { email: true }
     })
     const leadEmails = leads.map((lead: { email: string | null }) => lead.email).filter((email: string | null): email is string => email !== null)
@@ -254,8 +268,8 @@ export async function GET(request: NextRequest) {
     const orders = await prisma.order.findMany({
       where: {
         OR: [
-          { sellerId: user.id },
-          { email: { in: [...leadEmails, ...(user.email ? [user.email] : [])] } } // Dodajemy email sprzedawcy
+          { sellerId: targetSellerId } as any,
+          { email: { in: leadEmails } }
         ]
       },
       orderBy: { createdAt: 'desc' },

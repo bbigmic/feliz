@@ -60,7 +60,7 @@ export default function SellerPanel() {
   const [editLead, setEditLead] = useState<any>(null)
   const [isEditLeadModalOpen, setIsEditLeadModalOpen] = useState(false)
   const [leadSearchTerm, setLeadSearchTerm] = useState('')
-  const [leadStatusFilter, setLeadStatusFilter] = useState<'all' | 'pending' | 'paid'>('all')
+  const [leadStatusFilter, setLeadStatusFilter] = useState<'all' | 'pending' | 'first_payment' | 'second_payment' | 'paid' | 'rejected'>('all')
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
   const [categories, setCategories] = useState<string[]>([])
   const [softwares, setSoftwares] = useState<any[]>([])
@@ -72,6 +72,7 @@ export default function SellerPanel() {
   const [expandedUserId, setExpandedUserId] = useState<number | null>(null)
   const [userOrders, setUserOrders] = useState<any[]>([])
   const [loadingUserOrders, setLoadingUserOrders] = useState(false)
+  const [expandedLeadId, setExpandedLeadId] = useState<number | null>(null)
 
   // Funkcja pomocnicza do obliczania prowizji dla zamówienia
   const calculateOrderCommission = (order: any) => {
@@ -509,7 +510,8 @@ export default function SellerPanel() {
 
       <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
         {/* Tabs */}
-        <div className="flex space-x-2 mb-6 border-b border-gray-800 overflow-x-auto whitespace-nowrap">
+        <div className="relative mb-6">
+          <div className="flex space-x-2 border-b border-gray-800 overflow-x-auto whitespace-nowrap scrollbar-thin scrollbar-thumb-darkbg scrollbar-track-transparent">
           <button
             className={`px-6 py-2 font-medium transition-colors duration-200 border-b-2 ${activeTab === 'dashboard' ? 'border-primary-500 text-primary-500' : 'border-transparent text-darksubtle hover:text-primary-400'}`}
             onClick={() => setActiveTab('dashboard')}
@@ -540,6 +542,14 @@ export default function SellerPanel() {
           >
             Mój network
           </button>
+          </div>
+          
+          {/* Gradient wskazujący możliwość scrollowania */}
+          <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-darkbg via-darkbg/80 to-transparent pointer-events-none flex items-center justify-end pr-2">
+            <svg className="w-5 h-5 text-primary-400 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
         </div>
 
         {/* Dashboard Tab */}
@@ -941,12 +951,15 @@ export default function SellerPanel() {
               {/* Filtr statusu */}
               <select 
                 value={leadStatusFilter}
-                onChange={(e) => setLeadStatusFilter(e.target.value as 'all' | 'pending' | 'paid')}
+                onChange={(e) => setLeadStatusFilter(e.target.value as typeof leadStatusFilter)}
                 className="px-3 py-2 border border-gray-700 rounded-lg bg-darkpanel text-darktext w-full sm:w-auto"
               >
                 <option value="all">Wszystkie statusy</option>
-                <option value="pending">Oczekujące</option>
-                <option value="paid">Opłacone</option>
+                <option value="pending">Oczekujący</option>
+                <option value="first_payment">Po pierwszej zaliczce</option>
+                <option value="second_payment">Po drugiej zaliczce</option>
+                <option value="paid">Opłacony</option>
+                <option value="rejected">Odrzucony</option>
               </select>
             </div>
 
@@ -965,58 +978,72 @@ export default function SellerPanel() {
                           </div>
                           <div>
                             <p className="font-medium text-darktext">{lead.email || 'Brak email'}</p>
-                            <p className="text-xs text-darksubtle">{lead.phone || 'Brak telefonu'}</p>
+                            <p className="text-xs text-darksubtle">
+                              {new Date(lead.createdAt).toLocaleDateString('pl-PL')}
+                            </p>
                           </div>
                         </div>
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          lead.status === 'paid' 
-                            ? 'bg-green-900 text-green-300' 
-                            : lead.status === 'pending'
-                            ? 'bg-yellow-900 text-yellow-300'
-                            : 'bg-red-900 text-red-300'
+                          lead.status === 'pending' ? 'bg-gray-900 text-gray-300' :
+                          lead.status === 'first_payment' ? 'bg-yellow-900 text-yellow-300' :
+                          lead.status === 'second_payment' ? 'bg-blue-900 text-blue-300' :
+                          lead.status === 'paid' ? 'bg-green-900 text-green-300' :
+                          'bg-red-900 text-red-300'
                         }`}>
-                          {lead.status === 'paid' ? 'Opłacone' : lead.status === 'pending' ? 'Oczekujące' : 'Wygasłe'}
+                          {lead.status === 'pending' ? 'Oczekujący' :
+                           lead.status === 'first_payment' ? 'Po 1. zaliczce' :
+                           lead.status === 'second_payment' ? 'Po 2. zaliczce' :
+                           lead.status === 'paid' ? 'Opłacony' : 'Odrzucony'}
                         </span>
                       </div>
                       
-                      <div className="space-y-2 mb-3">
-                        <div className="flex items-center gap-2">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            lead.orderType === 'consultation' 
-                              ? 'bg-blue-600 text-white' 
-                              : lead.orderType === 'collaboration'
-                              ? 'bg-green-600 text-white'
-                              : 'bg-purple-600 text-white'
-                          }`}>
-                            {lead.orderType === 'consultation' ? 'Wycena' : 
-                             lead.orderType === 'collaboration' ? 'Współpraca' : 
-                             lead.orderType === 'code' ? 'Kod' : lead.orderType}
-                          </span>
-                        </div>
-                        
-                        {lead.selectedCategory && (
-                          <div className="text-sm">
-                            <span className="text-darksubtle">Kategoria: </span>
-                            <span className="px-2 py-1 bg-blue-600 text-white rounded-full text-xs">{lead.selectedCategory}</span>
+                      {/* Rozwinięte szczegóły */}
+                      {expandedLeadId === lead.id && (
+                        <div className="space-y-3 mb-3 p-3 bg-darkpanel rounded-lg border border-gray-700">
+                          <div>
+                            <p className="text-xs text-darksubtle mb-1">Telefon</p>
+                            <p className="text-sm font-medium text-darktext">{lead.phone || '-'}</p>
                           </div>
-                        )}
-                        {lead.softwareTemplate && (
-                          <div className="text-sm">
-                            <span className="text-darksubtle">Szablon: </span>
-                            <span className="font-medium text-darktext">{lead.softwareTemplate.name}</span>
+                          <div>
+                            <p className="text-xs text-darksubtle mb-1">Kategoria</p>
+                            {lead.selectedCategory ? (
+                              <span className="px-2 py-1 bg-blue-600 text-white rounded-full text-xs">{lead.selectedCategory}</span>
+                            ) : (
+                              <p className="text-sm text-darksubtle">-</p>
+                            )}
                           </div>
-                        )}
-                        <div className="text-sm">
-                          <span className="text-darksubtle">Data: </span>
-                          <span className="font-medium">
-                            {new Date(lead.createdAt).toLocaleString('pl-PL')}
-                          </span>
+                          {lead.softwareTemplate && (
+                            <>
+                              <div>
+                                <p className="text-xs text-darksubtle mb-1">Szablon oprogramowania</p>
+                                <p className="text-sm font-medium text-darktext">{lead.softwareTemplate.name}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-darksubtle mb-1">Cena szablonu</p>
+                                <p className="text-sm font-medium text-green-400">{lead.softwareTemplate.price} PLN</p>
+                              </div>
+                            </>
+                          )}
+                          {lead.info && (
+                            <div>
+                              <p className="text-xs text-darksubtle mb-1">Informacje / Notatki</p>
+                              <p className="text-sm text-darktext bg-darkbg rounded p-2 border border-gray-700">
+                                {lead.info}
+                              </p>
+                            </div>
+                          )}
                         </div>
-                      </div>
+                      )}
                       
                       <div className="flex gap-2">
                         <button
                           className="btn-secondary flex-1 py-2 text-xs"
+                          onClick={() => setExpandedLeadId(expandedLeadId === lead.id ? null : lead.id)}
+                        >
+                          {expandedLeadId === lead.id ? 'Ukryj' : 'Szczegóły'}
+                        </button>
+                        <button
+                          className="btn-primary flex-1 py-2 text-xs"
                           onClick={() => { setEditLead(lead); setIsEditLeadModalOpen(true) }}
                         >
                           Edytuj
@@ -1033,9 +1060,6 @@ export default function SellerPanel() {
                       <tr className="border-b border-gray-700">
                         <th className="py-3 px-4 font-medium text-darksubtle">ID</th>
                         <th className="py-3 px-4 font-medium text-darksubtle">Email</th>
-                        <th className="py-3 px-4 font-medium text-darksubtle">Telefon</th>
-                        <th className="py-3 px-4 font-medium text-darksubtle">Kategoria</th>
-                        <th className="py-3 px-4 font-medium text-darksubtle">Szablon</th>
                         <th className="py-3 px-4 font-medium text-darksubtle">Status</th>
                         <th className="py-3 px-4 font-medium text-darksubtle">Data</th>
                         <th className="py-3 px-4 font-medium text-darksubtle">Akcje</th>
@@ -1043,6 +1067,7 @@ export default function SellerPanel() {
                     </thead>
                     <tbody>
                       {leads.map(lead => (
+                        <>
                         <tr key={lead.id} className="border-t border-gray-700 hover:bg-darkbg/60">
                           <td className="py-3 px-4 font-mono text-sm">#{lead.id}</td>
                           <td className="py-3 px-4">
@@ -1053,32 +1078,18 @@ export default function SellerPanel() {
                               <span className="font-medium">{lead.email || 'Brak'}</span>
                             </div>
                           </td>
-                            <td className="py-3 px-4 text-sm text-darksubtle">
-                              {lead.phone || '-'}
-                            </td>
-                            <td className="py-3 px-4 text-sm text-darksubtle">
-                              {lead.selectedCategory ? (
-                                <span className="px-2 py-1 bg-blue-600 text-white rounded-full text-xs">{lead.selectedCategory}</span>
-                              ) : (
-                                <span className="text-darksubtle">-</span>
-                              )}
-                            </td>
-                            <td className="py-3 px-4 text-sm text-darksubtle">
-                              {lead.softwareTemplate ? (
-                                <span className="font-medium text-darktext">{lead.softwareTemplate.name}</span>
-                              ) : (
-                                <span className="text-darksubtle">-</span>
-                              )}
-                            </td>
                             <td className="py-3 px-4">
                               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                lead.status === 'paid' 
-                                  ? 'bg-green-900 text-green-300' 
-                                  : lead.status === 'pending'
-                                  ? 'bg-yellow-900 text-yellow-300'
-                                  : 'bg-red-900 text-red-300'
+                                lead.status === 'pending' ? 'bg-gray-900 text-gray-300' :
+                                lead.status === 'first_payment' ? 'bg-yellow-900 text-yellow-300' :
+                                lead.status === 'second_payment' ? 'bg-blue-900 text-blue-300' :
+                                lead.status === 'paid' ? 'bg-green-900 text-green-300' :
+                                'bg-red-900 text-red-300'
                               }`}>
-                                {lead.status === 'paid' ? 'Opłacone' : lead.status === 'pending' ? 'Oczekujące' : 'Wygasłe'}
+                                {lead.status === 'pending' ? 'Oczekujący' :
+                                 lead.status === 'first_payment' ? 'Po pierwszej zaliczce' :
+                                 lead.status === 'second_payment' ? 'Po drugiej zaliczce' :
+                                 lead.status === 'paid' ? 'Opłacony' : 'Odrzucony'}
                               </span>
                             </td>
                           <td className="py-3 px-4 text-sm text-darksubtle">
@@ -1091,14 +1102,69 @@ export default function SellerPanel() {
                             })}
                           </td>
                           <td className="py-3 px-4">
-                            <button
-                              className="btn-secondary text-xs px-3 py-1"
-                              onClick={() => { setEditLead(lead); setIsEditLeadModalOpen(true) }}
-                            >
-                              Edytuj
-                            </button>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => setExpandedLeadId(expandedLeadId === lead.id ? null : lead.id)}
+                                className="btn-secondary text-xs px-3 py-1"
+                              >
+                                {expandedLeadId === lead.id ? 'Ukryj' : 'Szczegóły'}
+                              </button>
+                              <button 
+                                className="btn-primary text-xs px-3 py-1"
+                                onClick={() => { setEditLead(lead); setIsEditLeadModalOpen(true) }}
+                              >
+                                Edytuj
+                              </button>
+                            </div>
                           </td>
                         </tr>
+                        
+                        {/* Rozwinięte szczegóły */}
+                        {expandedLeadId === lead.id && (
+                          <tr>
+                            <td colSpan={5} className="bg-darkbg/80 p-4 border-t border-b border-primary-700">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                  <p className="text-xs text-darksubtle mb-1">Telefon</p>
+                                  <p className="font-medium text-darktext">{lead.phone || '-'}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-darksubtle mb-1">Kategoria</p>
+                                  {lead.selectedCategory ? (
+                                    <span className="px-2 py-1 bg-blue-600 text-white rounded-full text-xs">{lead.selectedCategory}</span>
+                                  ) : (
+                                    <p className="text-darksubtle">-</p>
+                                  )}
+                                </div>
+                                <div>
+                                  <p className="text-xs text-darksubtle mb-1">Szablon oprogramowania</p>
+                                  {lead.softwareTemplate ? (
+                                    <p className="font-medium text-darktext">{lead.softwareTemplate.name}</p>
+                                  ) : (
+                                    <p className="text-darksubtle">-</p>
+                                  )}
+                                </div>
+                                <div>
+                                  <p className="text-xs text-darksubtle mb-1">Cena szablonu</p>
+                                  {lead.softwareTemplate ? (
+                                    <p className="font-medium text-green-400">{lead.softwareTemplate.price} PLN</p>
+                                  ) : (
+                                    <p className="text-darksubtle">-</p>
+                                  )}
+                                </div>
+                                {lead.info && (
+                                  <div className="md:col-span-2">
+                                    <p className="text-xs text-darksubtle mb-1">Informacje / Notatki</p>
+                                    <p className="text-sm text-darktext bg-darkpanel rounded p-3 border border-gray-700">
+                                      {lead.info}
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </>
                       ))}
                     </tbody>
                   </table>
@@ -1107,16 +1173,22 @@ export default function SellerPanel() {
                 {leads.length === 0 && !loadingLeads && (
                   <div className="text-center py-12">
                     <Users className="w-16 h-16 text-darksubtle mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-darktext mb-2">Brak leadów</h3>
+                    <h3 className="text-lg font-medium text-darktext mb-2">
+                      {(leadSearchTerm && leadSearchTerm.trim() !== '') || leadStatusFilter !== 'all' ? 'Brak wyników' : 'Brak leadów'}
+                    </h3>
                     <p className="text-darksubtle mb-4">
-                      Dodaj pierwszego leada, aby rozpocząć zarządzanie potencjalnymi klientami.
+                      {(leadSearchTerm && leadSearchTerm.trim() !== '') || leadStatusFilter !== 'all' 
+                        ? 'Nie znaleziono leadów pasujących do wybranych kryteriów.'
+                        : 'Dodaj pierwszego leada, aby rozpocząć zarządzanie potencjalnymi klientami.'}
                     </p>
-                    <button 
-                      className="btn-primary"
-                      onClick={() => setIsAddLeadModalOpen(true)}
-                    >
-                      Dodaj lead
-                    </button>
+                    {(!leadSearchTerm || leadSearchTerm.trim() === '') && leadStatusFilter === 'all' && (
+                      <button 
+                        className="btn-primary"
+                        onClick={() => setIsAddLeadModalOpen(true)}
+                      >
+                        Dodaj lead
+                      </button>
+                    )}
                   </div>
                 )}
               </>
@@ -1313,6 +1385,12 @@ export default function SellerPanel() {
                   <p className="text-xs text-indigo-100 mt-2">
                     Zaproszono: <span className="font-bold">{referralStats.sellerReferrals}</span> sprzedawców
                   </p>
+                  <div className="mt-3 pt-3 border-t border-white/20">
+                    <p className="text-xs text-yellow-200 font-medium flex items-start gap-1">
+                      <span className="text-base">💰</span>
+                      <span>Zarabiaj <span className="font-bold text-yellow-100">10%</span> z obrotu wszystkich zarejestrowanych przez Ciebie sprzedawców</span>
+                    </p>
+                  </div>
                 </div>
 
                 {/* Reflink dla leadów */}
@@ -1398,7 +1476,91 @@ export default function SellerPanel() {
               {loadingReferrals ? (
                 <div className="text-center py-8 text-darksubtle">Ładowanie...</div>
               ) : referredUsers.length > 0 ? (
-                <div className="overflow-x-auto">
+                <>
+                  {/* Mobile: karty */}
+                  <div className="flex flex-col gap-4 sm:hidden mb-6">
+                    {referredUsers.map(referredUser => (
+                      <div key={referredUser.id} className="bg-darkbg rounded-xl shadow-lg p-4 border border-gray-800">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                              {referredUser.email.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <p className="font-medium text-darktext">{referredUser.email}</p>
+                              <p className="text-xs text-darksubtle">
+                                {new Date(referredUser.createdAt).toLocaleDateString('pl-PL')}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2 mb-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-darksubtle">Rola:</span>
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              referredUser.role === 'seller' || referredUser.role === 'management' || referredUser.role === 'admin'
+                                ? 'bg-purple-600 text-white' 
+                                : 'bg-gray-600 text-white'
+                            }`}>
+                              {referredUser.role === 'seller' ? 'Sprzedawca' : 
+                               referredUser.role === 'management' ? 'Zarząd' :
+                               referredUser.role === 'admin' ? 'Administrator' : 'Użytkownik'}
+                            </span>
+                          </div>
+                          
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-darksubtle">Obrót:</span>
+                            <span className="text-sm font-bold text-green-400">
+                              {referredUser.revenue?.toLocaleString('pl-PL') || 0} PLN
+                            </span>
+                          </div>
+                          
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-darksubtle">Zamówienia:</span>
+                            <span className="text-sm font-medium text-darktext">
+                              {referredUser.ordersCount || 0}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        {/* Rozwinięte zamówienia mobile */}
+                        {expandedUserId === referredUser.id && userOrders.length > 0 && (
+                          <div className="space-y-3 mb-3 p-3 bg-darkpanel rounded-lg border border-gray-700">
+                            <h5 className="text-sm font-semibold text-darktext mb-2">Zamówienia</h5>
+                            {userOrders.map(order => (
+                              <div key={order.id} className="bg-darkbg rounded p-2 text-xs space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-mono text-primary-400">#{order.id}</span>
+                                  <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${
+                                    order.status === 'paid' ? 'bg-green-900 text-green-300' :
+                                    order.status === 'pending' ? 'bg-yellow-900 text-yellow-300' :
+                                    'bg-red-900 text-red-300'
+                                  }`}>
+                                    {order.status === 'paid' ? 'Opłacone' : order.status === 'pending' ? 'Oczekujące' : 'Wygasłe'}
+                                  </span>
+                                </div>
+                                <p className="text-darksubtle">{order.email || 'Brak email'}</p>
+                                <p className="text-darksubtle">{new Date(order.createdAt).toLocaleDateString('pl-PL')}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        
+                        {referredUser.ordersCount > 0 && (
+                          <button
+                            onClick={() => toggleUserOrders(referredUser.id)}
+                            className="btn-secondary w-full py-2 text-xs"
+                          >
+                            {expandedUserId === referredUser.id ? 'Ukryj' : 'Zobacz'} zamówienia ({referredUser.ordersCount})
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Desktop: tabela */}
+                  <div className="hidden sm:block overflow-x-auto">
                   <table className="w-full text-left">
                     <thead>
                       <tr className="border-b border-gray-700">
@@ -1535,7 +1697,8 @@ export default function SellerPanel() {
                       ))}
                     </tbody>
                   </table>
-                </div>
+                  </div>
+                </>
               ) : (
                 <div className="text-center py-12">
                   <Users className="w-16 h-16 text-darksubtle mx-auto mb-4" />
@@ -1739,9 +1902,11 @@ export default function SellerPanel() {
                   defaultValue={editLead.status}
                   className="w-full px-3 py-2 border border-gray-700 rounded-lg bg-darkbg text-darktext"
                 >
-                  <option value="pending">Oczekujące</option>
-                  <option value="paid">Opłacone</option>
-                  <option value="expired">Wygasłe</option>
+                  <option value="pending">Oczekujący</option>
+                  <option value="first_payment">Po pierwszej zaliczce</option>
+                  <option value="second_payment">Po drugiej zaliczce</option>
+                  <option value="paid">Opłacony</option>
+                  <option value="rejected">Odrzucony</option>
                 </select>
               </div>
               
