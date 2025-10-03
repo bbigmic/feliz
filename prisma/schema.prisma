@@ -21,6 +21,9 @@ model User {
   firstName         String?  // Imię
   lastName          String?  // Nazwisko
   level             Int      @default(1) // Poziom sprzedawcy
+  referrerId        Int?     // ID sprzedawcy, który zaprosił tego użytkownika
+  referrer          User?    @relation("UserReferrals", fields: [referrerId], references: [id])
+  referrals         User[]   @relation("UserReferrals") // Użytkownicy zaproszeni przez tego sprzedawcę
   orders            Order[]  @relation("UserOrders")
   sellerOrders      Order[]  @relation("SellerOrders")
   leads             Lead[]
@@ -48,6 +51,7 @@ model Order {
   sellerId            Int?    // Id sprzedawcy
   seller              User?    @relation("SellerOrders", fields: [sellerId], references: [id])
   commissionRate      Float?   // Procent prowizji w momencie opłacenia (np. 0.10 dla 10%)
+  referrerCommission  Float?   // Prowizja dla referrera sprzedawcy (10% z obrotu)
 }
 
 model OrderFile {

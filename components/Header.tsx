@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { Menu, X, ShoppingCart, User } from 'lucide-react'
 import AuthModal from './AuthModal'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import LanguageSwitcher from './LanguageSwitcher'
 import { useLanguage } from '@/contexts/LanguageContext'
 
@@ -15,6 +15,8 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false)
   const [isAuthOpen, setIsAuthOpen] = useState(false)
   const [user, setUser] = useState<{ email: string; role: string; isAdmin: boolean } | null>(null)
+  const searchParams = useSearchParams()
+  const [referrerId, setReferrerId] = useState<number | undefined>(undefined)
 
   useEffect(() => {
     const onScroll = () => {
@@ -44,6 +46,17 @@ export default function Header() {
     }
     fetchUser()
   }, [isAuthOpen]) // odśwież po zamknięciu modala
+
+  // Sprawdź parametr ref z URL
+  useEffect(() => {
+    const ref = searchParams.get('ref')
+    if (ref) {
+      const refId = parseInt(ref)
+      if (!isNaN(refId)) {
+        setReferrerId(refId)
+      }
+    }
+  }, [searchParams])
 
   const pathname = usePathname();
   const router = useRouter();
@@ -224,7 +237,12 @@ export default function Header() {
           </motion.div>
         )}
       </div>
-      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} onAuthSuccess={() => { setIsAuthOpen(false); window.location.reload(); }} />
+      <AuthModal 
+        isOpen={isAuthOpen} 
+        onClose={() => setIsAuthOpen(false)} 
+        onAuthSuccess={() => { setIsAuthOpen(false); window.location.reload(); }} 
+        referrerId={referrerId}
+      />
     </header>
   )
 } 

@@ -10,7 +10,7 @@ const JWT_EXPIRES_IN = '7d'
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password, termsAccepted, marketingAccepted } = await request.json()
+    const { email, password, termsAccepted, marketingAccepted, referrerId } = await request.json()
     if (!email || !password) {
       return NextResponse.json({ error: 'Email i hasło są wymagane.' }, { status: 400 })
     }
@@ -21,11 +21,40 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Użytkownik o tym adresie email już istnieje.' }, { status: 409 })
     }
 
+    // Jeśli podano referrerId, sprawdź czy sprzedawca istnieje
+    let isValidReferrer = false
+    if (referrerId) {
+      const referrer = await prisma.user.findUnique({ 
+        where: { id: parseInt(referrerId) },
+        select: { id: true, role: true }
+      })
+      
+      // Weryfikuj, czy referrer jest sprzedawcą
+      if (referrer && (referrer.role === 'seller' || referrer.role === 'management' || referrer.role === 'admin')) {
+        isValidReferrer = true
+      } else {
+        console.log('Nieprawidłowy referrer:', referrerId)
+      }
+    }
+
     // Hashuj hasło
     const passwordHash = await bcrypt.hash(password, 10)
 
     // Zapisz użytkownika
-    const user = await prisma.user.create({ data: { email, passwordHash, termsAccepted: !!termsAccepted, marketingAccepted: !!marketingAccepted } })
+    const userData: any = { 
+      email, 
+      passwordHash, 
+      termsAccepted: !!termsAccepted, 
+      marketingAccepted: !!marketingAccepted,
+      role: isValidReferrer ? 'seller' : 'user' // Użytkownicy zaproszeni przez reflink dostają rolę seller
+    }
+    
+    // Dodaj referrerId tylko jeśli jest poprawny
+    if (isValidReferrer && referrerId) {
+      userData.referrerId = parseInt(referrerId)
+    }
+    
+    const user = await prisma.user.create({ data: userData })
 
     // Wygeneruj JWT
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN })

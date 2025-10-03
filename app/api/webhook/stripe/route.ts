@@ -59,10 +59,10 @@ export async function POST(request: NextRequest) {
             // Zapisz prowizję dla wszystkich zamówień ze sprzedawcą
             // Zwiększ poziom tylko za collaboration/code
             if (order.sellerId) {
-              // Pobierz aktualny poziom sprzedawcy
+              // Pobierz aktualny poziom sprzedawcy i jego referrerId
               const seller = await prisma.user.findUnique({
                 where: { id: order.sellerId },
-                select: { level: true }
+                select: { level: true, referrerId: true }
               })
               
               if (seller) {
@@ -76,10 +76,42 @@ export async function POST(request: NextRequest) {
                 
                 const commissionRate = getCommissionRate(seller.level)
                 
-                // Zapisz procent prowizji w zamówieniu (dla wszystkich typów)
+                // Oblicz prowizję dla referrera (10% obrotu)
+                let referrerCommission = 0
+                if (seller.referrerId) {
+                  // Oblicz cenę zamówienia
+                  let orderPrice = 0
+                  if (orderType === 'consultation') {
+                    orderPrice = 200 // 200 PLN za konsultację
+                  } else if (orderType === 'collaboration' || orderType === 'code') {
+                    // Pobierz cenę software
+                    if (productId) {
+                      const software = await prisma.software.findUnique({
+                        where: { id: parseInt(productId) },
+                        select: { price: true }
+                      })
+                      if (software) {
+                        if (orderType === 'collaboration') {
+                          orderPrice = Math.round(software.price * 0.3) // 30% ceny za współpracę
+                        } else {
+                          orderPrice = software.price // 100% ceny za kod
+                        }
+                      }
+                    }
+                  }
+                  
+                  // 10% obrotu dla referrera
+                  referrerCommission = Math.round(orderPrice * 0.10)
+                  console.log(`Referrer ID ${seller.referrerId} otrzyma ${referrerCommission} PLN (10% z ${orderPrice} PLN) za zamówienie sprzedawcy ID: ${order.sellerId}`)
+                }
+                
+                // Zapisz procent prowizji i prowizję referrera w zamówieniu
                 await prisma.order.update({
                   where: { id: parseInt(orderId) },
-                  data: { commissionRate }
+                  data: { 
+                    commissionRate,
+                    referrerCommission: referrerCommission > 0 ? referrerCommission : null
+                  }
                 })
                 
                 // Zwiększ poziom sprzedawcy TYLKO za collaboration/code

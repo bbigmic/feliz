@@ -21,20 +21,29 @@ import toast from 'react-hot-toast'
 import AuthModal from '@/components/AuthModal'
 import Link from 'next/link'
 
-// Funkcja generująca reflink
+// Funkcja generująca reflink dla leadów
 const generateReflink = (sellerId: number) => {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
   return `${baseUrl}/lead?ref=${sellerId}`
 }
 
+// Funkcja generująca reflink dla rejestracji nowych sprzedawców
+const generateSellerReflink = (sellerId: number) => {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+  return `${baseUrl}/register?ref=${sellerId}`
+}
+
 // Funkcja kopiująca reflink do schowka
-const copyReflinkToClipboard = (reflink: string) => {
+const copyReflinkToClipboard = (reflink: string, type: 'lead' | 'seller' = 'lead') => {
   navigator.clipboard.writeText(reflink)
-  toast.success('Reflink skopiowany do schowka!')
+  const message = type === 'seller' 
+    ? 'Reflink rejestracji sprzedawców skopiowany do schowka!' 
+    : 'Reflink skopiowany do schowka!'
+  toast.success(message)
 }
 
 export default function SellerPanel() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'orders' | 'leads' | 'statistics'>('dashboard')
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'orders' | 'leads' | 'statistics' | 'network'>('dashboard')
   const [orders, setOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null)
@@ -57,6 +66,9 @@ export default function SellerPanel() {
   const [softwares, setSoftwares] = useState<any[]>([])
   const [showSoftwareTemplate, setShowSoftwareTemplate] = useState(false)
   const [showLevelAnimation, setShowLevelAnimation] = useState(true)
+  const [referralStats, setReferralStats] = useState<{ totalReferrals: number, sellerReferrals: number }>({ totalReferrals: 0, sellerReferrals: 0 })
+  const [referredUsers, setReferredUsers] = useState<any[]>([])
+  const [loadingReferrals, setLoadingReferrals] = useState(false)
 
   // Funkcja pomocnicza do obliczania prowizji dla zamówienia
   const calculateOrderCommission = (order: any) => {
@@ -123,6 +135,18 @@ export default function SellerPanel() {
       const data = await res.json()
       setStatistics(data)
       
+      // Pobierz statystyki poleceń
+      if (user) {
+        const referralsRes = await fetch(`/api/seller/referrals`)
+        const referralsData = await referralsRes.json()
+        if (referralsData.success) {
+          setReferralStats({
+            totalReferrals: referralsData.totalReferrals || 0,
+            sellerReferrals: referralsData.sellerReferrals || 0
+          })
+        }
+      }
+      
       // Animacja tylko dla dokładnie poziomów 15, 20 i 25
       if (data.sellerLevel && [15, 20, 25].includes(data.sellerLevel)) {
         setShowLevelAnimation(true)
@@ -158,6 +182,27 @@ export default function SellerPanel() {
     }
   }
 
+  // Pobieranie szczegółowych danych o poleceniach
+  const fetchReferrals = async () => {
+    setLoadingReferrals(true)
+    try {
+      const res = await fetch('/api/seller/referrals')
+      const data = await res.json()
+      if (data.success) {
+        setReferralStats({
+          totalReferrals: data.totalReferrals || 0,
+          sellerReferrals: data.sellerReferrals || 0
+        })
+        setReferredUsers(data.referrals || [])
+      }
+    } catch (error) {
+      console.error('Błąd pobierania poleceń:', error)
+      toast.error('Błąd pobierania poleceń')
+    } finally {
+      setLoadingReferrals(false)
+    }
+  }
+
   useEffect(() => {
     if (user) {
       if (activeTab === 'dashboard') {
@@ -172,6 +217,9 @@ export default function SellerPanel() {
       }
       if (activeTab === 'leads') {
         fetchLeads()
+      }
+      if (activeTab === 'network') {
+        fetchReferrals()
       }
     }
   }, [activeTab, user])
@@ -456,6 +504,12 @@ export default function SellerPanel() {
             onClick={() => setActiveTab('statistics')}
           >
             Statystyki
+          </button>
+          <button
+            className={`px-6 py-2 font-medium transition-colors duration-200 border-b-2 ${activeTab === 'network' ? 'border-primary-500 text-primary-500' : 'border-transparent text-darksubtle hover:text-primary-400'}`}
+            onClick={() => setActiveTab('network')}
+          >
+            Mój network
           </button>
         </div>
 
@@ -1094,6 +1148,31 @@ export default function SellerPanel() {
                     </div>
                   </div>
 
+                  {/* Prowizje z zespołu */}
+                  {statistics.totalTeamCommission > 0 && (
+                    <div className="card bg-gradient-to-br from-indigo-600/20 to-purple-600/20 border border-indigo-500/30">
+                      <h3 className="text-lg font-semibold text-darktext mb-4 flex items-center gap-2">
+                        <Users className="w-5 h-5 text-indigo-400" />
+                        Prowizje z zespołu (10% obrotu zaproszonych sprzedawców)
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-darkpanel rounded-lg p-4">
+                          <p className="text-sm text-darksubtle mb-1">Łącznie</p>
+                          <p className="text-2xl font-bold text-indigo-400">{statistics.totalTeamCommission?.toLocaleString('pl-PL')} PLN</p>
+                          <p className="text-xs text-darksubtle mt-1">{statistics.teamOrdersCount || 0} zamówień</p>
+                        </div>
+                        <div className="bg-darkpanel rounded-lg p-4">
+                          <p className="text-sm text-darksubtle mb-1">Ten miesiąc</p>
+                          <p className="text-2xl font-bold text-green-400">{statistics.thisMonthTeamCommission?.toLocaleString('pl-PL')} PLN</p>
+                        </div>
+                        <div className="bg-darkpanel rounded-lg p-4">
+                          <p className="text-sm text-darksubtle mb-1">Poprzedni miesiąc</p>
+                          <p className="text-2xl font-bold text-darksubtle">{statistics.lastMonthTeamCommission?.toLocaleString('pl-PL')} PLN</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="card">
                       <h3 className="text-lg font-semibold text-darktext mb-4">Bieżący miesiąc</h3>
@@ -1107,9 +1186,21 @@ export default function SellerPanel() {
                           <span className="font-bold">{statistics.thisMonthRevenue?.toLocaleString('pl-PL')} PLN</span>
                         </div>
                         <div className="flex justify-between">
-                          <span>Prowizja:</span>
+                          <span>Prowizja z własnych:</span>
                           <span className="font-bold text-green-400">{statistics.thisMonthCommission?.toLocaleString('pl-PL')} PLN</span>
                         </div>
+                        {statistics.thisMonthTeamCommission > 0 && (
+                          <div className="flex justify-between border-t border-gray-700 pt-2 mt-2">
+                            <span>Prowizja z zespołu:</span>
+                            <span className="font-bold text-indigo-400">{statistics.thisMonthTeamCommission?.toLocaleString('pl-PL')} PLN</span>
+                          </div>
+                        )}
+                        {statistics.thisMonthTeamCommission > 0 && (
+                          <div className="flex justify-between font-bold text-lg border-t border-gray-700 pt-2 mt-2">
+                            <span>Łącznie:</span>
+                            <span className="text-green-400">{((statistics.thisMonthCommission || 0) + (statistics.thisMonthTeamCommission || 0)).toLocaleString('pl-PL')} PLN</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="card">
@@ -1124,9 +1215,21 @@ export default function SellerPanel() {
                           <span className="font-bold">{statistics.lastMonthRevenue?.toLocaleString('pl-PL')} PLN</span>
                         </div>
                         <div className="flex justify-between">
-                          <span>Prowizja:</span>
+                          <span>Prowizja z własnych:</span>
                           <span className="font-bold text-green-400">{statistics.lastMonthCommission?.toLocaleString('pl-PL')} PLN</span>
                         </div>
+                        {statistics.lastMonthTeamCommission > 0 && (
+                          <div className="flex justify-between border-t border-gray-700 pt-2 mt-2">
+                            <span>Prowizja z zespołu:</span>
+                            <span className="font-bold text-indigo-400">{statistics.lastMonthTeamCommission?.toLocaleString('pl-PL')} PLN</span>
+                          </div>
+                        )}
+                        {statistics.lastMonthTeamCommission > 0 && (
+                          <div className="flex justify-between font-bold text-lg border-t border-gray-700 pt-2 mt-2">
+                            <span>Łącznie:</span>
+                            <span className="text-green-400">{((statistics.lastMonthCommission || 0) + (statistics.lastMonthTeamCommission || 0)).toLocaleString('pl-PL')} PLN</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1135,6 +1238,192 @@ export default function SellerPanel() {
                 <div className="text-center py-12 text-lg text-darksubtle">Brak danych statystycznych</div>
               )}
             </div>
+          </motion.section>
+        )}
+
+        {/* Network Tab */}
+        {activeTab === 'network' && (
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="space-y-6"
+          >
+            {/* Panel z reflinkami */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+              className="card bg-gradient-to-br from-indigo-600 to-purple-700 text-white"
+            >
+              <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                <Users className="w-6 h-6" />
+                Twoje Reflinki
+              </h3>
+              <p className="text-indigo-100 mb-6 text-sm">
+                Udostępniaj swoje linki polecające, aby rozwijać swoją sieć i zarabiać prowizje
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Reflink dla rejestracji sprzedawców */}
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+                  <p className="text-sm text-indigo-100 mb-2 font-medium">Rejestracja Sprzedawców</p>
+                  <div className="flex items-center gap-2">
+                    <input 
+                      type="text" 
+                      value={generateSellerReflink(user?.id || 0)}
+                      readOnly
+                      className="flex-1 px-3 py-2 bg-white/20 rounded text-sm text-white border border-white/30 focus:outline-none"
+                    />
+                    <button
+                      onClick={() => copyReflinkToClipboard(generateSellerReflink(user?.id || 0), 'seller')}
+                      className="px-4 py-2 bg-white text-indigo-600 rounded hover:bg-indigo-50 transition-colors font-medium text-sm whitespace-nowrap"
+                    >
+                      Kopiuj
+                    </button>
+                  </div>
+                  <p className="text-xs text-indigo-100 mt-2">
+                    Zaproszono: <span className="font-bold">{referralStats.sellerReferrals}</span> sprzedawców
+                  </p>
+                </div>
+
+                {/* Reflink dla leadów */}
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+                  <p className="text-sm text-indigo-100 mb-2 font-medium">Leady / Kontakty</p>
+                  <div className="flex items-center gap-2">
+                    <input 
+                      type="text" 
+                      value={generateReflink(user?.id || 0)}
+                      readOnly
+                      className="flex-1 px-3 py-2 bg-white/20 rounded text-sm text-white border border-white/30 focus:outline-none"
+                    />
+                    <button
+                      onClick={() => copyReflinkToClipboard(generateReflink(user?.id || 0), 'lead')}
+                      className="px-4 py-2 bg-white text-purple-600 rounded hover:bg-purple-50 transition-colors font-medium text-sm whitespace-nowrap"
+                    >
+                      Kopiuj
+                    </button>
+                  </div>
+                  <p className="text-xs text-indigo-100 mt-2">
+                    Używaj tego linka do zbierania leadów
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Statystyki network */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="card bg-gradient-to-br from-purple-600 to-purple-700 text-white"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-purple-100 text-sm">Zaproszeni sprzedawcy</p>
+                    <p className="text-3xl font-bold">{referralStats.sellerReferrals}</p>
+                  </div>
+                  <Users className="w-8 h-8 text-purple-200" />
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="card bg-gradient-to-br from-green-600 to-green-700 text-white"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-green-100 text-sm">Prowizja w tym miesiącu</p>
+                    <p className="text-3xl font-bold">{statistics?.thisMonthTeamCommission?.toLocaleString('pl-PL') || 0} PLN</p>
+                  </div>
+                  <DollarSign className="w-8 h-8 text-green-200" />
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="card bg-gradient-to-br from-indigo-600 to-indigo-700 text-white"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-indigo-100 text-sm">Prowizja łącznie</p>
+                    <p className="text-3xl font-bold">{statistics?.totalTeamCommission?.toLocaleString('pl-PL') || 0} PLN</p>
+                  </div>
+                  <TrendingUp className="w-8 h-8 text-indigo-200" />
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Lista poleconych użytkowników */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="card"
+            >
+              <h3 className="text-lg font-semibold text-darktext mb-4">Poleceni użytkownicy</h3>
+              {loadingReferrals ? (
+                <div className="text-center py-8 text-darksubtle">Ładowanie...</div>
+              ) : referredUsers.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="border-b border-gray-700">
+                        <th className="py-3 px-4 font-medium text-darksubtle">Email</th>
+                        <th className="py-3 px-4 font-medium text-darksubtle">Rola</th>
+                        <th className="py-3 px-4 font-medium text-darksubtle">Data rejestracji</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {referredUsers.map(referredUser => (
+                        <tr key={referredUser.id} className="border-t border-gray-700 hover:bg-darkbg/60">
+                          <td className="py-3 px-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                                {referredUser.email.charAt(0).toUpperCase()}
+                              </div>
+                              <span className="font-medium">{referredUser.email}</span>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              referredUser.role === 'seller' || referredUser.role === 'management' || referredUser.role === 'admin'
+                                ? 'bg-purple-600 text-white' 
+                                : 'bg-gray-600 text-white'
+                            }`}>
+                              {referredUser.role === 'seller' ? 'Sprzedawca' : 
+                               referredUser.role === 'management' ? 'Zarząd' :
+                               referredUser.role === 'admin' ? 'Administrator' : 'Użytkownik'}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-sm text-darksubtle">
+                            {new Date(referredUser.createdAt).toLocaleString('pl-PL', {
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Users className="w-16 h-16 text-darksubtle mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-darktext mb-2">Brak poleceń</h3>
+                  <p className="text-darksubtle mb-4">
+                    Udostępnij swój reflink, aby zaprosić nowych użytkowników i sprzedawców.
+                  </p>
+                </div>
+              )}
+            </motion.div>
           </motion.section>
         )}
       </div>

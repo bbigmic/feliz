@@ -7,9 +7,10 @@ interface AuthModalProps {
   isOpen: boolean
   onClose: () => void
   onAuthSuccess?: () => void
+  referrerId?: number // ID sprzedawcy, który zaprosił użytkownika
 }
 
-export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
+export default function AuthModal({ isOpen, onClose, onAuthSuccess, referrerId }: AuthModalProps) {
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -39,7 +40,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
     setLoading(true)
     try {
       const body = mode === 'register'
-        ? { email, password, termsAccepted, marketingAccepted }
+        ? { email, password, termsAccepted, marketingAccepted, referrerId }
         : { email, password }
       const res = await fetch(`/api/auth/${mode}`, {
         method: 'POST',
