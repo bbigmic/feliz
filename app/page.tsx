@@ -328,7 +328,7 @@ export default function Home() {
           </motion.section>
         </div>
         {/* Animowana strzałka przewijająca */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-30 flex flex-col items-center cursor-pointer" onClick={() => {
+        <div className="scroll-arrow absolute bottom-8 left-1/2 transform -translate-x-1/2 z-30 flex-col items-center cursor-pointer" onClick={() => {
           const mainSection = document.getElementById('main-content');
           const header = document.querySelector('header');
           let offset = 0;
