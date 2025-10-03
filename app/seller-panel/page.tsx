@@ -69,6 +69,9 @@ export default function SellerPanel() {
   const [referralStats, setReferralStats] = useState<{ totalReferrals: number, sellerReferrals: number }>({ totalReferrals: 0, sellerReferrals: 0 })
   const [referredUsers, setReferredUsers] = useState<any[]>([])
   const [loadingReferrals, setLoadingReferrals] = useState(false)
+  const [expandedUserId, setExpandedUserId] = useState<number | null>(null)
+  const [userOrders, setUserOrders] = useState<any[]>([])
+  const [loadingUserOrders, setLoadingUserOrders] = useState(false)
 
   // Funkcja pomocnicza do obliczania prowizji dla zamówienia
   const calculateOrderCommission = (order: any) => {
@@ -200,6 +203,32 @@ export default function SellerPanel() {
       toast.error('Błąd pobierania poleceń')
     } finally {
       setLoadingReferrals(false)
+    }
+  }
+
+  // Pobieranie zamówień konkretnego użytkownika
+  const fetchUserOrders = async (userId: number) => {
+    setLoadingUserOrders(true)
+    try {
+      const res = await fetch(`/api/orders?sellerId=${userId}`)
+      const data = await res.json()
+      setUserOrders(data.orders || [])
+    } catch (error) {
+      console.error('Błąd pobierania zamówień użytkownika:', error)
+      toast.error('Błąd pobierania zamówień')
+    } finally {
+      setLoadingUserOrders(false)
+    }
+  }
+
+  // Funkcja do rozwijania/zwijania zamówień użytkownika
+  const toggleUserOrders = (userId: number) => {
+    if (expandedUserId === userId) {
+      setExpandedUserId(null)
+      setUserOrders([])
+    } else {
+      setExpandedUserId(userId)
+      fetchUserOrders(userId)
     }
   }
 
@@ -1375,41 +1404,134 @@ export default function SellerPanel() {
                       <tr className="border-b border-gray-700">
                         <th className="py-3 px-4 font-medium text-darksubtle">Email</th>
                         <th className="py-3 px-4 font-medium text-darksubtle">Rola</th>
+                        <th className="py-3 px-4 font-medium text-darksubtle">Obrót</th>
+                        <th className="py-3 px-4 font-medium text-darksubtle">Zamówienia</th>
                         <th className="py-3 px-4 font-medium text-darksubtle">Data rejestracji</th>
+                        <th className="py-3 px-4 font-medium text-darksubtle">Akcje</th>
                       </tr>
                     </thead>
                     <tbody>
                       {referredUsers.map(referredUser => (
-                        <tr key={referredUser.id} className="border-t border-gray-700 hover:bg-darkbg/60">
-                          <td className="py-3 px-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
-                                {referredUser.email.charAt(0).toUpperCase()}
+                        <>
+                          <tr key={referredUser.id} className="border-t border-gray-700 hover:bg-darkbg/60">
+                            <td className="py-3 px-4">
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                                  {referredUser.email.charAt(0).toUpperCase()}
+                                </div>
+                                <span className="font-medium">{referredUser.email}</span>
                               </div>
-                              <span className="font-medium">{referredUser.email}</span>
-                            </div>
-                          </td>
-                          <td className="py-3 px-4">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              referredUser.role === 'seller' || referredUser.role === 'management' || referredUser.role === 'admin'
-                                ? 'bg-purple-600 text-white' 
-                                : 'bg-gray-600 text-white'
-                            }`}>
-                              {referredUser.role === 'seller' ? 'Sprzedawca' : 
-                               referredUser.role === 'management' ? 'Zarząd' :
-                               referredUser.role === 'admin' ? 'Administrator' : 'Użytkownik'}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4 text-sm text-darksubtle">
-                            {new Date(referredUser.createdAt).toLocaleString('pl-PL', {
-                              year: 'numeric',
-                              month: '2-digit',
-                              day: '2-digit',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </td>
-                        </tr>
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                referredUser.role === 'seller' || referredUser.role === 'management' || referredUser.role === 'admin'
+                                  ? 'bg-purple-600 text-white' 
+                                  : 'bg-gray-600 text-white'
+                              }`}>
+                                {referredUser.role === 'seller' ? 'Sprzedawca' : 
+                                 referredUser.role === 'management' ? 'Zarząd' :
+                                 referredUser.role === 'admin' ? 'Administrator' : 'Użytkownik'}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className="font-bold text-green-400">
+                                {referredUser.revenue?.toLocaleString('pl-PL') || 0} PLN
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-sm text-darksubtle">
+                              {referredUser.ordersCount || 0}
+                            </td>
+                            <td className="py-3 px-4 text-sm text-darksubtle">
+                              {new Date(referredUser.createdAt).toLocaleString('pl-PL', {
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </td>
+                            <td className="py-3 px-4">
+                              {referredUser.ordersCount > 0 && (
+                                <button
+                                  onClick={() => toggleUserOrders(referredUser.id)}
+                                  className="btn-secondary text-xs px-3 py-1"
+                                >
+                                  {expandedUserId === referredUser.id ? 'Ukryj' : 'Zobacz'} zamówienia
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                          
+                          {/* Rozwinięte zamówienia */}
+                          {expandedUserId === referredUser.id && (
+                            <tr>
+                              <td colSpan={6} className="bg-darkbg/80 p-4 border-t border-b border-primary-700">
+                                {loadingUserOrders ? (
+                                  <div className="text-center py-4 text-darksubtle">Ładowanie zamówień...</div>
+                                ) : userOrders.length > 0 ? (
+                                  <div className="space-y-3">
+                                    <h4 className="font-semibold text-darktext mb-3">Zamówienia sprzedawcy</h4>
+                                    {userOrders.map(order => (
+                                      <div key={order.id} className="bg-darkpanel rounded-lg p-3 border border-gray-700">
+                                        <div className="flex flex-wrap items-center justify-between gap-3">
+                                          <div className="flex-1 min-w-[200px]">
+                                            <div className="flex items-center gap-2 mb-1">
+                                              <span className="font-mono text-sm text-primary-400">#{order.id}</span>
+                                              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                                                order.status === 'paid' 
+                                                  ? 'bg-green-900 text-green-300' 
+                                                  : order.status === 'pending'
+                                                  ? 'bg-yellow-900 text-yellow-300'
+                                                  : 'bg-red-900 text-red-300'
+                                              }`}>
+                                                {order.status === 'paid' ? 'Opłacone' : order.status === 'pending' ? 'Oczekujące' : 'Wygasłe'}
+                                              </span>
+                                            </div>
+                                            <p className="text-sm text-darksubtle">
+                                              {order.email || 'Brak email'} • {order.phone || 'Brak telefonu'}
+                                            </p>
+                                          </div>
+                                          
+                                          <div className="flex items-center gap-4">
+                                            <div>
+                                              <p className="text-xs text-darksubtle">Typ</p>
+                                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                                order.orderType === 'consultation' 
+                                                  ? 'bg-blue-600 text-white' 
+                                                  : order.orderType === 'collaboration'
+                                                  ? 'bg-green-600 text-white'
+                                                  : 'bg-purple-600 text-white'
+                                              }`}>
+                                                {order.orderType === 'consultation' ? 'Wycena' : 
+                                                 order.orderType === 'collaboration' ? 'Współpraca' : 'Kod'}
+                                              </span>
+                                            </div>
+                                            
+                                            {order.software && (
+                                              <div>
+                                                <p className="text-xs text-darksubtle">Oprogramowanie</p>
+                                                <p className="text-sm font-medium text-primary-400">{order.software.name}</p>
+                                              </div>
+                                            )}
+                                            
+                                            <div>
+                                              <p className="text-xs text-darksubtle">Data</p>
+                                              <p className="text-sm">
+                                                {new Date(order.createdAt).toLocaleDateString('pl-PL')}
+                                              </p>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="text-center py-4 text-darksubtle">Brak zamówień</div>
+                                )}
+                              </td>
+                            </tr>
+                          )}
+                        </>
                       ))}
                     </tbody>
                   </table>
