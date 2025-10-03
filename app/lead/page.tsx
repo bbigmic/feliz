@@ -55,7 +55,7 @@ function LeadPageContent() {
       const data = await response.json()
 
       if (response.ok) {
-        toast.success('Lead został dodany pomyślnie')
+        toast.success('Zapytanie został wysłane pomyślnie')
         setEmail('')
         setPhone('')
         setInfo('')

@@ -43,7 +43,7 @@ interface Component {
 }
 
 export default function AdminPanel() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'software' | 'users' | 'orders' | 'leads' | 'components' | 'statistics'>('dashboard')
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'software' | 'users' | 'orders' | 'leads' | 'components' | 'statistics' | 'network'>('dashboard')
   const [software, setSoftware] = useState<Software[]>([])
   const [loading, setLoading] = useState(false)
 
@@ -72,6 +72,11 @@ export default function AdminPanel() {
   // Stan dla statystyk
   const [statistics, setStatistics] = useState<any>(null)
   const [loadingStatistics, setLoadingStatistics] = useState(false)
+
+  // Stan dla networku
+  const [networkData, setNetworkData] = useState<any>(null)
+  const [loadingNetwork, setLoadingNetwork] = useState(false)
+  const [expandedUsers, setExpandedUsers] = useState<Set<number>>(new Set())
 
   const [authChecked, setAuthChecked] = useState(false)
   const [showLogin, setShowLogin] = useState(false)
@@ -156,6 +161,34 @@ export default function AdminPanel() {
     }
   }
 
+  // Funkcja pobierająca dane networku
+  const fetchNetwork = async () => {
+    setLoadingNetwork(true)
+    try {
+      const res = await fetch('/api/admin/network')
+      const data = await res.json()
+      if (data.success) {
+        setNetworkData(data)
+      }
+    } catch (error) {
+      console.error('Błąd pobierania danych networku:', error)
+      toast.error('Błąd pobierania danych networku')
+    } finally {
+      setLoadingNetwork(false)
+    }
+  }
+
+  // Funkcja do rozwijania/zwijania użytkownika w drzewie
+  const toggleUserExpansion = (userId: number) => {
+    const newExpanded = new Set(expandedUsers)
+    if (newExpanded.has(userId)) {
+      newExpanded.delete(userId)
+    } else {
+      newExpanded.add(userId)
+    }
+    setExpandedUsers(newExpanded)
+  }
+
   // 6. Funkcja pobierająca użytkowników
   const fetchUsers = async () => {
     setLoadingUsers(true)
@@ -222,6 +255,9 @@ export default function AdminPanel() {
     }
     if (activeTab === 'statistics') {
       fetchStatistics()
+    }
+    if (activeTab === 'network') {
+      fetchNetwork()
     }
   }, [activeTab])
 
@@ -368,6 +404,12 @@ export default function AdminPanel() {
             onClick={() => setActiveTab('statistics')}
           >
             Statystyki
+          </button>
+          <button
+            className={`px-6 py-2 font-medium transition-colors duration-200 border-b-2 ${activeTab === 'network' ? 'border-primary-500 text-primary-500' : 'border-transparent text-darksubtle hover:text-primary-400'}`}
+            onClick={() => setActiveTab('network')}
+          >
+            Network
           </button>
         </div>
 
@@ -1780,6 +1822,174 @@ export default function AdminPanel() {
                   </div>
                 </div>
               </>
+            )}
+          </motion.section>
+        )}
+
+        {/* Network Tab */}
+        {activeTab === 'network' && (
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="space-y-6"
+          >
+            {loadingNetwork ? (
+              <div className="text-center py-12 text-lg text-darksubtle">Ładowanie danych networku...</div>
+            ) : networkData ? (
+              <>
+                {/* Statystyki globalne */}
+                <div className="card">
+                  <h2 className="text-xl font-semibold text-darktext mb-6">Przegląd sieci sprzedaży</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                    <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg p-6 text-white">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-blue-100 text-sm">Użytkownicy</p>
+                          <p className="text-3xl font-bold">{networkData.statistics.totalUsers}</p>
+                        </div>
+                        <Users className="w-8 h-8 text-blue-200" />
+                      </div>
+                    </div>
+                    <div className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-lg p-6 text-white">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-purple-100 text-sm">Sprzedawcy</p>
+                          <p className="text-3xl font-bold">{networkData.statistics.totalSellers}</p>
+                        </div>
+                        <Users className="w-8 h-8 text-purple-200" />
+                      </div>
+                    </div>
+                    <div className="bg-gradient-to-br from-green-600 to-green-700 rounded-lg p-6 text-white">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-green-100 text-sm">Obrót</p>
+                          <p className="text-3xl font-bold">{networkData.statistics.totalRevenue?.toLocaleString('pl-PL')} PLN</p>
+                        </div>
+                        <BarChart3 className="w-8 h-8 text-green-200" />
+                      </div>
+                    </div>
+                    <div className="bg-gradient-to-br from-yellow-600 to-yellow-700 rounded-lg p-6 text-white">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-yellow-100 text-sm">Prowizje własne</p>
+                          <p className="text-3xl font-bold">{networkData.statistics.totalCommissions?.toLocaleString('pl-PL')} PLN</p>
+                        </div>
+                        <Package className="w-8 h-8 text-yellow-200" />
+                      </div>
+                    </div>
+                    <div className="bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-lg p-6 text-white">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-indigo-100 text-sm">Prowizje z zespołu</p>
+                          <p className="text-3xl font-bold">{networkData.statistics.totalTeamCommissions?.toLocaleString('pl-PL')} PLN</p>
+                        </div>
+                        <Users className="w-8 h-8 text-indigo-200" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Lista wszystkich użytkowników z możliwością filtrowania */}
+                <div className="card">
+                  <h3 className="text-lg font-semibold text-darktext mb-4">Wszyscy użytkownicy networku</h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-700">
+                          <th className="py-3 px-4 font-medium text-darksubtle">ID</th>
+                          <th className="py-3 px-4 font-medium text-darksubtle">Email</th>
+                          <th className="py-3 px-4 font-medium text-darksubtle">Imię i Nazwisko</th>
+                          <th className="py-3 px-4 font-medium text-darksubtle">Rola</th>
+                          <th className="py-3 px-4 font-medium text-darksubtle">Level</th>
+                          <th className="py-3 px-4 font-medium text-darksubtle">Referrer</th>
+                          <th className="py-3 px-4 font-medium text-darksubtle">Polecenia</th>
+                          <th className="py-3 px-4 font-medium text-darksubtle">Obrót</th>
+                          <th className="py-3 px-4 font-medium text-darksubtle">Prowizje</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {networkData.users.map((user: any) => (
+                          <tr key={user.id} className="border-t border-gray-700 hover:bg-darkbg/60">
+                            <td className="py-3 px-4 font-mono text-xs text-darksubtle">#{user.id}</td>
+                            <td className="py-3 px-4">
+                              <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                                  {user.email.charAt(0).toUpperCase()}
+                                </div>
+                                <span className="font-medium">{user.email}</span>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4">
+                              {user.firstName || user.lastName 
+                                ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
+                                : '-'}
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                user.role === 'admin' ? 'bg-red-600 text-white' :
+                                user.role === 'management' ? 'bg-orange-600 text-white' :
+                                user.role === 'seller' ? 'bg-purple-600 text-white' :
+                                'bg-gray-600 text-white'
+                              }`}>
+                                {user.role === 'admin' ? 'Admin' :
+                                 user.role === 'management' ? 'Zarząd' :
+                                 user.role === 'seller' ? 'Sprzedawca' : 'User'}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4">
+                              {user.level > 0 && (
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  user.level === 3 ? 'bg-yellow-600 text-white' :
+                                  user.level === 2 ? 'bg-green-600 text-white' :
+                                  'bg-blue-600 text-white'
+                                }`}>
+                                  Level {user.level}
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-3 px-4 text-darksubtle">
+                              {user.referrer 
+                                ? `${user.referrer.email}`
+                                : '-'}
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="flex flex-col">
+                                <span className="font-bold text-primary-400">{user.sellerReferralsCount}</span>
+                                <span className="text-xs text-darksubtle">sprzedawców</span>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className="font-bold text-green-400">
+                                {user.revenue?.toLocaleString('pl-PL')} PLN
+                              </span>
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="flex flex-col">
+                                <span className="font-bold text-green-400">
+                                  {user.commission?.toLocaleString('pl-PL')} PLN
+                                </span>
+                                {user.teamCommission > 0 && (
+                                  <>
+                                    <span className="text-xs text-indigo-400">
+                                      + {user.teamCommission?.toLocaleString('pl-PL')} PLN z zespołu
+                                    </span>
+                                    <span className="text-xs text-darksubtle border-t border-gray-700 pt-1 mt-1">
+                                      = {user.totalEarnings?.toLocaleString('pl-PL')} PLN
+                                    </span>
+                                  </>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-12 text-lg text-darksubtle">Brak danych networku</div>
             )}
           </motion.section>
         )}

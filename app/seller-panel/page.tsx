@@ -1169,7 +1169,7 @@ export default function SellerPanel() {
                     <div className="bg-gradient-to-br from-orange-600 to-orange-700 rounded-lg p-6 text-white">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-orange-100 text-sm">Prowizja ({statistics.commissionRate}%)</p>
+                          <p className="text-orange-100 text-sm">Prowizja z mojej sprzedaży ({statistics.commissionRate}%)</p>
                           <p className="text-3xl font-bold">{statistics.totalCommission?.toLocaleString('pl-PL')} PLN</p>
                         </div>
                         <DollarSign className="w-8 h-8 text-orange-200" />
