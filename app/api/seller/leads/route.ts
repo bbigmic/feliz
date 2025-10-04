@@ -77,17 +77,25 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await checkSellerAuth(request)
-    if (!user) {
-      return NextResponse.json({ error: 'Brak uprawnień' }, { status: 403 })
-    }
-
-    const { email, phone, info, selectedCategory, selectedSoftware } = await request.json()
+    const { email, phone, info, selectedCategory, selectedSoftware, sellerId } = await request.json()
     
-    console.log('Lead creation data:', { email, phone, info, selectedCategory, selectedSoftware, sellerId: user.id })
+    console.log('Lead creation data:', { email, phone, info, selectedCategory, selectedSoftware, sellerId })
     
     if (!email && !phone) {
       return NextResponse.json({ error: 'Email lub telefon jest wymagany' }, { status: 400 })
+    }
+
+    if (!sellerId) {
+      return NextResponse.json({ error: 'ID sprzedawcy jest wymagane' }, { status: 400 })
+    }
+
+    // Sprawdź czy sprzedawca istnieje
+    const seller = await prisma.user.findUnique({
+      where: { id: parseInt(sellerId) }
+    })
+
+    if (!seller) {
+      return NextResponse.json({ error: 'Sprzedawca nie istnieje' }, { status: 400 })
     }
 
     // Tworzymy nowy lead w tabeli Lead
@@ -99,7 +107,7 @@ export async function POST(request: NextRequest) {
         selectedCategory,
         softwareTemplateId: selectedSoftware ? parseInt(selectedSoftware) : null,
         status: 'pending',
-        sellerId: user.id, // Dodajemy sellerId
+        sellerId: parseInt(sellerId), // Używamy sellerId z body zapytania
         createdAt: new Date()
       }
     })

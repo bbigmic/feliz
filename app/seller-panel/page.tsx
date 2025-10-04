@@ -1156,7 +1156,8 @@ export default function SellerPanel() {
                               }`}>
                                 {order.orderType === 'consultation' ? 'Wycena' : 
                                  order.orderType === 'collaboration' ? 'Współpraca' : 
-                                 order.orderType === 'code' ? 'Kod' : order.orderType}
+                                 order.orderType === 'code' ? 'Kod' : 
+                                 order.orderType === 'custom_payment' ? 'Kolejna rata' : order.orderType}
                               </span>
                             </td>
                             <td className="py-3 px-4">
