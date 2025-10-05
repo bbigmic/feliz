@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
@@ -9,6 +9,7 @@ import { ArrowLeft, Send, CheckCircle, Users, Smartphone, Sparkles, LayoutDashbo
 
 function LeadPageContent() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const ref = searchParams.get('ref')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
@@ -80,13 +81,11 @@ function LeadPageContent() {
       const data = await response.json()
 
       if (response.ok) {
-        toast.success('Zapytanie zostało wysłane pomyślnie! Skontaktujemy się z Tobą wkrótce.')
-        setEmail('')
-        setPhone('')
-        setInfo('')
-        setSelectedCategory('')
-        setSelectedSoftware('')
-        setShowSoftwareTemplate(false)
+        toast.success('Zapytanie zostało wysłane pomyślnie!')
+        // Przekierowanie do strony sukcesu po krótkiej przerwie
+        setTimeout(() => {
+          router.push('/lead-success')
+        }, 1000)
       } else {
         // Wyświetl szczegółowy komunikat błędu z API
         if (data.error) {
