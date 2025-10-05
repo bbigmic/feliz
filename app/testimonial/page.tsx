@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Star, Send, CheckCircle, Sparkles, Loader2 } from 'lucide-react'
@@ -9,7 +9,7 @@ import Footer from '@/components/Footer'
 import { useLanguage } from '@/contexts/LanguageContext'
 import DynamicTitle from '@/components/DynamicTitle'
 
-export default function TestimonialPage() {
+function TestimonialContent() {
   const { t, language } = useLanguage()
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -404,5 +404,23 @@ export default function TestimonialPage() {
         <Footer />
       </div>
     </>
+  )
+}
+
+export default function TestimonialPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen relative bg-darkbg">
+        <Header />
+        <main className="container mx-auto px-4 py-24">
+          <div className="text-center py-12">
+            <div className="text-darksubtle">Ładowanie...</div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    }>
+      <TestimonialContent />
+    </Suspense>
   )
 }
