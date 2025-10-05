@@ -529,7 +529,7 @@ export const translations: Record<Language, Translations> = {
       collaborationTitle: 'Dziękujemy za zamówienie współpracy!',
       codeTitle: 'Dziękujemy za zamówienie kodu!',
       consultationDescription: 'Skontaktujemy się z Tobą pod wskazany numer telefonu, aby omówić szczegóły projektu i przygotować wycenę.',
-             collaborationDescription: 'Skontaktujemy się z Tobą w ciągu 24 godzin pod wskazany numer telefonu, aby ustalić dalsze kroki współpracy i harmonogram realizacji projektu.',
+             collaborationDescription: 'Skontaktujemy się z Tobą w przeciągu 3 dni roboczych pod wskazany numer telefonu, aby ustalić dalsze kroki współpracy i harmonogram realizacji projektu.',
        codeDescription: 'Kod z instrukcjami uruchomienia i edycji zostanie dostarczony w ciągu 7 dni roboczych na podany adres email.',
       loading: 'Ładowanie...',
       backToHome: 'Wróć na stronę główną'
@@ -794,8 +794,8 @@ export const translations: Record<Language, Translations> = {
         "leadTimes": {
           "title": "1. Czasy realizacji",
           "items": [
-            "Konsultacje: kontakt w ciągu 24h",
-            "Współpraca: kontakt w ciągu 24h, harmonogram ustalany indywidualnie",
+            "Konsultacje: kontakt w przeciągu 3 dni roboczych",
+            "Współpraca: kontakt w przeciągu 3 dni roboczych, harmonogram ustalany indywidualnie",
             "Kod źródłowy: dostarczenie w ciągu 7 dni roboczych"
           ]
         },
@@ -1090,7 +1090,7 @@ export const translations: Record<Language, Translations> = {
       collaborationTitle: 'Thank you for ordering a collaboration!',
       codeTitle: 'Thank you for ordering a code!',
       consultationDescription: 'We will contact you at the provided phone number to discuss project details and prepare a quote.',
-             collaborationDescription: 'We will contact you within 24 hours at the provided phone number to arrange next collaboration steps and project implementation schedule.',
+             collaborationDescription: 'We will contact you within 3 business days at the provided phone number to arrange next collaboration steps and project implementation schedule.',
        codeDescription: 'Code with installation and editing instructions will be delivered within 7 working days to the provided email address.',
       loading: 'Loading...',
       backToHome: 'Back to homepage'
@@ -1355,8 +1355,8 @@ export const translations: Record<Language, Translations> = {
         "leadTimes": {
           "title": "1. Lead Times",
           "items": [
-            "Consultations: contact within 24h",
-            "Collaboration: contact within 24h, schedule set individually",
+            "Consultations: contact within 3 business days",
+            "Collaboration: contact within 3 business days, schedule set individually",
             "Source code: delivery within 7 business days"
           ]
         },

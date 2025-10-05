@@ -57,7 +57,7 @@ export function createEmailTemplate(content: string, language: 'pl' | 'en' = 'pl
                       <tr>
                         <td style="text-align: center; font-size: 14px; line-height: 1.8; color: #aaaaaa;">
                           <p style="margin: 5px 0;">
-                            📧 <a href="mailto:${process.env.EMAIL_USER || 'contact@feliztradeltd.com'}" style="color: #667eea; text-decoration: none;">${process.env.EMAIL_USER || 'contact@feliztradeltd.com'}</a>
+                            📧 <a href="mailto:${'contact@feliztradeltd.com'}" style="color: #667eea; text-decoration: none;">${'contact@feliztradeltd.com'}</a>
                           </p>
                           <p style="margin: 5px 0;">
                             📞 <a href="tel:+48502600739" style="color: #667eea; text-decoration: none;">+48 502 600 739</a>

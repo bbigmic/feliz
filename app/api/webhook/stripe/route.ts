@@ -191,8 +191,8 @@ export async function POST(request: NextRequest) {
                     ? 'Payment Confirmed - Collaboration Order' 
                     : 'Płatność potwierdzona - Zamówienie współpracy'
                   paymentBody = language === 'en'
-                    ? 'Your collaboration order payment has been confirmed. We will contact you within 24 hours to arrange next steps.'
-                    : 'Płatność za zamówienie współpracy została potwierdzona. Skontaktujemy się z Tobą w ciągu 24 godzin, aby ustalić dalsze kroki.'
+                    ? 'Your collaboration order payment has been confirmed. We will contact you within 3 business days to arrange next steps.'
+                    : 'Płatność za zamówienie współpracy została potwierdzona. Skontaktujemy się z Tobą w przeciągu 3 dni roboczych, aby ustalić dalsze kroki.'
                 } else if (order.orderType === 'code') {
                   paymentSubject = language === 'en' 
                     ? 'Payment Confirmed - Code Order' 

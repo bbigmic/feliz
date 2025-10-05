@@ -44,7 +44,7 @@ export default function LeadSuccessPage() {
             transition={{ delay: 0.4 }}
             className="text-lg text-darksubtle mb-8 max-w-lg mx-auto"
           >
-            Dziękujemy za zainteresowanie naszymi usługami. Nasz zespół skontaktuje się z Tobą w ciągu <span className="text-primary-500 font-semibold">24 godzin</span>, aby omówić szczegóły Twojego projektu.
+            Dziękujemy za zainteresowanie naszymi usługami. Nasz zespół skontaktuje się z Tobą w przeciągu <span className="text-primary-500 font-semibold">3 dni roboczych</span>, aby omówić szczegóły Twojego projektu.
           </motion.p>
 
           {/* Informacje o dalszych krokach */}
@@ -69,7 +69,7 @@ export default function LeadSuccessPage() {
                   2
                 </div>
                 <p className="text-darksubtle text-sm pt-1">
-                  Skontaktujemy się z Tobą telefonicznie lub emailem w ciągu 24h
+                  Skontaktujemy się z Tobą telefonicznie lub emailem w przeciągu 3 dni roboczych
                 </p>
               </div>
               <div className="flex items-start gap-3">

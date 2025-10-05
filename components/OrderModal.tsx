@@ -290,7 +290,7 @@ export default function OrderModal({ isOpen, onClose, productId, userEmail, user
                             {language === 'en' ? 'Collaboration (30% advance)' : 'Współpraca (30% zaliczka)'}
                           </div>
                           <div className="text-sm text-gray-400">
-                            {language === 'en' ? 'We will contact you within 24h to arrange project implementation schedule' : 'Skontaktujemy się w ciągu 24h aby ustalić harmonogram realizacji projektu'}
+                            {language === 'en' ? 'We will contact you within 3 business days to arrange project implementation schedule' : 'Skontaktujemy się w przeciągu 3 dni roboczych aby ustalić harmonogram realizacji projektu'}
                           </div>
                         </div>
                       </label>
