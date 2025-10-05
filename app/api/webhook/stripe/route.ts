@@ -199,6 +199,13 @@ export async function POST(request: NextRequest) {
                   paymentBody = language === 'en'
                     ? 'Your code order payment has been confirmed. Code with instructions will be delivered within 7 working days.'
                     : 'Płatność za zamówienie kodu została potwierdzona. Kod z instrukcjami zostanie dostarczony w ciągu 7 dni roboczych.'
+                } else if (order.orderType === 'custom_payment') {
+                  paymentSubject = language === 'en' 
+                    ? 'Payment Confirmed - Installment Payment' 
+                    : 'Płatność potwierdzona - Kolejna rata'
+                  paymentBody = language === 'en'
+                    ? 'Your installment payment has been confirmed. Thank you for your payment.'
+                    : 'Płatność kolejnej raty została potwierdzona. Dziękujemy za wpłatę.'
                 }
 
                 const paymentEmailText = `${greeting}!
@@ -207,7 +214,7 @@ ${paymentBody}
 
 ${language === 'en' ? 'Order Details' : 'Szczegóły zamówienia'}:
 ${language === 'en' ? 'Order ID' : 'ID zamówienia'}: ${order.id}
-${language === 'en' ? 'Order Type' : 'Typ zamówienia'}: ${order.orderType === 'consultation' ? (language === 'en' ? 'Consultation/Quote' : 'Konsultacja/Wycena') : order.orderType === 'collaboration' ? (language === 'en' ? 'Collaboration' : 'Współpraca') : (language === 'en' ? 'Code' : 'Kod')}
+${language === 'en' ? 'Order Type' : 'Typ zamówienia'}: ${order.orderType === 'consultation' ? (language === 'en' ? 'Consultation/Quote' : 'Konsultacja/Wycena') : order.orderType === 'collaboration' ? (language === 'en' ? 'Collaboration' : 'Współpraca') : order.orderType === 'code' ? (language === 'en' ? 'Code' : 'Kod') : order.orderType === 'custom_payment' ? (language === 'en' ? 'Installment Payment' : 'Kolejna rata') : order.orderType}
 ${language === 'en' ? 'Phone' : 'Telefon'}: ${order.phone}
 
 ${language === 'en' ? 'Contact Information' : 'Informacje kontaktowe'}:
@@ -300,7 +307,7 @@ ${expiredBody}
 
 ${language === 'en' ? 'Order Details' : 'Szczegóły zamówienia'}:
 ${language === 'en' ? 'Order ID' : 'ID zamówienia'}: ${expiredOrder.id}
-${language === 'en' ? 'Order Type' : 'Typ zamówienia'}: ${expiredOrder.orderType === 'consultation' ? (language === 'en' ? 'Consultation/Quote' : 'Konsultacja/Wycena') : expiredOrder.orderType === 'collaboration' ? (language === 'en' ? 'Collaboration' : 'Współpraca') : (language === 'en' ? 'Code' : 'Kod')}
+${language === 'en' ? 'Order Type' : 'Typ zamówienia'}: ${expiredOrder.orderType === 'consultation' ? (language === 'en' ? 'Consultation/Quote' : 'Konsultacja/Wycena') : expiredOrder.orderType === 'collaboration' ? (language === 'en' ? 'Collaboration' : 'Współpraca') : expiredOrder.orderType === 'code' ? (language === 'en' ? 'Code' : 'Kod') : expiredOrder.orderType === 'custom_payment' ? (language === 'en' ? 'Installment Payment' : 'Kolejna rata') : expiredOrder.orderType}
 
 ${language === 'en' ? 'To complete your order, please visit' : 'Aby dokończyć zamówienie, odwiedź'}: https://feliztradeltd.com
 
