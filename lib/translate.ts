@@ -20,8 +20,16 @@ export async function translateToEnglish(text: string): Promise<string> {
     const data = await response.json();
     
     // Google Translate zwraca tablicę z tłumaczeniami
-    if (data && data[0] && data[0][0] && data[0][0][0]) {
-      return data[0][0][0];
+    // data[0] to tablica fragmentów tłumaczenia
+    if (data && data[0] && Array.isArray(data[0])) {
+      // Łączymy wszystkie fragmenty tłumaczenia
+      const translatedFragments = data[0]
+        .filter((fragment: any) => fragment && fragment[0]) // Filtrujemy tylko fragmenty z tekstem
+        .map((fragment: any) => fragment[0]) // Bierzemy przetłumaczony tekst
+      
+      if (translatedFragments.length > 0) {
+        return translatedFragments.join(''); // Łączymy wszystkie fragmenty
+      }
     }
     
     return text; // Fallback do oryginalnego tekstu

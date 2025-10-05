@@ -12,7 +12,8 @@ import {
   Users,
   Package,
   File,
-  Download
+  Download,
+  MessageSquare
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import SoftwareFormModal from '@/components/SoftwareFormModal'
@@ -43,7 +44,7 @@ interface Component {
 }
 
 export default function AdminPanel() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'software' | 'users' | 'orders' | 'leads' | 'components' | 'statistics' | 'network'>('dashboard')
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'software' | 'users' | 'orders' | 'leads' | 'components' | 'statistics' | 'network' | 'testimonials'>('dashboard')
   const [software, setSoftware] = useState<Software[]>([])
   const [loading, setLoading] = useState(false)
 
@@ -86,6 +87,10 @@ export default function AdminPanel() {
   const [loadingSellerDetails, setLoadingSellerDetails] = useState(false)
   const [networkSearchTerm, setNetworkSearchTerm] = useState('')
 
+  // Stan dla testimonials
+  const [testimonials, setTestimonials] = useState<any[]>([])
+  const [loadingTestimonials, setLoadingTestimonials] = useState(false)
+
   const [authChecked, setAuthChecked] = useState(false)
   const [showLogin, setShowLogin] = useState(false)
   const [user, setUser] = useState<{ email: string; isAdmin: boolean } | null>(null)
@@ -96,6 +101,68 @@ export default function AdminPanel() {
   const [leadsPage, setLeadsPage] = useState(1)
   const [networkPage, setNetworkPage] = useState(1)
   const ITEMS_PER_PAGE = 50
+
+  const copyTestimonialLink = (softwareId: number) => {
+    const link = `${window.location.origin}/testimonial?software=${softwareId}`
+    navigator.clipboard.writeText(link)
+    toast.success('Link do formularza opinii skopiowany!')
+  }
+
+  const fetchTestimonials = async () => {
+    setLoadingTestimonials(true)
+    try {
+      const res = await fetch('/api/admin/testimonials')
+      const data = await res.json()
+      if (data.testimonials) {
+        setTestimonials(data.testimonials)
+      }
+    } catch (error) {
+      console.error('Błąd pobierania opinii:', error)
+      toast.error('Błąd pobierania opinii')
+    } finally {
+      setLoadingTestimonials(false)
+    }
+  }
+
+  const handleApproveTestimonial = async (id: number, isApproved: boolean) => {
+    try {
+      const res = await fetch('/api/admin/testimonials', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, isApproved })
+      })
+      
+      if (res.ok) {
+        toast.success(isApproved ? 'Opinia zatwierdzona!' : 'Opinia odrzucona!')
+        fetchTestimonials()
+      } else {
+        toast.error('Błąd aktualizacji opinii')
+      }
+    } catch (error) {
+      console.error('Błąd aktualizacji opinii:', error)
+      toast.error('Błąd aktualizacji opinii')
+    }
+  }
+
+  const handleDeleteTestimonial = async (id: number) => {
+    if (!confirm('Czy na pewno chcesz usunąć tę opinię?')) return
+    
+    try {
+      const res = await fetch(`/api/admin/testimonials?id=${id}`, {
+        method: 'DELETE'
+      })
+      
+      if (res.ok) {
+        toast.success('Opinia usunięta!')
+        fetchTestimonials()
+      } else {
+        toast.error('Błąd usuwania opinii')
+      }
+    } catch (error) {
+      console.error('Błąd usuwania opinii:', error)
+      toast.error('Błąd usuwania opinii')
+    }
+  }
 
   const downloadFile = (url: string, filename: string) => {
     fetch(url)
@@ -524,6 +591,12 @@ export default function AdminPanel() {
             onClick={() => setActiveTab('network')}
           >
             Network
+          </button>
+          <button
+            className={`px-6 py-2 font-medium transition-colors duration-200 border-b-2 ${activeTab === 'testimonials' ? 'border-primary-500 text-primary-500' : 'border-transparent text-darksubtle hover:text-primary-400'}`}
+            onClick={() => { setActiveTab('testimonials'); fetchTestimonials() }}
+          >
+            Opinie
           </button>
           </div>
           
@@ -1003,6 +1076,13 @@ export default function AdminPanel() {
                           >
                             {item.status === 'active' ? 'Dezaktywuj' : 'Aktywuj'}
                           </button>
+                          <button 
+                            onClick={() => copyTestimonialLink(item.id)} 
+                            className="bg-blue-700 hover:bg-blue-800 text-white rounded-lg px-2 py-2 text-xs flex items-center gap-1"
+                            title="Kopiuj link do formularza opinii"
+                          >
+                            <MessageSquare className="w-3 h-3" />
+                          </button>
                           <button onClick={async () => { if (confirm('Czy na pewno chcesz usunąć to oprogramowanie?')) { await fetch(`/api/admin/softwares?id=${item.id}`, { method: 'DELETE' }); fetchSoftwares(); } }} className="bg-red-700 hover:bg-red-800 text-white rounded-lg px-2 py-2 text-xs">Usuń</button>
                         </div>
                       </div>
@@ -1062,6 +1142,13 @@ export default function AdminPanel() {
                               <div className="flex space-x-2">
                                 <button onClick={() => { setSoftwareToEdit(item); setIsEditModalOpen(true) }} className="text-primary-500 hover:text-primary-300 p-1" title="Edytuj"><Edit className="w-4 h-4" /></button>
                                 <button onClick={() => window.open(item.demoUrl, '_blank')} className="text-green-400 hover:text-green-300 p-1" title="Zobacz demo"><Eye className="w-4 h-4" /></button>
+                                <button 
+                                  onClick={() => copyTestimonialLink(item.id)} 
+                                  className="text-blue-400 hover:text-blue-300 p-1" 
+                                  title="Kopiuj link do formularza opinii"
+                                >
+                                  <MessageSquare className="w-4 h-4" />
+                                </button>
                                 <button 
                                   onClick={() => handleStatusToggle(item.id, item.status)} 
                                   className={`p-1 ${item.status === 'active' ? 'text-orange-400 hover:text-orange-300' : 'text-green-400 hover:text-green-300'}`} 
@@ -2802,6 +2889,160 @@ export default function AdminPanel() {
             )}
           </motion.section>
         )}
+              {/* Testimonials Section */}
+      {activeTab === 'testimonials' && (
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="card"
+        >
+          <h2 className="text-xl font-bold mb-6">Zarządzanie opiniami</h2>
+          
+          {loadingTestimonials ? (
+            <div className="text-center py-12 text-lg text-darksubtle">Ładowanie opinii...</div>
+          ) : testimonials.length === 0 ? (
+            <div className="text-center py-12 text-darksubtle">
+              <MessageSquare className="w-16 h-16 mx-auto mb-4 opacity-50" />
+              <p>Brak opinii do wyświetlenia</p>
+            </div>
+          ) : (
+            <>
+              {/* Mobile: karty */}
+              <div className="grid grid-cols-1 gap-4 sm:hidden">
+                {testimonials.map((item) => (
+                  <div key={item.id} className="bg-darkpanel p-4 rounded-lg border border-gray-800">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <p className="font-semibold text-white">{item.name}</p>
+                        {item.position && (
+                          <p className="text-xs text-darksubtle italic">{item.position}</p>
+                        )}
+                        <p className="text-sm text-darksubtle">{item.software.name}</p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {[...Array(5)].map((_, i) => (
+                          <span key={i} className={`text-lg ${i < item.rating ? 'text-yellow-400' : 'text-gray-600'}`}>★</span>
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-sm text-darktext mb-2 italic">"{item.comment}"</p>
+                    {item.commentEn && (
+                      <p className="text-xs text-darksubtle mb-3 italic">EN: "{item.commentEn}"</p>
+                    )}
+                    <div className="flex items-center justify-between mb-3">
+                      <span className={`px-2 py-1 rounded-full text-xs ${item.isApproved ? 'bg-green-900 text-green-300' : 'bg-orange-900 text-orange-300'}`}>
+                        {item.isApproved ? 'Zatwierdzona' : 'Oczekuje'}
+                      </span>
+                      <span className="text-xs text-darksubtle">{new Date(item.createdAt).toLocaleDateString('pl-PL')}</span>
+                    </div>
+                    <div className="flex gap-2">
+                      {!item.isApproved && (
+                        <button
+                          onClick={() => handleApproveTestimonial(item.id, true)}
+                          className="btn-primary flex-1 py-2 text-xs"
+                        >
+                          Zatwierdź
+                        </button>
+                      )}
+                      {item.isApproved && (
+                        <button
+                          onClick={() => handleApproveTestimonial(item.id, false)}
+                          className="bg-orange-700 hover:bg-orange-800 text-white rounded-lg flex-1 py-2 text-xs"
+                        >
+                          Cofnij zatwierdzenie
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleDeleteTestimonial(item.id)}
+                        className="bg-red-700 hover:bg-red-800 text-white rounded-lg px-4 py-2 text-xs"
+                      >
+                        Usuń
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop: tabela */}
+              <div className="overflow-x-auto hidden sm:block">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-gray-800">
+                      <th className="text-left py-3 px-4 font-medium text-darksubtle">Autor</th>
+                      <th className="text-left py-3 px-4 font-medium text-darksubtle">Oprogramowanie</th>
+                      <th className="text-left py-3 px-4 font-medium text-darksubtle">Ocena</th>
+                      <th className="text-left py-3 px-4 font-medium text-darksubtle">Komentarz</th>
+                      <th className="text-left py-3 px-4 font-medium text-darksubtle">Data</th>
+                      <th className="text-left py-3 px-4 font-medium text-darksubtle">Status</th>
+                      <th className="text-left py-3 px-4 font-medium text-darksubtle">Akcje</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {testimonials.map((item) => (
+                      <tr key={item.id} className="border-b border-gray-900 hover:bg-darkbg/60">
+                        <td className="py-4 px-4">
+                          <p className="font-medium text-darktext">{item.name}</p>
+                          {item.position && <p className="text-xs text-darksubtle italic">{item.position}</p>}
+                          {item.email && <p className="text-xs text-darksubtle">{item.email}</p>}
+                        </td>
+                        <td className="py-4 px-4 text-darksubtle">{item.software.name}</td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-1">
+                            {[...Array(5)].map((_, i) => (
+                              <span key={i} className={`${i < item.rating ? 'text-yellow-400' : 'text-gray-600'}`}>★</span>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <p className="text-sm text-darktext italic mb-1">"{item.comment.substring(0, 100)}{item.comment.length > 100 ? '...' : ''}"</p>
+                          {item.commentEn && (
+                            <p className="text-xs text-darksubtle italic">EN: "{item.commentEn.substring(0, 100)}{item.commentEn.length > 100 ? '...' : ''}"</p>
+                          )}
+                        </td>
+                        <td className="py-4 px-4 text-darksubtle text-sm">{new Date(item.createdAt).toLocaleDateString('pl-PL')}</td>
+                        <td className="py-4 px-4">
+                          <span className={`px-2 py-1 rounded-full text-xs ${item.isApproved ? 'bg-green-900 text-green-300 border border-green-800' : 'bg-orange-900 text-orange-300 border border-orange-800'}`}>
+                            {item.isApproved ? 'Zatwierdzona' : 'Oczekuje'}
+                          </span>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex space-x-2">
+                            {!item.isApproved ? (
+                              <button
+                                onClick={() => handleApproveTestimonial(item.id, true)}
+                                className="text-green-400 hover:text-green-300 p-1"
+                                title="Zatwierdź"
+                              >
+                                ✓
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => handleApproveTestimonial(item.id, false)}
+                                className="text-orange-400 hover:text-orange-300 p-1"
+                                title="Cofnij zatwierdzenie"
+                              >
+                                ↩
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleDeleteTestimonial(item.id)}
+                              className="text-red-400 hover:text-red-300 p-1"
+                              title="Usuń"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+        </motion.section>
+      )}
       </div>
 
       {/* Edit Modal */}
@@ -3091,6 +3332,8 @@ export default function AdminPanel() {
           </motion.div>
         </div>
       )}
+
+
     </div>
   )
 } 

@@ -17,6 +17,7 @@ import Footer from '@/components/Footer'
 import OrderModal from '@/components/OrderModal'
 import SoftwareGalleryModal from '@/components/SoftwareGalleryModal'
 import Preloader from '@/components/Preloader'
+import TestimonialsSection from '@/components/TestimonialsSection'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { formatPrice } from '@/lib/i18n'
 import DynamicTitle from '@/components/DynamicTitle'
@@ -541,6 +542,10 @@ export default function Home() {
             </div>
           </div>
         </section>
+        
+        {/* Sekcja opinii klientów */}
+        <TestimonialsSection />
+        
         <Footer />
       </div>
       <OrderModal

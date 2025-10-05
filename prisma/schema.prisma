@@ -85,6 +85,7 @@ model Software {
   nameEn        String?
   images        SoftwareImage[]
   leads         Lead[]          // Relacja do leadów używających tego szablonu
+  testimonials  Testimonial[]   // Relacja do opinii
 }
 
 model SoftwareImage {
@@ -117,4 +118,19 @@ model Lead {
   selectedCategory    String?
   softwareTemplateId  Int?     // Id wybranego szablonu oprogramowania
   softwareTemplate    Software? @relation(fields: [softwareTemplateId], references: [id])
+}
+
+model Testimonial {
+  id          Int      @id @default(autoincrement())
+  softwareId  Int
+  software    Software @relation(fields: [softwareId], references: [id])
+  name        String   // Imię osoby dodającej opinię
+  position    String?  // Stanowisko (opcjonalnie)
+  positionEn  String?  // Stanowisko po angielsku (automatycznie tłumaczony)
+  email       String?  // Email (opcjonalnie)
+  rating      Int      // 1-5 gwiazdek
+  comment     String   // Komentarz po polsku
+  commentEn   String?  // Komentarz po angielsku (automatycznie tłumaczony)
+  isApproved  Boolean  @default(false) // Moderacja opinii
+  createdAt   DateTime @default(now())
 }

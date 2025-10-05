@@ -428,6 +428,34 @@ export interface Translations {
     regulamin: string
     orderSuccess: string
   }
+
+  // Testimonials section
+  testimonials: {
+    sectionTitle: string
+    sectionSubtitle: string
+    noReviews: string
+    loadingReviews: string
+    addReviewCTA: string
+    // Testimonial page
+    pageTitle: string
+    pageSubtitle: string
+    formName: string
+    formEmail: string
+    formPosition: string
+    formRating: string
+    formComment: string
+    formSubmit: string
+    formCancel: string
+    formSubmitting: string
+    selectedRating: string
+    ratingStars: string
+    autoTranslateNote: string
+    successTitle: string
+    successMessage: string
+    backToHome: string
+    softwareIdRequired: string
+    aboutSoftware: string
+  }
 }
 
 export const translations: Record<Language, Translations> = {
@@ -584,10 +612,36 @@ export const translations: Record<Language, Translations> = {
       loading: 'Ładowanie...'
     },
     pageTitles: {
-       home: 'Budowanie aplikacji | FelizTrade - Platforma Zakupu Oprogramowań',
-       about: 'O nas',
-       regulamin: 'Regulamin',
-       orderSuccess: 'Dziękujemy za zamówienie wyceny/konsultacji!'
+      home: 'Budowanie aplikacji | FelizTrade - Platforma Zakupu Oprogramowań',
+      about: 'O nas',
+      regulamin: 'Regulamin',
+      orderSuccess: 'Dziękujemy za zamówienie wyceny/konsultacji!'
+    },
+    testimonials: {
+      sectionTitle: 'Co mówią nasi klienci',
+      sectionSubtitle: 'Przeczytaj opinie naszych zadowolonych klientów, którzy skorzystali z naszych rozwiązań.',
+      noReviews: 'Brak opinii',
+      loadingReviews: 'Ładowanie opinii...',
+      addReviewCTA: 'Korzystałeś z naszego oprogramowania? Podziel się swoim doświadczeniem!',
+      // Testimonial page
+      pageTitle: 'Dodaj swoją opinię',
+      pageSubtitle: 'Podziel się swoim doświadczeniem',
+      formName: 'Twoje imię',
+      formEmail: 'Email (opcjonalnie)',
+      formPosition: 'Stanowisko (opcjonalnie)',
+      formRating: 'Twoja ocena',
+      formComment: 'Twoja opinia',
+      formSubmit: 'Wyślij opinię',
+      formCancel: 'Anuluj',
+      formSubmitting: 'Wysyłanie...',
+      selectedRating: 'Wybrana ocena',
+      ratingStars: 'gwiazdek',
+      autoTranslateNote: 'Twoja opinia zostanie automatycznie przetłumaczona na angielski.',
+      successTitle: 'Dziękujemy za opinię!',
+      successMessage: 'Twoja opinia została przesłana i oczekuje na moderację.',
+      backToHome: 'Wróć do strony głównej',
+      softwareIdRequired: 'Brak ID oprogramowania',
+      aboutSoftware: 'Opinia o:'
     },
     "regulamin": {
       "meta": {
@@ -1149,6 +1203,32 @@ export const translations: Record<Language, Translations> = {
        about: 'About',
        regulamin: 'Terms and Conditions',
        orderSuccess: 'Thank you for ordering a quote/consultation!'
+     },
+     testimonials: {
+       sectionTitle: 'What Our Clients Say',
+       sectionSubtitle: 'Read reviews from our satisfied customers who have used our software solutions.',
+       noReviews: 'No reviews',
+       loadingReviews: 'Loading reviews...',
+       addReviewCTA: 'Have you used our software? Share your experience!',
+       // Testimonial page
+       pageTitle: 'Add Your Review',
+       pageSubtitle: 'Share your experience',
+       formName: 'Your name',
+       formEmail: 'Email (optional)',
+       formPosition: 'Position (optional)',
+       formRating: 'Your rating',
+       formComment: 'Your review',
+       formSubmit: 'Submit Review',
+       formCancel: 'Cancel',
+       formSubmitting: 'Submitting...',
+       selectedRating: 'Selected rating',
+       ratingStars: 'stars',
+       autoTranslateNote: 'Your review will be automatically translated to English.',
+       successTitle: 'Thank you for your review!',
+       successMessage: 'Your review has been submitted and is awaiting moderation.',
+       backToHome: 'Back to home',
+       softwareIdRequired: 'Software ID is required',
+       aboutSoftware: 'About:'
      },
      "regulamin": {
       "meta": {
