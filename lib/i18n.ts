@@ -607,7 +607,7 @@ export const translations: Record<Language, Translations> = {
         },
         "companyName": "Feliz Trade LTD",
         "address": "Preston, Lancashire, United Kingdom",
-        "email": "FelizTradeLTD@proton.me",
+        "email": "contact@feliztradeltd.com",
         "phone": "+48 502 600 739",
         "regNumber": "16008964",
         "website": "https://feliztradeltd.com"
@@ -978,7 +978,7 @@ export const translations: Record<Language, Translations> = {
           "address": "Adres:",
           "website": "Strona:"
         },
-        "email": "FelizTradeLTD@proton.me",
+        "email": "contact@feliztradeltd.com",
         "phone": "+48 502 600 739",
         "address": "Preston, Lancashire, United Kingdom",
         "website": "https://feliztradeltd.com"
@@ -1168,7 +1168,7 @@ export const translations: Record<Language, Translations> = {
         },
         "companyName": "Feliz Trade LTD",
         "address": "Preston, Lancashire, United Kingdom",
-        "email": "FelizTradeLTD@proton.me",
+        "email": "contact@feliztradeltd.com",
         "phone": "+48 502 600 739",
         "regNumber": "16008964",
         "website": "https://feliztradeltd.com"
@@ -1539,7 +1539,7 @@ export const translations: Record<Language, Translations> = {
           "address": "Address:",
           "website": "Website:"
         },
-        "email": "FelizTradeLTD@proton.me",
+        "email": "contact@feliztradeltd.com",
         "phone": "+48 502 600 739",
         "address": "Preston, Lancashire, United Kingdom",
         "website": "https://feliztradeltd.com"

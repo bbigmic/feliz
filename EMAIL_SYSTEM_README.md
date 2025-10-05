@@ -199,7 +199,7 @@ case 'checkout.session.expired':
 4. **Sprawdź foldery spam** klientów
 
 ### **Kontakt**
-- **Email**: feliztradeltd@proton.me
+- **Email**: contact@feliztradeltd.com
 - **Website**: https://feliztradeltd.com
 
 ---

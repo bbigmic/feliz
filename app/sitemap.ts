@@ -4,7 +4,7 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://feliztrade.com'
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://feliztradeltd.com'
 
   // Pobierz wszystkie aktywne oprogramowania
   const softwares = await prisma.software.findMany({

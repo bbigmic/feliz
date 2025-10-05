@@ -95,18 +95,18 @@ export default function LeadSuccessPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
-                href="mailto:kontakt@feliztrade.com"
+                href="mailto:contact@feliztradeltd.com"
                 className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors"
               >
                 <Mail className="w-4 h-4" />
-                <span className="text-sm">kontakt@feliztrade.com</span>
+                <span className="text-sm">contact@feliztradeltd.com</span>
               </a>
               <a
-                href="tel:+48123456789"
+                href="tel:+48502600739"
                 className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors"
               >
                 <Phone className="w-4 h-4" />
-                <span className="text-sm">+48 123 456 789</span>
+                <span className="text-sm">+48 502 600 739</span>
               </a>
             </div>
           </motion.div>
