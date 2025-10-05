@@ -48,6 +48,24 @@ const copyPaymentLinkToClipboard = (link: string) => {
   toast.success('Link płatności skopiowany do schowka!')
 }
 
+// Funkcja do pobierania i kopiowania linku płatności dla zamówienia
+const copyOrderPaymentLink = async (orderId: number) => {
+  try {
+    const res = await fetch(`/api/orders/payment-url?orderId=${orderId}`)
+    const data = await res.json()
+    
+    if (res.ok && data.paymentUrl) {
+      navigator.clipboard.writeText(data.paymentUrl)
+      toast.success('Link płatności skopiowany do schowka!')
+    } else {
+      toast.error(data.error || 'Nie można pobrać linku płatności')
+    }
+  } catch (error) {
+    console.error('Error fetching payment URL:', error)
+    toast.error('Błąd pobierania linku płatności')
+  }
+}
+
 export default function SellerPanel() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'orders' | 'leads' | 'statistics' | 'network'>('dashboard')
   const [orders, setOrders] = useState<any[]>([])
@@ -84,10 +102,21 @@ export default function SellerPanel() {
     amount: '',
     description: '',
     customerEmail: '',
-    customerPhone: ''
+    customerPhone: '',
+    selectedLeadId: ''
   })
   const [generatedPaymentLink, setGeneratedPaymentLink] = useState<string | null>(null)
   const [generatingPaymentLink, setGeneratingPaymentLink] = useState(false)
+  const [leadsForPaymentLink, setLeadsForPaymentLink] = useState<any[]>([])
+  const [loadingLeadsForPaymentLink, setLoadingLeadsForPaymentLink] = useState(false)
+  const [leadSearchForPaymentLink, setLeadSearchForPaymentLink] = useState('')
+  const [isLeadDropdownOpen, setIsLeadDropdownOpen] = useState(false)
+  
+  // Paginacja
+  const [ordersPage, setOrdersPage] = useState(1)
+  const [leadsPage, setLeadsPage] = useState(1)
+  const [networkPage, setNetworkPage] = useState(1)
+  const ITEMS_PER_PAGE = 50
 
   // Funkcja pomocnicza do obliczania prowizji dla zamówienia
   const calculateOrderCommission = (order: any) => {
@@ -253,14 +282,21 @@ export default function SellerPanel() {
   // Funkcja do generowania linku płatności
   const handleGeneratePaymentLink = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    const amount = parseFloat(paymentLinkData.amount)
+    if (isNaN(amount) || amount <= 0) {
+      toast.error('Wprowadź poprawną kwotę')
+      return
+    }
+
+    if (!paymentLinkData.selectedLeadId) {
+      toast.error('Wybierz leada z listy')
+      return
+    }
+
     setGeneratingPaymentLink(true)
     
     try {
-      const amount = parseFloat(paymentLinkData.amount)
-      if (isNaN(amount) || amount <= 0) {
-        toast.error('Wprowadź poprawną kwotę')
-        return
-      }
 
       const res = await fetch('/api/seller/payment-links', {
         method: 'POST',
@@ -289,16 +325,63 @@ export default function SellerPanel() {
     }
   }
 
+  // Funkcja do pobierania leadów dla generowania linku płatności
+  const fetchLeadsForPaymentLink = async () => {
+    setLoadingLeadsForPaymentLink(true)
+    try {
+      const res = await fetch('/api/seller/leads?status=all')
+      if (res.ok) {
+        const data = await res.json()
+        // Filtruj tylko leady z emailem
+        const leadsWithEmail = data.leads.filter((lead: any) => lead.email && lead.email.trim() !== '')
+        setLeadsForPaymentLink(leadsWithEmail)
+      } else {
+        toast.error('Błąd pobierania leadów')
+      }
+    } catch (error) {
+      console.error('Error fetching leads for payment link:', error)
+      toast.error('Błąd pobierania leadów')
+    } finally {
+      setLoadingLeadsForPaymentLink(false)
+    }
+  }
+
+  // Funkcja obsługująca wybór leada
+  const handleLeadSelection = (lead: any) => {
+    setPaymentLinkData({
+      ...paymentLinkData,
+      selectedLeadId: lead.id.toString(),
+      customerEmail: lead.email || '',
+      customerPhone: lead.phone || ''
+    })
+    setLeadSearchForPaymentLink(lead.email || '')
+    setIsLeadDropdownOpen(false)
+  }
+
+  // Funkcja filtrująca leady na podstawie wyszukiwania
+  const filteredLeadsForPaymentLink = leadsForPaymentLink.filter((lead) => {
+    if (!leadSearchForPaymentLink) return true
+    const searchLower = leadSearchForPaymentLink.toLowerCase()
+    return (
+      lead.email?.toLowerCase().includes(searchLower) ||
+      lead.phone?.toLowerCase().includes(searchLower) ||
+      lead.info?.toLowerCase().includes(searchLower)
+    )
+  })
+
   // Funkcja do resetowania formularza generowania linku
   const resetPaymentLinkForm = () => {
     setPaymentLinkData({
       amount: '',
       description: '',
       customerEmail: '',
-      customerPhone: ''
+      customerPhone: '',
+      selectedLeadId: ''
     })
     setGeneratedPaymentLink(null)
     setIsPaymentLinkModalOpen(false)
+    setLeadSearchForPaymentLink('')
+    setIsLeadDropdownOpen(false)
   }
 
   useEffect(() => {
@@ -309,15 +392,18 @@ export default function SellerPanel() {
       }
       if (activeTab === 'orders') {
         fetchOrders()
+        setOrdersPage(1)
       }
       if (activeTab === 'statistics') {
         fetchStatistics()
       }
       if (activeTab === 'leads') {
         fetchLeads()
+        setLeadsPage(1)
       }
       if (activeTab === 'network') {
         fetchReferrals()
+        setNetworkPage(1)
       }
     }
   }, [activeTab, user])
@@ -347,6 +433,43 @@ export default function SellerPanel() {
     }
   }, [leadSearchTerm, leadStatusFilter])
 
+  // Resetowanie paginacji przy zmianie filtrów
+  useEffect(() => {
+    setOrdersPage(1)
+  }, [searchTerm, orderFilter])
+
+  useEffect(() => {
+    setLeadsPage(1)
+  }, [leadSearchTerm, leadStatusFilter])
+
+  useEffect(() => {
+    setNetworkPage(1)
+  }, [referredUsers.length])
+
+  // Effect dla pobierania leadów przy otwieraniu modala generowania linku płatności
+  useEffect(() => {
+    if (isPaymentLinkModalOpen && user) {
+      fetchLeadsForPaymentLink()
+    }
+  }, [isPaymentLinkModalOpen, user])
+
+  // Effect dla zamykania dropdownu gdy kliknięto poza nim
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      if (isLeadDropdownOpen && !target.closest('.lead-dropdown-container')) {
+        setIsLeadDropdownOpen(false)
+      }
+    }
+
+    if (isLeadDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside)
+      }
+    }
+  }, [isLeadDropdownOpen])
+
   if (!authChecked) {
     return <div className="min-h-screen flex items-center justify-center text-darksubtle">Sprawdzanie uprawnień...</div>
   }
@@ -372,6 +495,27 @@ export default function SellerPanel() {
       order.phone?.includes(searchTerm) ||
       order.id.toString().includes(searchTerm)
     )
+
+  // Paginacja zamówień
+  const totalOrdersPages = Math.ceil(filteredOrders.length / ITEMS_PER_PAGE)
+  const paginatedOrders = filteredOrders.slice(
+    (ordersPage - 1) * ITEMS_PER_PAGE,
+    ordersPage * ITEMS_PER_PAGE
+  )
+
+  // Paginacja leadów
+  const totalLeadsPages = Math.ceil(leads.length / ITEMS_PER_PAGE)
+  const paginatedLeads = leads.slice(
+    (leadsPage - 1) * ITEMS_PER_PAGE,
+    leadsPage * ITEMS_PER_PAGE
+  )
+
+  // Paginacja network
+  const totalNetworkPages = Math.ceil(referredUsers.length / ITEMS_PER_PAGE)
+  const paginatedReferredUsers = referredUsers.slice(
+    (networkPage - 1) * ITEMS_PER_PAGE,
+    networkPage * ITEMS_PER_PAGE
+  )
 
   // Dashboard metryki są teraz pobierane z API statistics zamiast obliczane lokalnie
 
@@ -703,7 +847,7 @@ export default function SellerPanel() {
                 <div className="text-center py-8 text-darksubtle">Ładowanie...</div>
               ) : orders.length > 0 ? (
                 <div className="space-y-3">
-                  {orders.slice(0, 8).map((order) => {
+                  {orders.slice(0, 5).map((order) => {
                     const commission = calculateOrderCommission(order)
                     return (
                     <div key={order.id} className="flex items-center justify-between p-3 bg-darkbg rounded-lg">
@@ -1028,7 +1172,7 @@ export default function SellerPanel() {
               <>
                 {/* Mobile: karty */}
                 <div className="flex flex-col gap-4 sm:hidden">
-                  {filteredOrders.map(order => (
+                  {paginatedOrders.map(order => (
                     <div key={order.id} className="bg-darkbg rounded-xl shadow-lg p-4 border border-gray-800">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-3">
@@ -1094,11 +1238,25 @@ export default function SellerPanel() {
                       {/* Rozszerzone szczegóły */}
                       {expandedOrderId === order.id && (
                         <div className="mt-3 p-3 bg-darkpanel rounded-lg border border-gray-700">
-                          <div className="space-y-2 text-sm">
+                          <div className="space-y-3 text-sm">
                             {order.info && (
                               <div>
                                 <span className="font-medium text-darksubtle">Dodatkowe informacje:</span>
                                 <p className="mt-1">{order.info}</p>
+                              </div>
+                            )}
+                            
+                            {order.status === 'pending' && order.stripeSessionId && (
+                              <div>
+                                <button
+                                  onClick={() => copyOrderPaymentLink(order.id)}
+                                  className="btn-primary w-full py-2 text-sm flex items-center justify-center gap-2"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                  </svg>
+                                  Kopiuj link płatności
+                                </button>
                               </div>
                             )}
                           </div>
@@ -1124,7 +1282,7 @@ export default function SellerPanel() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredOrders.map(order => (
+                      {paginatedOrders.map(order => (
                         <>
                           <tr key={order.id} className="border-t border-gray-700 hover:bg-darkbg/60">
                             <td className="py-3 px-4 font-mono text-sm">#{order.id}</td>
@@ -1197,6 +1355,20 @@ export default function SellerPanel() {
                                     <b>Dodatkowe informacje od zamawiającego:</b><br />
                                     {order.info ? order.info : <span className="text-darksubtle">Brak dodatkowych informacji</span>}
                                   </div>
+                                  
+                                  {order.status === 'pending' && order.stripeSessionId && (
+                                    <div>
+                                      <button
+                                        onClick={() => copyOrderPaymentLink(order.id)}
+                                        className="btn-primary py-2 px-4 text-sm flex items-center gap-2"
+                                      >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                        </svg>
+                                        Kopiuj link płatności
+                                      </button>
+                                    </div>
+                                  )}
                                 </div>
                               </td>
                             </tr>
@@ -1206,6 +1378,57 @@ export default function SellerPanel() {
                     </tbody>
                   </table>
                 </div>
+                
+                {/* Paginacja */}
+                {totalOrdersPages > 1 && (
+                  <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="text-sm text-darksubtle">
+                      Wyświetlanie {((ordersPage - 1) * ITEMS_PER_PAGE) + 1}-{Math.min(ordersPage * ITEMS_PER_PAGE, filteredOrders.length)} z {filteredOrders.length} zamówień
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setOrdersPage(p => Math.max(1, p - 1))}
+                        disabled={ordersPage === 1}
+                        className="px-4 py-2 border border-gray-700 rounded-lg bg-darkpanel text-darktext disabled:opacity-50 disabled:cursor-not-allowed hover:bg-darkbg transition-colors"
+                      >
+                        Poprzednia
+                      </button>
+                      <div className="flex items-center gap-2">
+                        {Array.from({ length: totalOrdersPages }, (_, i) => i + 1)
+                          .filter(page => {
+                            // Pokazuj pierwszą stronę, ostatnią, obecną i sąsiednie
+                            return page === 1 || page === totalOrdersPages || Math.abs(page - ordersPage) <= 1
+                          })
+                          .map((page, idx, arr) => (
+                            <>
+                              {idx > 0 && arr[idx - 1] !== page - 1 && (
+                                <span key={`ellipsis-${page}`} className="text-darksubtle px-2">...</span>
+                              )}
+                              <button
+                                key={page}
+                                onClick={() => setOrdersPage(page)}
+                                className={`px-4 py-2 rounded-lg transition-colors ${
+                                  ordersPage === page
+                                    ? 'bg-primary-600 text-white'
+                                    : 'border border-gray-700 bg-darkpanel text-darktext hover:bg-darkbg'
+                                }`}
+                              >
+                                {page}
+                              </button>
+                            </>
+                          ))
+                        }
+                      </div>
+                      <button
+                        onClick={() => setOrdersPage(p => Math.min(totalOrdersPages, p + 1))}
+                        disabled={ordersPage === totalOrdersPages}
+                        className="px-4 py-2 border border-gray-700 rounded-lg bg-darkpanel text-darktext disabled:opacity-50 disabled:cursor-not-allowed hover:bg-darkbg transition-colors"
+                      >
+                        Następna
+                      </button>
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </motion.section>
@@ -1266,7 +1489,7 @@ export default function SellerPanel() {
               <>
                 {/* Mobile: karty */}
                 <div className="flex flex-col gap-4 sm:hidden">
-                  {leads.map(lead => (
+                  {paginatedLeads.map(lead => (
                     <div key={lead.id} className="bg-darkbg rounded-xl shadow-lg p-4 border border-gray-800">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-3">
@@ -1363,7 +1586,7 @@ export default function SellerPanel() {
                       </tr>
                     </thead>
                     <tbody>
-                      {leads.map(lead => (
+                      {paginatedLeads.map(lead => (
                         <>
                         <tr key={lead.id} className="border-t border-gray-700 hover:bg-darkbg/60">
                           <td className="py-3 px-4 font-mono text-sm">#{lead.id}</td>
@@ -1466,6 +1689,56 @@ export default function SellerPanel() {
                     </tbody>
                   </table>
                 </div>
+
+                {/* Paginacja */}
+                {totalLeadsPages > 1 && (
+                  <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="text-sm text-darksubtle">
+                      Wyświetlanie {((leadsPage - 1) * ITEMS_PER_PAGE) + 1}-{Math.min(leadsPage * ITEMS_PER_PAGE, leads.length)} z {leads.length} leadów
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setLeadsPage(p => Math.max(1, p - 1))}
+                        disabled={leadsPage === 1}
+                        className="px-4 py-2 border border-gray-700 rounded-lg bg-darkpanel text-darktext disabled:opacity-50 disabled:cursor-not-allowed hover:bg-darkbg transition-colors"
+                      >
+                        Poprzednia
+                      </button>
+                      <div className="flex items-center gap-2">
+                        {Array.from({ length: totalLeadsPages }, (_, i) => i + 1)
+                          .filter(page => {
+                            return page === 1 || page === totalLeadsPages || Math.abs(page - leadsPage) <= 1
+                          })
+                          .map((page, idx, arr) => (
+                            <>
+                              {idx > 0 && arr[idx - 1] !== page - 1 && (
+                                <span key={`ellipsis-${page}`} className="text-darksubtle px-2">...</span>
+                              )}
+                              <button
+                                key={page}
+                                onClick={() => setLeadsPage(page)}
+                                className={`px-4 py-2 rounded-lg transition-colors ${
+                                  leadsPage === page
+                                    ? 'bg-primary-600 text-white'
+                                    : 'border border-gray-700 bg-darkpanel text-darktext hover:bg-darkbg'
+                                }`}
+                              >
+                                {page}
+                              </button>
+                            </>
+                          ))
+                        }
+                      </div>
+                      <button
+                        onClick={() => setLeadsPage(p => Math.min(totalLeadsPages, p + 1))}
+                        disabled={leadsPage === totalLeadsPages}
+                        className="px-4 py-2 border border-gray-700 rounded-lg bg-darkpanel text-darktext disabled:opacity-50 disabled:cursor-not-allowed hover:bg-darkbg transition-colors"
+                      >
+                        Następna
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {leads.length === 0 && !loadingLeads && (
                   <div className="text-center py-12">
@@ -1796,7 +2069,7 @@ export default function SellerPanel() {
                 <>
                   {/* Mobile: karty */}
                   <div className="flex flex-col gap-4 sm:hidden mb-6">
-                    {referredUsers.map(referredUser => (
+                    {paginatedReferredUsers.map(referredUser => (
                       <div key={referredUser.id} className="bg-darkbg rounded-xl shadow-lg p-4 border border-gray-800">
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-3">
@@ -1890,7 +2163,7 @@ export default function SellerPanel() {
                       </tr>
                     </thead>
                     <tbody>
-                      {referredUsers.map(referredUser => (
+                      {paginatedReferredUsers.map(referredUser => (
                         <>
                           <tr key={referredUser.id} className="border-t border-gray-700 hover:bg-darkbg/60">
                             <td className="py-3 px-4">
@@ -2015,6 +2288,56 @@ export default function SellerPanel() {
                     </tbody>
                   </table>
                   </div>
+                  
+                  {/* Paginacja */}
+                  {totalNetworkPages > 1 && (
+                    <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                      <div className="text-sm text-darksubtle">
+                        Wyświetlanie {((networkPage - 1) * ITEMS_PER_PAGE) + 1}-{Math.min(networkPage * ITEMS_PER_PAGE, referredUsers.length)} z {referredUsers.length} użytkowników
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setNetworkPage(p => Math.max(1, p - 1))}
+                          disabled={networkPage === 1}
+                          className="px-4 py-2 border border-gray-700 rounded-lg bg-darkpanel text-darktext disabled:opacity-50 disabled:cursor-not-allowed hover:bg-darkbg transition-colors"
+                        >
+                          Poprzednia
+                        </button>
+                        <div className="flex items-center gap-2">
+                          {Array.from({ length: totalNetworkPages }, (_, i) => i + 1)
+                            .filter(page => {
+                              return page === 1 || page === totalNetworkPages || Math.abs(page - networkPage) <= 1
+                            })
+                            .map((page, idx, arr) => (
+                              <>
+                                {idx > 0 && arr[idx - 1] !== page - 1 && (
+                                  <span key={`ellipsis-${page}`} className="text-darksubtle px-2">...</span>
+                                )}
+                                <button
+                                  key={page}
+                                  onClick={() => setNetworkPage(page)}
+                                  className={`px-4 py-2 rounded-lg transition-colors ${
+                                    networkPage === page
+                                      ? 'bg-primary-600 text-white'
+                                      : 'border border-gray-700 bg-darkpanel text-darktext hover:bg-darkbg'
+                                  }`}
+                                >
+                                  {page}
+                                </button>
+                              </>
+                            ))
+                          }
+                        </div>
+                        <button
+                          onClick={() => setNetworkPage(p => Math.min(totalNetworkPages, p + 1))}
+                          disabled={networkPage === totalNetworkPages}
+                          className="px-4 py-2 border border-gray-700 rounded-lg bg-darkpanel text-darktext disabled:opacity-50 disabled:cursor-not-allowed hover:bg-darkbg transition-colors"
+                        >
+                          Następna
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </>
               ) : (
                 <div className="text-center py-12">
@@ -2296,29 +2619,111 @@ export default function SellerPanel() {
 
                 <div>
                   <label className="block text-sm font-medium text-darksubtle mb-1">
-                    Email klienta (opcjonalnie)
+                    Wybierz leada <span className="text-red-500">*</span>
                   </label>
-                  <input 
-                    type="email"
-                    value={paymentLinkData.customerEmail}
-                    onChange={(e) => setPaymentLinkData({...paymentLinkData, customerEmail: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-700 rounded-lg bg-darkbg text-darktext"
-                    placeholder="klient@example.com"
-                  />
+                  {loadingLeadsForPaymentLink ? (
+                    <div className="w-full px-3 py-2 border border-gray-700 rounded-lg bg-darkbg text-darksubtle">
+                      Ładowanie leadów...
+                    </div>
+                  ) : leadsForPaymentLink.length === 0 ? (
+                    <div className="w-full px-3 py-2 border border-gray-700 rounded-lg bg-darkbg text-darksubtle">
+                      Brak leadów z emailem. Dodaj najpierw leady w zakładce Leady.
+                    </div>
+                  ) : (
+                    <div className="relative lead-dropdown-container">
+                      {/* Custom searchable dropdown */}
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-darksubtle z-10" />
+                        <input
+                          type="text"
+                          placeholder="Wyszukaj i wybierz leada (email, telefon)..."
+                          value={leadSearchForPaymentLink}
+                          onChange={(e) => {
+                            setLeadSearchForPaymentLink(e.target.value)
+                            setIsLeadDropdownOpen(true)
+                          }}
+                          onFocus={() => setIsLeadDropdownOpen(true)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Escape') {
+                              setIsLeadDropdownOpen(false)
+                            } else if (e.key === 'Enter' && filteredLeadsForPaymentLink.length === 1) {
+                              e.preventDefault()
+                              handleLeadSelection(filteredLeadsForPaymentLink[0])
+                            }
+                          }}
+                          className={`w-full pl-10 pr-3 py-2 border ${
+                            paymentLinkData.selectedLeadId ? 'border-green-500' : 'border-gray-700'
+                          } rounded-lg bg-darkbg text-darktext placeholder-darksubtle`}
+                          required
+                        />
+                      </div>
+
+                      {/* Dropdown lista leadów */}
+                      {isLeadDropdownOpen && (
+                        <div className="absolute z-50 w-full mt-1 max-h-60 overflow-y-auto bg-darkpanel border border-gray-700 rounded-lg shadow-lg">
+                          {filteredLeadsForPaymentLink.length > 0 ? (
+                            <>
+                              <div className="p-2 text-xs text-darksubtle border-b border-gray-700">
+                                {leadSearchForPaymentLink 
+                                  ? `Znaleziono: ${filteredLeadsForPaymentLink.length} z ${leadsForPaymentLink.length}` 
+                                  : `Dostępnych leadów: ${leadsForPaymentLink.length}`
+                                }
+                              </div>
+                          {filteredLeadsForPaymentLink.map((lead) => (
+                            <button
+                              key={lead.id}
+                              type="button"
+                              onClick={() => handleLeadSelection(lead)}
+                              className={`w-full text-left px-4 py-3 hover:bg-gray-700/50 transition-colors border-b border-gray-800 last:border-b-0 ${
+                                paymentLinkData.selectedLeadId === lead.id.toString() ? 'bg-blue-500/20' : ''
+                              }`}
+                            >
+                              <div className="flex flex-col gap-1">
+                                <div className="flex items-center gap-2">
+                                  <Mail className="w-3 h-3 text-darksubtle" />
+                                  <span className="text-sm text-darktext font-medium">{lead.email}</span>
+                                </div>
+                                {lead.phone && (
+                                  <div className="flex items-center gap-2">
+                                    <Phone className="w-3 h-3 text-darksubtle" />
+                                    <span className="text-xs text-darksubtle">{lead.phone}</span>
+                                  </div>
+                                )}
+                                {lead.info && (
+                                  <div className="text-xs text-darksubtle truncate">
+                                    {lead.info.substring(0, 50)}{lead.info.length > 50 ? '...' : ''}
+                                  </div>
+                                )}
+                              </div>
+                            </button>
+                          ))}
+                            </>
+                          ) : (
+                            <div className="p-4 text-center text-darksubtle text-sm">
+                              Brak wyników dla "{leadSearchForPaymentLink}"
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-darksubtle mb-1">
-                    Telefon klienta (opcjonalnie)
-                  </label>
-                  <input 
-                    type="tel"
-                    value={paymentLinkData.customerPhone}
-                    onChange={(e) => setPaymentLinkData({...paymentLinkData, customerPhone: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-700 rounded-lg bg-darkbg text-darktext"
-                    placeholder="+48 123 456 789"
-                  />
-                </div>
+                {paymentLinkData.selectedLeadId && (
+                  <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
+                    <p className="text-xs text-blue-300">
+                      <strong>Wybrany lead:</strong>
+                      <br />
+                      Email: {paymentLinkData.customerEmail}
+                      {paymentLinkData.customerPhone && (
+                        <>
+                          <br />
+                          Telefon: {paymentLinkData.customerPhone}
+                        </>
+                      )}
+                    </p>
+                  </div>
+                )}
 
                 <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
                   <p className="text-xs text-blue-300">

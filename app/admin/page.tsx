@@ -89,6 +89,13 @@ export default function AdminPanel() {
   const [authChecked, setAuthChecked] = useState(false)
   const [showLogin, setShowLogin] = useState(false)
   const [user, setUser] = useState<{ email: string; isAdmin: boolean } | null>(null)
+  
+  // Paginacja
+  const [usersPage, setUsersPage] = useState(1)
+  const [ordersPage, setOrdersPage] = useState(1)
+  const [leadsPage, setLeadsPage] = useState(1)
+  const [networkPage, setNetworkPage] = useState(1)
+  const ITEMS_PER_PAGE = 50
 
   const downloadFile = (url: string, filename: string) => {
     fetch(url)
@@ -313,6 +320,23 @@ export default function AdminPanel() {
     }
   }, [leadSearchTerm, leadStatusFilter])
 
+  // Resetowanie paginacji przy zmianie filtrów
+  useEffect(() => {
+    setLeadsPage(1)
+  }, [leadSearchTerm, leadStatusFilter])
+
+  useEffect(() => {
+    setNetworkPage(1)
+  }, [networkSearchTerm])
+
+  // Resetowanie paginacji przy zmianie zakładek
+  useEffect(() => {
+    if (activeTab === 'users') setUsersPage(1)
+    if (activeTab === 'orders') setOrdersPage(1)
+    if (activeTab === 'leads') setLeadsPage(1)
+    if (activeTab === 'network') setNetworkPage(1)
+  }, [activeTab])
+
   if (!authChecked) {
     return <div className="min-h-screen flex items-center justify-center text-darksubtle">Sprawdzanie uprawnień...</div>
   }
@@ -329,6 +353,43 @@ export default function AdminPanel() {
   }
 
   const filteredSoftware = software.filter(item => statusFilter === 'all' || item.status === statusFilter)
+  
+  // Paginacja użytkowników
+  const totalUsersPages = Math.ceil(users.length / ITEMS_PER_PAGE)
+  const paginatedUsers = users.slice(
+    (usersPage - 1) * ITEMS_PER_PAGE,
+    usersPage * ITEMS_PER_PAGE
+  )
+
+  // Paginacja zamówień
+  const totalOrdersPages = Math.ceil(orders.length / ITEMS_PER_PAGE)
+  const paginatedOrders = orders.slice(
+    (ordersPage - 1) * ITEMS_PER_PAGE,
+    ordersPage * ITEMS_PER_PAGE
+  )
+
+  // Paginacja leadów
+  const totalLeadsPages = Math.ceil(leads.length / ITEMS_PER_PAGE)
+  const paginatedLeads = leads.slice(
+    (leadsPage - 1) * ITEMS_PER_PAGE,
+    leadsPage * ITEMS_PER_PAGE
+  )
+
+  // Paginacja network - filtrowane użytkownicy
+  const filteredNetworkUsers = networkData?.users.filter((user: any) => {
+    const searchLower = networkSearchTerm.toLowerCase()
+    return (
+      user.email.toLowerCase().includes(searchLower) ||
+      (user.firstName && user.firstName.toLowerCase().includes(searchLower)) ||
+      (user.lastName && user.lastName.toLowerCase().includes(searchLower))
+    )
+  }) || []
+  
+  const totalNetworkPages = Math.ceil(filteredNetworkUsers.length / ITEMS_PER_PAGE)
+  const paginatedNetworkUsers = filteredNetworkUsers.slice(
+    (networkPage - 1) * ITEMS_PER_PAGE,
+    networkPage * ITEMS_PER_PAGE
+  )
   
   const stats = [
     { title: 'Wszystkie oprogramowanie', value: software.length, icon: Package, color: 'text-primary-500' },
@@ -1072,7 +1133,7 @@ export default function AdminPanel() {
               <>
                 {/* Mobile: karty */}
                 <div className="flex flex-col gap-4 sm:hidden mb-6">
-                  {leads.map(lead => (
+                  {paginatedLeads.map(lead => (
                     <div key={lead.id} className="bg-darkbg rounded-xl shadow-lg p-4 border border-gray-800">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-3">
@@ -1188,7 +1249,7 @@ export default function AdminPanel() {
                     </tr>
                   </thead>
                   <tbody>
-                    {leads.map(lead => (
+                    {paginatedLeads.map(lead => (
                       <>
                         <tr key={lead.id} className="border-t border-gray-700 hover:bg-darkbg/60">
                           <td className="py-3 px-4 font-mono text-sm">#{lead.id}</td>
@@ -1303,6 +1364,54 @@ export default function AdminPanel() {
                   </div>
                 )}
                 </div>
+                
+                {/* Paginacja */}
+                {totalLeadsPages > 1 && (
+                  <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="text-sm text-darksubtle">
+                      Wyświetlanie {((leadsPage - 1) * ITEMS_PER_PAGE) + 1}-{Math.min(leadsPage * ITEMS_PER_PAGE, leads.length)} z {leads.length} leadów
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setLeadsPage(p => Math.max(1, p - 1))}
+                        disabled={leadsPage === 1}
+                        className="px-4 py-2 border border-gray-700 rounded-lg bg-darkpanel text-darktext disabled:opacity-50 disabled:cursor-not-allowed hover:bg-darkbg transition-colors"
+                      >
+                        Poprzednia
+                      </button>
+                      <div className="flex items-center gap-2">
+                        {Array.from({ length: totalLeadsPages }, (_, i) => i + 1)
+                          .filter(page => page === 1 || page === totalLeadsPages || Math.abs(page - leadsPage) <= 1)
+                          .map((page, idx, arr) => (
+                            <>
+                              {idx > 0 && arr[idx - 1] !== page - 1 && (
+                                <span key={`ellipsis-${page}`} className="text-darksubtle px-2">...</span>
+                              )}
+                              <button
+                                key={page}
+                                onClick={() => setLeadsPage(page)}
+                                className={`px-4 py-2 rounded-lg transition-colors ${
+                                  leadsPage === page
+                                    ? 'bg-primary-600 text-white'
+                                    : 'border border-gray-700 bg-darkpanel text-darktext hover:bg-darkbg'
+                                }`}
+                              >
+                                {page}
+                              </button>
+                            </>
+                          ))
+                        }
+                      </div>
+                      <button
+                        onClick={() => setLeadsPage(p => Math.min(totalLeadsPages, p + 1))}
+                        disabled={leadsPage === totalLeadsPages}
+                        className="px-4 py-2 border border-gray-700 rounded-lg bg-darkpanel text-darktext disabled:opacity-50 disabled:cursor-not-allowed hover:bg-darkbg transition-colors"
+                      >
+                        Następna
+                      </button>
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </motion.section>
@@ -1327,7 +1436,7 @@ export default function AdminPanel() {
               <>
                 {/* Mobile: karty */}
                 <div className="flex flex-col gap-4 sm:hidden">
-                  {users.map(user => (
+                  {paginatedUsers.map(user => (
                     <div key={user.id} className="bg-darkbg rounded-xl shadow-lg p-4 border border-gray-800">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-3">
@@ -1402,7 +1511,7 @@ export default function AdminPanel() {
                       </tr>
                     </thead>
                     <tbody>
-                      {users.map(user => (
+                      {paginatedUsers.map(user => (
                                                   <tr key={user.id} className="border-t border-gray-700 hover:bg-darkbg/60">
                             <td className="py-3 px-4 font-mono text-sm">{user.id}</td>
                             <td className="py-3 px-4">
@@ -1466,6 +1575,54 @@ export default function AdminPanel() {
                     </tbody>
                   </table>
                 </div>
+                
+                {/* Paginacja */}
+                {totalUsersPages > 1 && (
+                  <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="text-sm text-darksubtle">
+                      Wyświetlanie {((usersPage - 1) * ITEMS_PER_PAGE) + 1}-{Math.min(usersPage * ITEMS_PER_PAGE, users.length)} z {users.length} użytkowników
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setUsersPage(p => Math.max(1, p - 1))}
+                        disabled={usersPage === 1}
+                        className="px-4 py-2 border border-gray-700 rounded-lg bg-darkpanel text-darktext disabled:opacity-50 disabled:cursor-not-allowed hover:bg-darkbg transition-colors"
+                      >
+                        Poprzednia
+                      </button>
+                      <div className="flex items-center gap-2">
+                        {Array.from({ length: totalUsersPages }, (_, i) => i + 1)
+                          .filter(page => page === 1 || page === totalUsersPages || Math.abs(page - usersPage) <= 1)
+                          .map((page, idx, arr) => (
+                            <>
+                              {idx > 0 && arr[idx - 1] !== page - 1 && (
+                                <span key={`ellipsis-${page}`} className="text-darksubtle px-2">...</span>
+                              )}
+                              <button
+                                key={page}
+                                onClick={() => setUsersPage(page)}
+                                className={`px-4 py-2 rounded-lg transition-colors ${
+                                  usersPage === page
+                                    ? 'bg-primary-600 text-white'
+                                    : 'border border-gray-700 bg-darkpanel text-darktext hover:bg-darkbg'
+                                }`}
+                              >
+                                {page}
+                              </button>
+                            </>
+                          ))
+                        }
+                      </div>
+                      <button
+                        onClick={() => setUsersPage(p => Math.min(totalUsersPages, p + 1))}
+                        disabled={usersPage === totalUsersPages}
+                        className="px-4 py-2 border border-gray-700 rounded-lg bg-darkpanel text-darktext disabled:opacity-50 disabled:cursor-not-allowed hover:bg-darkbg transition-colors"
+                      >
+                        Następna
+                      </button>
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </motion.section>
@@ -1484,7 +1641,7 @@ export default function AdminPanel() {
               <>
                 {/* Mobile: karty */}
                 <div className="flex flex-col gap-4 sm:hidden">
-                  {orders.map(order => (
+                  {paginatedOrders.map(order => (
                     <div key={order.id} className="bg-darkbg rounded-xl shadow-lg p-4 border border-gray-800">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-3">
@@ -1656,7 +1813,7 @@ export default function AdminPanel() {
                       </tr>
                     </thead>
                     <tbody>
-                      {orders.map(order => (
+                      {paginatedOrders.map(order => (
                         <>
                           <tr key={order.id} className="border-t border-gray-700 hover:bg-darkbg/60">
                             <td className="py-3 px-4 font-mono text-sm">{order.id}</td>
@@ -1806,6 +1963,54 @@ export default function AdminPanel() {
                     </tbody>
                   </table>
                 </div>
+                
+                {/* Paginacja */}
+                {totalOrdersPages > 1 && (
+                  <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="text-sm text-darksubtle">
+                      Wyświetlanie {((ordersPage - 1) * ITEMS_PER_PAGE) + 1}-{Math.min(ordersPage * ITEMS_PER_PAGE, orders.length)} z {orders.length} zamówień
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setOrdersPage(p => Math.max(1, p - 1))}
+                        disabled={ordersPage === 1}
+                        className="px-4 py-2 border border-gray-700 rounded-lg bg-darkpanel text-darktext disabled:opacity-50 disabled:cursor-not-allowed hover:bg-darkbg transition-colors"
+                      >
+                        Poprzednia
+                      </button>
+                      <div className="flex items-center gap-2">
+                        {Array.from({ length: totalOrdersPages }, (_, i) => i + 1)
+                          .filter(page => page === 1 || page === totalOrdersPages || Math.abs(page - ordersPage) <= 1)
+                          .map((page, idx, arr) => (
+                            <>
+                              {idx > 0 && arr[idx - 1] !== page - 1 && (
+                                <span key={`ellipsis-${page}`} className="text-darksubtle px-2">...</span>
+                              )}
+                              <button
+                                key={page}
+                                onClick={() => setOrdersPage(page)}
+                                className={`px-4 py-2 rounded-lg transition-colors ${
+                                  ordersPage === page
+                                    ? 'bg-primary-600 text-white'
+                                    : 'border border-gray-700 bg-darkpanel text-darktext hover:bg-darkbg'
+                                }`}
+                              >
+                                {page}
+                              </button>
+                            </>
+                          ))
+                        }
+                      </div>
+                      <button
+                        onClick={() => setOrdersPage(p => Math.min(totalOrdersPages, p + 1))}
+                        disabled={ordersPage === totalOrdersPages}
+                        className="px-4 py-2 border border-gray-700 rounded-lg bg-darkpanel text-darktext disabled:opacity-50 disabled:cursor-not-allowed hover:bg-darkbg transition-colors"
+                      >
+                        Następna
+                      </button>
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </motion.section>
@@ -2188,14 +2393,7 @@ export default function AdminPanel() {
                   
                   {/* Mobile: karty */}
                   <div className="flex flex-col gap-4 sm:hidden mb-6">
-                    {networkData.users.filter((user: any) => {
-                      const searchLower = networkSearchTerm.toLowerCase()
-                      return (
-                        user.email.toLowerCase().includes(searchLower) ||
-                        (user.firstName && user.firstName.toLowerCase().includes(searchLower)) ||
-                        (user.lastName && user.lastName.toLowerCase().includes(searchLower))
-                      )
-                    }).map((user: any) => (
+                    {paginatedNetworkUsers.map((user: any) => (
                       <div key={user.id} className="bg-darkbg rounded-xl shadow-lg p-4 border border-gray-800">
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-3">
@@ -2292,14 +2490,7 @@ export default function AdminPanel() {
                     ))}
                     
                     {/* Komunikat o braku wyników mobile */}
-                    {networkData.users.filter((user: any) => {
-                      const searchLower = networkSearchTerm.toLowerCase()
-                      return (
-                        user.email.toLowerCase().includes(searchLower) ||
-                        (user.firstName && user.firstName.toLowerCase().includes(searchLower)) ||
-                        (user.lastName && user.lastName.toLowerCase().includes(searchLower))
-                      )
-                    }).length === 0 && (
+                    {filteredNetworkUsers.length === 0 && (
                       <div className="text-center py-12">
                         <Users className="w-16 h-16 text-darksubtle mx-auto mb-4" />
                         <h3 className="text-lg font-medium text-darktext mb-2">Brak wyników</h3>
@@ -2324,14 +2515,7 @@ export default function AdminPanel() {
                         </tr>
                       </thead>
                       <tbody>
-                        {networkData.users.filter((user: any) => {
-                          const searchLower = networkSearchTerm.toLowerCase()
-                          return (
-                            user.email.toLowerCase().includes(searchLower) ||
-                            (user.firstName && user.firstName.toLowerCase().includes(searchLower)) ||
-                            (user.lastName && user.lastName.toLowerCase().includes(searchLower))
-                          )
-                        }).map((user: any) => (
+                        {paginatedNetworkUsers.map((user: any) => (
                           <>
                             <tr key={user.id} className="border-t border-gray-700 hover:bg-darkbg/60">
                               <td className="py-3 px-4">
@@ -2555,14 +2739,7 @@ export default function AdminPanel() {
                     </table>
                     
                     {/* Komunikat o braku wyników */}
-                    {networkData.users.filter((user: any) => {
-                      const searchLower = networkSearchTerm.toLowerCase()
-                      return (
-                        user.email.toLowerCase().includes(searchLower) ||
-                        (user.firstName && user.firstName.toLowerCase().includes(searchLower)) ||
-                        (user.lastName && user.lastName.toLowerCase().includes(searchLower))
-                      )
-                    }).length === 0 && (
+                    {filteredNetworkUsers.length === 0 && (
                       <div className="text-center py-12">
                         <Users className="w-16 h-16 text-darksubtle mx-auto mb-4" />
                         <h3 className="text-lg font-medium text-darktext mb-2">Brak wyników</h3>
@@ -2570,6 +2747,54 @@ export default function AdminPanel() {
                       </div>
                     )}
                   </div>
+                  
+                  {/* Paginacja */}
+                  {totalNetworkPages > 1 && (
+                    <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                      <div className="text-sm text-darksubtle">
+                        Wyświetlanie {((networkPage - 1) * ITEMS_PER_PAGE) + 1}-{Math.min(networkPage * ITEMS_PER_PAGE, filteredNetworkUsers.length)} z {filteredNetworkUsers.length} użytkowników
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setNetworkPage(p => Math.max(1, p - 1))}
+                          disabled={networkPage === 1}
+                          className="px-4 py-2 border border-gray-700 rounded-lg bg-darkpanel text-darktext disabled:opacity-50 disabled:cursor-not-allowed hover:bg-darkbg transition-colors"
+                        >
+                          Poprzednia
+                        </button>
+                        <div className="flex items-center gap-2">
+                          {Array.from({ length: totalNetworkPages }, (_, i) => i + 1)
+                            .filter(page => page === 1 || page === totalNetworkPages || Math.abs(page - networkPage) <= 1)
+                            .map((page, idx, arr) => (
+                              <>
+                                {idx > 0 && arr[idx - 1] !== page - 1 && (
+                                  <span key={`ellipsis-${page}`} className="text-darksubtle px-2">...</span>
+                                )}
+                                <button
+                                  key={page}
+                                  onClick={() => setNetworkPage(page)}
+                                  className={`px-4 py-2 rounded-lg transition-colors ${
+                                    networkPage === page
+                                      ? 'bg-primary-600 text-white'
+                                      : 'border border-gray-700 bg-darkpanel text-darktext hover:bg-darkbg'
+                                  }`}
+                                >
+                                  {page}
+                                </button>
+                              </>
+                            ))
+                          }
+                        </div>
+                        <button
+                          onClick={() => setNetworkPage(p => Math.min(totalNetworkPages, p + 1))}
+                          disabled={networkPage === totalNetworkPages}
+                          className="px-4 py-2 border border-gray-700 rounded-lg bg-darkpanel text-darktext disabled:opacity-50 disabled:cursor-not-allowed hover:bg-darkbg transition-colors"
+                        >
+                          Następna
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </>
             ) : (
