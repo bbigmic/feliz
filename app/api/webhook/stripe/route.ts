@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client'
 import Stripe from 'stripe'
 import nodemailer from 'nodemailer'
 import { getTranslation } from '@/lib/i18n'
+import { createEmailTemplate, formatEmailContent } from '@/lib/emailTemplate'
 
 const prisma = new PrismaClient()
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2023-10-16' })
@@ -208,30 +209,34 @@ export async function POST(request: NextRequest) {
                     : 'Płatność kolejnej raty została potwierdzona. Dziękujemy za wpłatę.'
                 }
 
-                const paymentEmailText = `${greeting}!
+                const orderTypeText = order.orderType === 'consultation' 
+                  ? (language === 'en' ? 'Consultation/Quote' : 'Konsultacja/Wycena') 
+                  : order.orderType === 'collaboration' 
+                  ? (language === 'en' ? 'Collaboration' : 'Współpraca') 
+                  : order.orderType === 'code' 
+                  ? (language === 'en' ? 'Code' : 'Kod') 
+                  : order.orderType === 'custom_payment' 
+                  ? (language === 'en' ? 'Installment Payment' : 'Kolejna rata') 
+                  : order.orderType
 
-${paymentBody}
+                const emailDetails = `
+                  <p style="margin: 0 0 10px 0;"><strong style="color: #667eea;">${language === 'en' ? 'Order Details' : 'Szczegóły zamówienia'}:</strong></p>
+                  <p style="margin: 5px 0;"><strong>${language === 'en' ? 'Order ID' : 'ID zamówienia'}:</strong> #${order.id}</p>
+                  <p style="margin: 5px 0;"><strong>${language === 'en' ? 'Order Type' : 'Typ zamówienia'}:</strong> ${orderTypeText}</p>
+                  <p style="margin: 5px 0;"><strong>${language === 'en' ? 'Phone' : 'Telefon'}:</strong> ${order.phone}</p>
+                  <p style="margin: 20px 0 0 0; padding-top: 15px; border-top: 1px solid #e0e0e0;"><em>${thankYou}</em></p>
+                `
 
-${language === 'en' ? 'Order Details' : 'Szczegóły zamówienia'}:
-${language === 'en' ? 'Order ID' : 'ID zamówienia'}: ${order.id}
-${language === 'en' ? 'Order Type' : 'Typ zamówienia'}: ${order.orderType === 'consultation' ? (language === 'en' ? 'Consultation/Quote' : 'Konsultacja/Wycena') : order.orderType === 'collaboration' ? (language === 'en' ? 'Collaboration' : 'Współpraca') : order.orderType === 'code' ? (language === 'en' ? 'Code' : 'Kod') : order.orderType === 'custom_payment' ? (language === 'en' ? 'Installment Payment' : 'Kolejna rata') : order.orderType}
-${language === 'en' ? 'Phone' : 'Telefon'}: ${order.phone}
-
-${language === 'en' ? 'Contact Information' : 'Informacje kontaktowe'}:
-${language === 'en' ? 'Email' : 'Email'}: ${process.env.EMAIL_USER}
-${language === 'en' ? 'Phone' : 'Telefon'}: +48 502 600 739
-${language === 'en' ? 'Website' : 'Strona internetowa'}: https://feliztradeltd.com
-
-${thankYou}
-
----
-FelizTrade Team`
+                const emailHtml = createEmailTemplate(
+                  formatEmailContent(greeting, paymentBody || '', emailDetails),
+                  language as 'pl' | 'en'
+                )
 
                 await transporter.sendMail({
                   from: `FelizTrade <${process.env.EMAIL_USER}>`,
                   to: order.email,
                   subject: paymentSubject,
-                  text: paymentEmailText
+                  html: emailHtml
                 })
 
                 console.log(`Payment confirmation email sent to customer: ${order.email}`)
@@ -301,28 +306,37 @@ FelizTrade Team`
                   ? 'Your payment session has expired. To complete your order, please visit our website and place a new order.'
                   : 'Twoja sesja płatności wygasła. Aby dokończyć zamówienie, odwiedź naszą stronę internetową i złóż nowe zamówienie.'
 
-                const expiredEmailText = `${greeting}!
+                const expiredOrderTypeText = expiredOrder.orderType === 'consultation' 
+                  ? (language === 'en' ? 'Consultation/Quote' : 'Konsultacja/Wycena') 
+                  : expiredOrder.orderType === 'collaboration' 
+                  ? (language === 'en' ? 'Collaboration' : 'Współpraca') 
+                  : expiredOrder.orderType === 'code' 
+                  ? (language === 'en' ? 'Code' : 'Kod') 
+                  : expiredOrder.orderType === 'custom_payment' 
+                  ? (language === 'en' ? 'Installment Payment' : 'Kolejna rata') 
+                  : expiredOrder.orderType
 
-${expiredBody}
+                const expiredEmailDetails = `
+                  <p style="margin: 0 0 10px 0;"><strong style="color: #667eea;">${language === 'en' ? 'Order Details' : 'Szczegóły zamówienia'}:</strong></p>
+                  <p style="margin: 5px 0;"><strong>${language === 'en' ? 'Order ID' : 'ID zamówienia'}:</strong> #${expiredOrder.id}</p>
+                  <p style="margin: 5px 0;"><strong>${language === 'en' ? 'Order Type' : 'Typ zamówienia'}:</strong> ${expiredOrderTypeText}</p>
+                  <p style="margin: 20px 0; padding: 15px; background-color: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+                    <strong>⚠️ ${language === 'en' ? 'Action Required' : 'Wymagane działanie'}:</strong><br>
+                    ${language === 'en' ? 'To complete your order, please visit' : 'Aby dokończyć zamówienie, odwiedź'}: 
+                    <a href="https://feliztradeltd.com" style="color: #667eea; font-weight: 600;">feliztradeltd.com</a>
+                  </p>
+                `
 
-${language === 'en' ? 'Order Details' : 'Szczegóły zamówienia'}:
-${language === 'en' ? 'Order ID' : 'ID zamówienia'}: ${expiredOrder.id}
-${language === 'en' ? 'Order Type' : 'Typ zamówienia'}: ${expiredOrder.orderType === 'consultation' ? (language === 'en' ? 'Consultation/Quote' : 'Konsultacja/Wycena') : expiredOrder.orderType === 'collaboration' ? (language === 'en' ? 'Collaboration' : 'Współpraca') : expiredOrder.orderType === 'code' ? (language === 'en' ? 'Code' : 'Kod') : expiredOrder.orderType === 'custom_payment' ? (language === 'en' ? 'Installment Payment' : 'Kolejna rata') : expiredOrder.orderType}
-
-${language === 'en' ? 'To complete your order, please visit' : 'Aby dokończyć zamówienie, odwiedź'}: https://feliztradeltd.com
-
-${language === 'en' ? 'Contact Information' : 'Informacje kontaktowe'}:
-${language === 'en' ? 'Email' : 'Email'}: ${process.env.EMAIL_USER}
-${language === 'en' ? 'Phone' : 'Telefon'}: +48 502 600 739
-
----
-FelizTrade Team`
+                const expiredEmailHtml = createEmailTemplate(
+                  formatEmailContent(greeting, expiredBody, expiredEmailDetails),
+                  language as 'pl' | 'en'
+                )
 
                 await transporter.sendMail({
                   from: `FelizTrade <${process.env.EMAIL_USER}>`,
                   to: expiredOrder.email,
                   subject: expiredSubject,
-                  text: expiredEmailText
+                  html: expiredEmailHtml
                 })
 
                 console.log(`Expired session notification email sent to customer: ${expiredOrder.email}`)

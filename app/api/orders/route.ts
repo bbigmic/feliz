@@ -4,6 +4,7 @@ import Stripe from 'stripe'
 import nodemailer from 'nodemailer'
 import { getTranslation } from '@/lib/i18n'
 import jwt from 'jsonwebtoken'
+import { createEmailTemplate, formatEmailContent } from '@/lib/emailTemplate'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'tajny_klucz'
 
@@ -132,19 +133,43 @@ export async function POST(request: NextRequest) {
       
       const softwareName = language === 'en' && software?.nameEn ? software.nameEn : software?.name || softwareText
       
-      let priceInfo = ''
+      let priceInfoHtml = ''
       if (order.orderType === 'collaboration' && software) {
-        priceInfo = `\n${softwareText}: ${softwareName}\n${collaborationPriceText}: ${Math.round(software.price * 0.3)} PLN`
+        priceInfoHtml = `
+          <p style="margin: 5px 0;"><strong>${softwareText}:</strong> ${softwareName}</p>
+          <p style="margin: 5px 0;"><strong>${collaborationPriceText}:</strong> ${Math.round(software.price * 0.3)} PLN</p>
+        `
       } else if (order.orderType === 'code' && software) {
-        priceInfo = `\n${softwareText}: ${softwareName}\n${codePriceText}: ${software.price} PLN`
+        priceInfoHtml = `
+          <p style="margin: 5px 0;"><strong>${softwareText}:</strong> ${softwareName}</p>
+          <p style="margin: 5px 0;"><strong>${codePriceText}:</strong> ${software.price} PLN</p>
+        `
       }
+      
+      const orderDetailsHtml = `
+        <p style="margin: 0 0 10px 0;"><strong style="color: #667eea;">${language === 'en' ? 'New Order Received' : 'Nowe zamówienie'}:</strong></p>
+        <p style="margin: 5px 0;"><strong>${language === 'en' ? 'Order ID' : 'ID zamówienia'}:</strong> #${order.id}</p>
+        <p style="margin: 5px 0;"><strong>${language === 'en' ? 'Email' : 'Email'}:</strong> ${order.email || loggedInUserText}</p>
+        <p style="margin: 5px 0;"><strong>${language === 'en' ? 'Phone' : 'Telefon'}:</strong> ${order.phone}</p>
+        ${order.info ? `<p style="margin: 5px 0;"><strong>${language === 'en' ? 'Additional Info' : 'Dodatkowe informacje'}:</strong> ${order.info}</p>` : ''}
+        ${priceInfoHtml}
+      `
+      
+      const ownerEmailHtml = createEmailTemplate(
+        formatEmailContent(
+          language === 'en' ? 'Hello' : 'Witaj',
+          emailBody || '',
+          orderDetailsHtml
+        ),
+        language as 'pl' | 'en'
+      )
       
       // Mail do właściciela platformy
       await transporter.sendMail({
         from: `FelizTrade <${process.env.EMAIL_USER}>`,
         to: process.env.EMAIL_USER,
         subject: emailSubject,
-        text: `${emailBody}\nEmail: ${order.email || loggedInUserText}\nTelefon: ${order.phone}\nInfo: ${order.info || '-'}\n${orderIdText}: ${order.id}${priceInfo}`
+        html: ownerEmailHtml
       })
 
       // Email potwierdzający do klienta zostanie wysłany dopiero po potwierdzeniu płatności przez webhook Stripe
