@@ -92,7 +92,7 @@ export default function Home() {
 
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const [sortBy, setSortBy] = useState('name')
+  const [sortBy, setSortBy] = useState('price')
 
   // Kategorie wyliczane dynamicznie na podstawie danych z API
   const [softwares, setSoftwares] = useState<any[]>([])
@@ -391,8 +391,8 @@ export default function Home() {
                   onChange={(e) => setSortBy(e.target.value)}
                   className="px-4 py-2 border border-gray-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-darkpanel text-darktext"
                 >
-                  <option value="name" className="bg-darkpanel text-darktext">{t('filters.sortByName')}</option>
                   <option value="price" className="bg-darkpanel text-darktext">{t('filters.sortByPrice')}</option>
+                  <option value="name" className="bg-darkpanel text-darktext">{t('filters.sortByName')}</option>
                   <option value="rating" className="bg-darkpanel text-darktext">{t('filters.sortByRating')}</option>
                   <option value="sales" className="bg-darkpanel text-darktext">{t('filters.sortBySales')}</option>
                 </select>
