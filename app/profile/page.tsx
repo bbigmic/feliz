@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import { motion } from 'framer-motion'
-import { User, Mail, Upload, Save } from 'lucide-react'
+import { User, Mail, Upload, Save, Lock } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 export default function ProfilePage() {
@@ -20,6 +20,12 @@ export default function ProfilePage() {
   const [lastName, setLastName] = useState('')
   const [bio, setBio] = useState('')
   const [profileImageUrl, setProfileImageUrl] = useState('')
+
+  // Password change states
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [changingPassword, setChangingPassword] = useState(false)
 
   useEffect(() => {
     fetchUser()
@@ -109,6 +115,49 @@ export default function ProfilePage() {
       toast.error('Nie udało się zapisać profilu')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (newPassword !== confirmPassword) {
+      toast.error('Nowe hasło i potwierdzenie hasła nie są identyczne')
+      return
+    }
+
+    if (newPassword.length < 6) {
+      toast.error('Nowe hasło musi mieć co najmniej 6 znaków')
+      return
+    }
+
+    setChangingPassword(true)
+
+    try {
+      const res = await fetch('/api/user/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword
+        })
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        toast.success('Hasło zostało zmienione pomyślnie!')
+        setCurrentPassword('')
+        setNewPassword('')
+        setConfirmPassword('')
+      } else {
+        toast.error(data.error || 'Błąd podczas zmiany hasła')
+      }
+    } catch (error) {
+      console.error('Błąd zmiany hasła:', error)
+      toast.error('Nie udało się zmienić hasła')
+    } finally {
+      setChangingPassword(false)
     }
   }
 
@@ -228,6 +277,67 @@ export default function ProfilePage() {
                 <span>{saving ? 'Zapisywanie...' : 'Zapisz zmiany'}</span>
               </button>
             </form>
+
+            {/* Password Change Section */}
+            <div className="mt-8 pt-6 border-t border-gray-700">
+              <h2 className="text-xl font-semibold mb-4 text-darktext flex items-center gap-2">
+                <Lock className="w-5 h-5" />
+                Zmiana Hasła
+              </h2>
+
+              <form onSubmit={handlePasswordChange} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-darksubtle mb-2">
+                    Aktualne hasło
+                  </label>
+                  <input
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="Wprowadź aktualne hasło"
+                    className="w-full p-3 bg-darkbg border border-gray-700 rounded-lg text-darktext focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-darksubtle mb-2">
+                    Nowe hasło
+                  </label>
+                  <input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Wprowadź nowe hasło (min. 6 znaków)"
+                    className="w-full p-3 bg-darkbg border border-gray-700 rounded-lg text-darktext focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-darksubtle mb-2">
+                    Potwierdź nowe hasło
+                  </label>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Potwierdź nowe hasło"
+                    className="w-full p-3 bg-darkbg border border-gray-700 rounded-lg text-darktext focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={changingPassword}
+                  className="btn-secondary w-full flex items-center justify-center gap-2"
+                >
+                  <Lock className="w-4 h-4" />
+                  <span>{changingPassword ? 'Zmienianie hasła...' : 'Zmień hasło'}</span>
+                </button>
+              </form>
+            </div>
           </motion.div>
         </div>
       </div>
